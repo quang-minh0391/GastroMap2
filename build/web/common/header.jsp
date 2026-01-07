@@ -24,7 +24,7 @@
             <a class="nav-link <%= currentUri.contains("farm-products") ? "active" : "" %>" 
                href="${pageContext.request.contextPath}/farm-products">🌾 Danh mục Nông sản</a>
             
-            <a class="nav-link <%= currentUri.contains("/batches") ? "active" : "" %>" 
+            <a class="nav-link <%= currentUri.contains("/batches") && !currentUri.contains("qr") ? "active" : "" %>" 
                href="${pageContext.request.contextPath}/batches">📦 Lô Sản xuất</a>
             
             <a class="nav-link <%= currentUri.contains("warehouses") ? "active" : "" %>" 
