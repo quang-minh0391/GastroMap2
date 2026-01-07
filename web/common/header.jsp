@@ -18,6 +18,35 @@
             <h4 class="text-white">🍀 Gastromap</h4>
         </div>
         <nav class="nav flex-column">
+            <!-- Module Người 1: Quản lý Sản xuất & Truy xuất -->
+            <div class="nav-section-title text-white-50 px-3 py-2 small fw-bold">SẢN XUẤT & TRUY XUẤT</div>
+            
+            <a class="nav-link <%= currentUri.contains("farm-products") ? "active" : "" %>" 
+               href="${pageContext.request.contextPath}/farm-products">🌾 Danh mục Nông sản</a>
+            
+            <a class="nav-link <%= currentUri.contains("/batches") ? "active" : "" %>" 
+               href="${pageContext.request.contextPath}/batches">📦 Lô Sản xuất</a>
+            
+            <a class="nav-link <%= currentUri.contains("warehouses") ? "active" : "" %>" 
+               href="${pageContext.request.contextPath}/warehouses">🏭 Quản lý Kho</a>
+            
+            <a class="nav-link <%= currentUri.contains("inventory") ? "active" : "" %>" 
+               href="${pageContext.request.contextPath}/inventory">📊 Tồn Kho</a>
+            
+            <a class="nav-link <%= currentUri.contains("stock-ins") ? "active" : "" %>" 
+               href="${pageContext.request.contextPath}/stock-ins">📥 Nhập Kho</a>
+            
+            <a class="nav-link <%= currentUri.contains("qr-codes") ? "active" : "" %>" 
+               href="${pageContext.request.contextPath}/qr-codes">📱 Mã QR</a>
+            
+            <a class="nav-link <%= currentUri.contains("traceability") ? "active" : "" %>" 
+               href="${pageContext.request.contextPath}/traceability">🔍 Truy xuất Nguồn gốc</a>
+            
+            <hr class="border-secondary my-2">
+            
+            <!-- Các module khác -->
+            <div class="nav-section-title text-white-50 px-3 py-2 small fw-bold">QUẢN LÝ KHÁC</div>
+            
             <a class="nav-link <%= currentUri.contains("product.jsp") ? "active" : "" %>" 
                href="${pageContext.request.contextPath}/admin/product.jsp">1. 📦 Quản lý Sản phẩm</a>
             
