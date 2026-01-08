@@ -7,48 +7,63 @@ import java.sql.Timestamp;
  * Entity class for members table (READ ONLY for Person 1)
  * Represents cooperative members
  */
-public class Member {
-    private Integer id;
-    private String username;
-    private String password;
-    private String fullName;
-    private String phone;
-    private String address;
-    private Integer memberType;
-    private Integer coopId;
-    private String status;
-    private Date expiryDate;
-    private String planType;
-    private Date joinedDate;
-    private Timestamp createdAt;
+public class member {
+    private int id;                  // ID of the user
+    private String username;         // Username
+    private String password;  
+    private String email;// Password (hashed);
+    private String full_name;         // Full name
+    private String phone;            // Phone number
+    private String address;          // Address
+    private int member_type;          // Member type (1: Farmer, 2: Cooperative)
+    private Integer coop_id;          // Cooperative ID (nullable)
+    private String status;           // Account status (Active, Inactive, Expired)
+    private String expiry_date;       // Account expiry date (formatted as String)
+    private String plan_type;         // Plan type (MONTHLY, YEARLY, NONE)
+    private String joined_date;       // Joined date (formatted as String)
+    private String created_at;
 
-    public Member() {
+    public member() {
     }
 
-    public Member(Integer id, String username, String password, String fullName,
-                  String phone, String address, Integer memberType, Integer coopId,
-                  String status, Date expiryDate, String planType,
-                  Date joinedDate, Timestamp createdAt) {
+    public member(int id, String username, String password, String email, String full_name, String phone, String address, int member_type, Integer coop_id, String status, String expiry_date, String plan_type, String joined_date, String created_at) {
         this.id = id;
         this.username = username;
         this.password = password;
-        this.fullName = fullName;
+        this.email = email;
+        this.full_name = full_name;
         this.phone = phone;
         this.address = address;
-        this.memberType = memberType;
-        this.coopId = coopId;
+        this.member_type = member_type;
+        this.coop_id = coop_id;
         this.status = status;
-        this.expiryDate = expiryDate;
-        this.planType = planType;
-        this.joinedDate = joinedDate;
-        this.createdAt = createdAt;
+        this.expiry_date = expiry_date;
+        this.plan_type = plan_type;
+        this.joined_date = joined_date;
+        this.created_at = created_at;
     }
 
-    public Integer getId() {
+    public member(String username, String password, String email, String full_name, String phone, String address, int member_type, Integer coop_id, String status, String expiry_date, String plan_type, String joined_date, String created_at) {
+        this.username = username;
+        this.password = password;
+        this.email = email;
+        this.full_name = full_name;
+        this.phone = phone;
+        this.address = address;
+        this.member_type = member_type;
+        this.coop_id = coop_id;
+        this.status = status;
+        this.expiry_date = expiry_date;
+        this.plan_type = plan_type;
+        this.joined_date = joined_date;
+        this.created_at = created_at;
+    }
+
+    public int getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -68,12 +83,20 @@ public class Member {
         this.password = password;
     }
 
-    public String getFullName() {
-        return fullName;
+    public String getEmail() {
+        return email;
     }
 
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getFull_name() {
+        return full_name;
+    }
+
+    public void setFull_name(String full_name) {
+        this.full_name = full_name;
     }
 
     public String getPhone() {
@@ -92,20 +115,20 @@ public class Member {
         this.address = address;
     }
 
-    public Integer getMemberType() {
-        return memberType;
+    public int getMember_type() {
+        return member_type;
     }
 
-    public void setMemberType(Integer memberType) {
-        this.memberType = memberType;
+    public void setMember_type(int member_type) {
+        this.member_type = member_type;
     }
 
-    public Integer getCoopId() {
-        return coopId;
+    public Integer getCoop_id() {
+        return coop_id;
     }
 
-    public void setCoopId(Integer coopId) {
-        this.coopId = coopId;
+    public void setCoop_id(Integer coop_id) {
+        this.coop_id = coop_id;
     }
 
     public String getStatus() {
@@ -116,36 +139,38 @@ public class Member {
         this.status = status;
     }
 
-    public Date getExpiryDate() {
-        return expiryDate;
+    public String getExpiry_date() {
+        return expiry_date;
     }
 
-    public void setExpiryDate(Date expiryDate) {
-        this.expiryDate = expiryDate;
+    public void setExpiry_date(String expiry_date) {
+        this.expiry_date = expiry_date;
     }
 
-    public String getPlanType() {
-        return planType;
+    public String getPlan_type() {
+        return plan_type;
     }
 
-    public void setPlanType(String planType) {
-        this.planType = planType;
+    public void setPlan_type(String plan_type) {
+        this.plan_type = plan_type;
     }
 
-    public Date getJoinedDate() {
-        return joinedDate;
+    public String getJoined_date() {
+        return joined_date;
     }
 
-    public void setJoinedDate(Date joinedDate) {
-        this.joinedDate = joinedDate;
+    public void setJoined_date(String joined_date) {
+        this.joined_date = joined_date;
     }
 
-    public Timestamp getCreatedAt() {
-        return createdAt;
+    public String getCreated_at() {
+        return created_at;
     }
 
-    public void setCreatedAt(Timestamp createdAt) {
-        this.createdAt = createdAt;
+    public void setCreated_at(String created_at) {
+        this.created_at = created_at;
     }
+
+   
 }
 
