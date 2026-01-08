@@ -8,7 +8,7 @@ import DAO.DAOQRScanHistory;
 import model.BatchQRCode;
 import model.ProductionBatch;
 import model.FarmProduct;
-import model.Member;
+import model.member;
 import model.QRScanHistory;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -130,12 +130,12 @@ public class TraceabilityController extends HttpServlet {
 
         ProductionBatch batch = daoBatch.getById(qrCode.getBatchId());
         FarmProduct product = null;
-        Member member = null;
+        member memberObj = null;
         List<QRScanHistory> scanHistory = null;
 
         if (batch != null) {
             product = daoProduct.getById(batch.getProductId());
-            member = daoMember.getById(batch.getMemberId());
+            memberObj = daoMember.getById(batch.getMemberId());
         }
 
         scanHistory = daoHistory.getByQrId(qrCode.getId());
@@ -143,7 +143,7 @@ public class TraceabilityController extends HttpServlet {
         request.setAttribute("qrCode", qrCode);
         request.setAttribute("batch", batch);
         request.setAttribute("product", product);
-        request.setAttribute("member", member);
+        request.setAttribute("member", memberObj);
         request.setAttribute("scanHistory", scanHistory);
 
         request.getRequestDispatcher("/production/traceability/result.jsp").forward(request, response);

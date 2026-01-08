@@ -50,7 +50,7 @@
                                 <select class="form-select" id="memberId" name="memberId" required>
                                     <option value="">-- Chọn thành viên --</option>
                                     <c:forEach var="member" items="${memberList}">
-                                        <option value="${member.id}">${member.fullName}</option>
+                                        <option value="${member.id}">${member.full_name}</option>
                                     </c:forEach>
                                 </select>
                             </div>

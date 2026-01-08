@@ -88,7 +88,7 @@
                     <h6 class="mb-0 fw-bold">👤 Thành viên sản xuất</h6>
                 </div>
                 <div class="card-body">
-                    <p class="mb-1"><strong>Họ tên:</strong> ${member.fullName}</p>
+                    <p class="mb-1"><strong>Họ tên:</strong> ${member.full_name}</p>
                     <c:if test="${not empty member.phone}">
                         <p class="mb-1"><strong>Điện thoại:</strong> ${member.phone}</p>
                     </c:if>
