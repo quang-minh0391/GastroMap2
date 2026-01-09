@@ -43,12 +43,43 @@
             </div>
 
             <nav class="nav flex-column">
-                <a class="nav-link <%= currentUri.contains("product.jsp") ? "active" : "" %>" href="${pageContext.request.contextPath}/admin/product.jsp">1. 📦 Quản lý Sản phẩm</a>
-                <a class="nav-link <%= currentUri.contains("sales.jsp") ? "active" : "" %>" href="${pageContext.request.contextPath}/admin/sales.jsp">2. 🛒 Quản lý Bán hàng</a>
+                <a class="nav-link <%= currentUri.contains("product.jsp") ? "active" : "" %>" href="${pageContext.request.contextPath}/admin/product.jsp">1. 🍊 Quản lý Sản phẩm</a>
+                <a class="nav-link <%= currentUri.contains("sales.jsp") ? "active" : "" %>" href="${pageContext.request.contextPath}/admin/sales.jsp">2. 🖥️ Quản lý Bán hàng</a>
                 <a class="nav-link <%= currentUri.contains("finance.jsp") ? "active" : "" %>" href="${pageContext.request.contextPath}/admin/finance.jsp">3. 💰 Tài chính & Báo cáo</a>
-                <a class="nav-link <%= currentUri.contains("dashboard.jsp") || currentUri.contains("index.jsp") ? "active" : "" %>" href="${pageContext.request.contextPath}/admin/dashboard.jsp">4. 🤝 Quản lý HTX Tích hợp</a>
-                <a class="nav-link <%= currentUri.contains("qr_code.jsp") ? "active" : "" %>" href="${pageContext.request.contextPath}/admin/qr_code.jsp">5. 🔍 QR & Truy xuất</a>
-                <a class="nav-link <%= currentUri.contains("list_materials.jsp") ? "active" : "" %>"  href="${pageContext.request.contextPath}/SearchMaterialServlet">6. 📦 Quản lý Vật Tư</a>
+                
+                <!-- Menu 4: Quản lý HTX Tích hợp - Người 1 -->
+                <div class="nav-item-group">
+                    <a class="nav-link <%= (currentUri.contains("farm-products") || currentUri.contains("batches") || currentUri.contains("warehouses") || currentUri.contains("inventory") || currentUri.contains("stock-ins") || currentUri.contains("dashboard.jsp")) ? "active" : "" %>" 
+                       data-bs-toggle="collapse" href="#menuHTX" role="button" aria-expanded="<%= (currentUri.contains("farm-products") || currentUri.contains("batches") || currentUri.contains("warehouses") || currentUri.contains("inventory") || currentUri.contains("stock-ins")) ? "true" : "false" %>">
+                        4. 🤝 Quản lý HTX Tích hợp <i class="bi bi-chevron-down float-end"></i>
+                    </a>
+                    <div class="collapse <%= (currentUri.contains("farm-products") || currentUri.contains("batches") || currentUri.contains("warehouses") || currentUri.contains("inventory") || currentUri.contains("stock-ins")) ? "show" : "" %>" id="menuHTX">
+                        <nav class="nav flex-column ms-3 sub-menu">
+                            <a class="nav-link <%= currentUri.contains("farm-products") ? "active" : "" %>" href="${pageContext.request.contextPath}/farm-products">🌾 Danh mục Nông sản</a>
+                            <a class="nav-link <%= currentUri.contains("batches") ? "active" : "" %>" href="${pageContext.request.contextPath}/batches">📦 Lô Sản xuất</a>
+                            <a class="nav-link <%= currentUri.contains("warehouses") ? "active" : "" %>" href="${pageContext.request.contextPath}/warehouses">🏠 Kho hàng</a>
+                            <a class="nav-link <%= currentUri.contains("inventory") ? "active" : "" %>" href="${pageContext.request.contextPath}/inventory">📊 Tồn kho</a>
+                            <a class="nav-link <%= currentUri.contains("stock-ins") ? "active" : "" %>" href="${pageContext.request.contextPath}/stock-ins">📥 Nhập kho</a>
+                        </nav>
+                    </div>
+                </div>
+                
+                <!-- Menu 5: QR & Truy xuất - Người 1 -->
+                <div class="nav-item-group">
+                    <a class="nav-link <%= (currentUri.contains("qr-codes") || currentUri.contains("traceability")) ? "active" : "" %>" 
+                       data-bs-toggle="collapse" href="#menuQR" role="button" aria-expanded="<%= (currentUri.contains("qr-codes") || currentUri.contains("traceability")) ? "true" : "false" %>">
+                        5. 🔍 QR & Truy xuất <i class="bi bi-chevron-down float-end"></i>
+                    </a>
+                    <div class="collapse <%= (currentUri.contains("qr-codes") || currentUri.contains("traceability")) ? "show" : "" %>" id="menuQR">
+                        <nav class="nav flex-column ms-3 sub-menu">
+                            <a class="nav-link <%= currentUri.contains("qr-codes") ? "active" : "" %>" href="${pageContext.request.contextPath}/qr-codes">🏷️ Quản lý Mã QR</a>
+                            <a class="nav-link <%= currentUri.contains("traceability") && !currentUri.contains("history") ? "active" : "" %>" href="${pageContext.request.contextPath}/traceability">🔎 Tra cứu nguồn gốc</a>
+                            <a class="nav-link <%= currentUri.contains("traceability") && currentUri.contains("history") ? "active" : "" %>" href="${pageContext.request.contextPath}/traceability?action=history">📜 Lịch sử quét</a>
+                        </nav>
+                    </div>
+                </div>
+                
+                <a class="nav-link <%= currentUri.contains("list_materials.jsp") ? "active" : "" %>" href="${pageContext.request.contextPath}/SearchMaterialServlet">6. 📦 Quản lý Vật Tư</a>
             </nav>
 
             <div class="logout-section mt-auto p-3">
@@ -58,43 +89,5 @@
                 </form>
             </div>
         </div>
-        
-        <nav class="nav flex-column">
-            <a class="nav-link <%= currentUri.contains("product.jsp") ? "active" : "" %>" href="${pageContext.request.contextPath}/admin/product.jsp">1. 🍊 Quản lý Sản phẩm</a>
-            <a class="nav-link <%= currentUri.contains("sales.jsp") ? "active" : "" %>" href="${pageContext.request.contextPath}/admin/sales.jsp">2. 🖥️ Quản lý Bán hàng</a>
-            <a class="nav-link <%= currentUri.contains("finance.jsp") ? "active" : "" %>" href="${pageContext.request.contextPath}/admin/finance.jsp">3. 💰 Tài chính & Báo cáo</a>
-            
-            <!-- Menu 4: Quản lý HTX Tích hợp - Người 1 -->
-            <div class="nav-item-group">
-                <a class="nav-link <%= (currentUri.contains("farm-products") || currentUri.contains("batches") || currentUri.contains("warehouses") || currentUri.contains("inventory") || currentUri.contains("stock-ins")) ? "active" : "" %>" 
-                   data-bs-toggle="collapse" href="#menuHTX" role="button" aria-expanded="<%= (currentUri.contains("farm-products") || currentUri.contains("batches") || currentUri.contains("warehouses") || currentUri.contains("inventory") || currentUri.contains("stock-ins")) ? "true" : "false" %>">
-                    4. 🤝 Quản lý HTX Tích hợp <i class="bi bi-chevron-down float-end"></i>
-                </a>
-                <div class="collapse <%= (currentUri.contains("farm-products") || currentUri.contains("batches") || currentUri.contains("warehouses") || currentUri.contains("inventory") || currentUri.contains("stock-ins")) ? "show" : "" %>" id="menuHTX">
-                    <nav class="nav flex-column ms-3 sub-menu">
-                        <a class="nav-link <%= currentUri.contains("farm-products") ? "active" : "" %>" href="${pageContext.request.contextPath}/farm-products">🌾 Danh mục Nông sản</a>
-                        <a class="nav-link <%= currentUri.contains("batches") ? "active" : "" %>" href="${pageContext.request.contextPath}/batches">📦 Lô Sản xuất</a>
-                        <a class="nav-link <%= currentUri.contains("warehouses") ? "active" : "" %>" href="${pageContext.request.contextPath}/warehouses">🏠 Kho hàng</a>
-                        <a class="nav-link <%= currentUri.contains("inventory") ? "active" : "" %>" href="${pageContext.request.contextPath}/inventory">📊 Tồn kho</a>
-                        <a class="nav-link <%= currentUri.contains("stock-ins") ? "active" : "" %>" href="${pageContext.request.contextPath}/stock-ins">📥 Nhập kho</a>
-                    </nav>
-                </div>
-            </div>
-            
-            <!-- Menu 5: QR & Truy xuất - Người 1 -->
-            <div class="nav-item-group">
-                <a class="nav-link <%= (currentUri.contains("qr-codes") || currentUri.contains("traceability")) ? "active" : "" %>" 
-                   data-bs-toggle="collapse" href="#menuQR" role="button" aria-expanded="<%= (currentUri.contains("qr-codes") || currentUri.contains("traceability")) ? "true" : "false" %>">
-                    5. 🔍 QR & Truy xuất <i class="bi bi-chevron-down float-end"></i>
-                </a>
-                <div class="collapse <%= (currentUri.contains("qr-codes") || currentUri.contains("traceability")) ? "show" : "" %>" id="menuQR">
-                    <nav class="nav flex-column ms-3 sub-menu">
-                        <a class="nav-link <%= currentUri.contains("qr-codes") ? "active" : "" %>" href="${pageContext.request.contextPath}/qr-codes">🏷️ Quản lý Mã QR</a>
-                        <a class="nav-link <%= currentUri.contains("traceability") && !currentUri.contains("history") ? "active" : "" %>" href="${pageContext.request.contextPath}/traceability">🔎 Tra cứu nguồn gốc</a>
-                        <a class="nav-link <%= currentUri.contains("traceability") && currentUri.contains("history") ? "active" : "" %>" href="${pageContext.request.contextPath}/traceability?action=history">📜 Lịch sử quét</a>
-                    </nav>
-                </div>
-            </div>
-        </nav>
 
         <div class="main-area">
