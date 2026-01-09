@@ -17,10 +17,29 @@ public class Material {
     private double unitPrice;       // Ánh xạ từ cột unit_price (DECIMAL)
     private double stockQuantity;   // Ánh xạ từ cột stock_quantity (DECIMAL)
     private String description;
+    private String image;
+    private double salePrice;   
 
     // 1. Constructor mặc định (Bắt buộc)
     public Material() {
     }
+
+    
+
+    public Material(int id, String name, String unit, double unitPrice, double stockQuantity, String description, String image, double salePrice) {
+        this.id = id;
+        this.name = name;
+        this.unit = unit;
+        this.unitPrice = unitPrice;
+        this.stockQuantity = stockQuantity;
+        this.description = description;
+        this.image = image;
+        this.salePrice = salePrice;
+    }
+    
+    
+    
+    
 
     // 2. Constructor đầy đủ (Dùng khi SELECT dữ liệu lên)
     public Material(int id, String name, String unit, double unitPrice, double stockQuantity, String description) {
@@ -41,7 +60,24 @@ public class Material {
         this.description = description;
     }
 
+    public double getSalePrice() {
+        return salePrice;
+    }
+
+    public void setSalePrice(double salePrice) {
+        this.salePrice = salePrice;
+    }
+
+    
+    
+    public String getImage() {
+        return image;
+    }
+
     // --- Getters và Setters ---
+    public void setImage(String image) {
+        this.image = image;
+    }
 
     public int getId() {
         return id;
