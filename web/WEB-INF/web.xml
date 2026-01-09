@@ -15,5 +15,22 @@
         <servlet-name>Register</servlet-name>
         <url-pattern>/Register</url-pattern>
     </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>SearchMaterialServlet</servlet-name>
+        <servlet-class>controller.supply.SearchMaterialServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>MaterialDetailServlet</servlet-name>
+        <servlet-class>controller.supply.MaterialDetailServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>SearchMaterialServlet</servlet-name>
+        <url-pattern>/SearchMaterialServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>MaterialDetailServlet</servlet-name>
+        <url-pattern>/MaterialDetailServlet</url-pattern>
+    </servlet-mapping>
 
 </web-app>
