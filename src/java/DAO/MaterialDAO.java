@@ -22,12 +22,12 @@ public class MaterialDAO extends DBContext {
     List<Material> list = new ArrayList<>();
 
     String sql =
-        "SELECT m.id, m.name, m.unit, m.unit_price, m.description, m.image,m.sale_price, " +
+        "SELECT m.id, m.name, m.unit, m.description, m.image, " +
         "       IFNULL(SUM(mi.quantity), 0) AS total_stock " +
         "FROM materials m " +
         "LEFT JOIN material_inventory mi ON m.id = mi.material_id " +
         "WHERE m.name LIKE ? " +
-        "GROUP BY m.id, m.name, m.unit, m.unit_price, m.description, m.image,m.sale_price ";
+        "GROUP BY m.id, m.name, m.unit,  m.description, m.image ";
 
     // lọc theo tổng tồn kho
     if ("low".equals(sort)) {
@@ -54,11 +54,11 @@ public class MaterialDAO extends DBContext {
                 rs.getInt("id"),
                 rs.getString("name"),
                 rs.getString("unit"),
-                rs.getDouble("unit_price"),
+               
                 rs.getDouble("total_stock"),   // 👈 tổng tồn
                 rs.getString("description"),
-                rs.getString("image"),
-                    rs.getDouble("sale_price")
+                rs.getString("image")
+                   
             ));
         }
 
@@ -74,12 +74,12 @@ public class MaterialDAO extends DBContext {
    public Material getMaterialById(int id) {
 
     String sql =
-        "SELECT m.id, m.name, m.unit, m.unit_price, m.description, m.image,m.sale_price, " +
+        "SELECT m.id, m.name, m.unit, m.description, m.image, " +
         "       IFNULL(SUM(mi.quantity), 0) AS total_stock " +
         "FROM materials m " +
         "LEFT JOIN material_inventory mi ON m.id = mi.material_id " +
         "WHERE m.id = ? " +
-        "GROUP BY m.id, m.name, m.unit, m.unit_price, m.description, m.image,m.sale_price";
+        "GROUP BY m.id, m.name, m.unit,  m.description, m.image";
 
     try {
         Connection conn = this.getConnection();
@@ -93,11 +93,11 @@ public class MaterialDAO extends DBContext {
                 rs.getInt("id"),
                 rs.getString("name"),
                 rs.getString("unit"),
-                rs.getDouble("unit_price"),
+                
                 rs.getDouble("total_stock"),
                 rs.getString("description"),
-                rs.getString("image"),
-                    rs.getDouble("sale_price")
+                rs.getString("image")
+                  
             );
         }
 
@@ -106,6 +106,22 @@ public class MaterialDAO extends DBContext {
     }
 
     return null;
+}
+   public List<Material> searchMaterials(String keyword) {
+    List<Material> list = new ArrayList<>();
+    String sql = "SELECT id, name, unit FROM materials WHERE name LIKE ? LIMIT 10";
+    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setString(1, "%" + keyword + "%");
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            Material m = new Material();
+            m.setId(rs.getInt("id"));
+            m.setName(rs.getString("name"));
+            m.setUnit(rs.getString("unit")); // Lấy đơn vị từ DB
+            list.add(m);
+        }
+    } catch (Exception e) { e.printStackTrace(); }
+    return list;
 }
 
 

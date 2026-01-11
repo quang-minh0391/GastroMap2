@@ -109,32 +109,15 @@
                                     <span class="stat-label">Đơn vị tính</span>
                                     <span class="stat-value">${material.unit}</span>
                                 </li>
-                                <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                                    <span class="stat-label">Giá vốn</span>
-                                    <span class="stat-value text-primary">
-                                        <fmt:formatNumber value="${material.unitPrice}" type="number" groupingUsed="true" />
-                                    </span>
-                                </li>
+                                
 
-                                <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                                    <span class="stat-label">Giá cung ứng</span>
-                                    <span class="stat-value text-primary">
-                                        <fmt:formatNumber value="${material.salePrice}" type="number" groupingUsed="true" />
-                                    </span>
-                                </li>
-
-                                <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                                    <span class="stat-label">Tổng giá trị tồn</span>
-                                    <span class="stat-value text-danger">
-                                        <fmt:formatNumber value="${material.unitPrice * material.stockQuantity}" type="number" groupingUsed="true" />
-                                    </span>
-                                </li>
+                                
 
                             </ul>
 
                             <div class="d-grid gap-2">
                                 <button class="btn btn-primary"><i class="bi bi-pencil-square"></i> Cập nhật</button>
-                                <button class="btn btn-outline-danger"><i class="bi bi-trash"></i> Xóa</button>
+                                <button class="btn btn-outline-danger"><i class="bi bi-trash"></i> Tạm Ngưng</button>
                             </div>
                         </div>
                     </div>

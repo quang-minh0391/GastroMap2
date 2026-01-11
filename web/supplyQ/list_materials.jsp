@@ -15,7 +15,7 @@
         <div class="container mt-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h3><i class="bi bi-box-seam"></i> Kho Vật Tư Nông Nghiệp</h3>
-                <a href="create-material.jsp" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Thêm vật tư mới</a>
+                <a href="supplyQ/add_materials.jsp" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Thêm vật tư mới</a>
             </div>
 
             <div class="card mb-4 shadow-sm">
@@ -50,8 +50,7 @@
                                     <th>Ảnh</th>
                                     <th>Tên Vật Tư</th>
                                     <th>Đơn Vị</th>
-                                    <th class="text-end">Giá Vốn (VNĐ)</th>
-                                    <th class="text-end">Giá Cung Ứng (VNĐ)</th>
+                                   
                                     <th class="text-center">Tồn Kho</th>
                                     <th>Trạng Thái</th>
                                     <th class="text-center">Hành động</th>
@@ -70,13 +69,7 @@
                                     </td>
                                     <td class="fw-bold text-primary">${i.name}</td>
                                     <td>${i.unit}</td>
-                                    <td class="text-end">
-                                        <fmt:formatNumber value="${i.unitPrice}" type="number" groupingUsed="true" />
-                                    </td>
                                     
-                                     <td class="text-end">
-                                        <fmt:formatNumber value="${i.salePrice}" type="number" groupingUsed="true" />
-                                    </td>
                                     <td class="text-center fw-bold">
                                         <fmt:formatNumber value="${i.stockQuantity}" maxFractionDigits="0"/>
                                     </td>
