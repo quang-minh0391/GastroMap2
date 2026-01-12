@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.sql.Types;
+import java.time.LocalDate;
 
 public class DAOMember1 extends DBContext {
 
@@ -53,7 +54,90 @@ public class DAOMember1 extends DBContext {
 
         return user;
     }
+    public int addFarmer(member user) {
+    int generatedId = -1;
+    // Câu SQL giống hệt nhưng logic xử lý tham số sẽ chuẩn xác cho thành viên
+    String sql = "INSERT INTO members (username, password, email, full_name, phone, address, member_type, coop_id, status, expiry_date, plan_type, joined_date, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    try {
+        java.sql.PreparedStatement pre = conn.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS);
+        pre.setString(1, user.getUsername());
+        pre.setString(2, hashPassword(user.getPassword())); 
+        pre.setString(3, user.getEmail());
+        pre.setString(4, user.getFull_name());
+        pre.setString(5, user.getPhone());
+        pre.setString(6, user.getAddress());
+        pre.setInt(7, user.getMember_type()); // Cố định luôn là 1 (Farmer) cho chắc chắn
+        pre.setInt(8, user.getCoop_id()); // Lấy đúng ID của HTX từ Controller truyền sang
+        pre.setString(9, "Active");      // Mặc định là hoạt động
+        pre.setString(10, user.getExpiry_date());
+        pre.setString(11, "Free");       // Hoặc gói mặc định của HTX
+        pre.setString(12, user.getJoined_date());
+        pre.setString(13, user.getCreated_at());
+        
+        pre.executeUpdate();
+        java.sql.ResultSet rs = pre.getGeneratedKeys();
+        if (rs.next()) {
+            generatedId = rs.getInt(1);
+        }
+    } catch (java.sql.SQLException ex) {
+        System.err.println("Lỗi tại addFarmer: " + ex.getMessage());
+        ex.printStackTrace();
+    }
+    return generatedId;
+}
+    // Lấy danh sách member có phân trang và tìm kiếm theo tên, lọc theo coop_id của người đang đăng nhập
+public List<member> getMembersWithPaging(String name, int coopId, int index, int pageSize) {
+    List<member> list = new ArrayList<>();
+    String sql = "SELECT * FROM members WHERE full_name LIKE ? AND coop_id = ? AND member_type = 1 and status = 'Active' "
+               + "ORDER BY id DESC LIMIT ?, ?";
+    try {
+        PreparedStatement pre = conn.prepareStatement(sql);
+        pre.setString(1, "%" + name + "%");
+        pre.setInt(2, coopId);
+        pre.setInt(3, (index - 1) * pageSize);
+        pre.setInt(4, pageSize);
+        ResultSet rs = pre.executeQuery();
+        while (rs.next()) {
+            list.add(new member(
+                rs.getInt("id"), rs.getString("username"), rs.getString("password"),
+                rs.getString("email"), rs.getString("full_name"), rs.getString("phone"),
+                rs.getString("address"), rs.getInt("member_type"), rs.getInt("coop_id"),
+                rs.getString("status"), rs.getString("expiry_date"), rs.getString("plan_type"),
+                rs.getString("joined_date"), rs.getString("created_at")
+            ));
+        }
+    } catch (SQLException ex) {
+        ex.printStackTrace();
+    }
+    return list;
+}
 
+// Đếm tổng số member để tính số trang
+public int getTotalMembers(String name, int coopId) {
+    String sql = "SELECT COUNT(*) FROM members WHERE full_name LIKE ? AND coop_id = ? AND member_type = 1";
+    try {
+        PreparedStatement pre = conn.prepareStatement(sql);
+        pre.setString(1, "%" + name + "%");
+        pre.setInt(2, coopId);
+        ResultSet rs = pre.executeQuery();
+        if (rs.next()) return rs.getInt(1);
+    } catch (SQLException ex) {
+        ex.printStackTrace();
+    }
+    return 0;
+}
+    public int softDeleteMember(int id) {
+    int n = 0;
+    String sql = "UPDATE members SET status = 'Deleted' WHERE id = ?";
+    try {
+        java.sql.PreparedStatement pre = conn.prepareStatement(sql);
+        pre.setInt(1, id);
+        n = pre.executeUpdate();
+    } catch (java.sql.SQLException ex) {
+        ex.printStackTrace();
+    }
+    return n;
+}
     public String hashPassword(String password) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
@@ -319,6 +403,37 @@ public boolean isUsernameExists(String username) {
 
 // 2. Lấy Plan Name (Gói Tháng/Năm) dựa trên mã đơn hàng PayOS
 // Hàm này giúp bạn biết khách đã trả tiền cho gói nào để set expiry_date cho đúng
+// Thêm hàm này vào DAOMember1.java
+public member getMemberById(int id) {
+    String sql = "SELECT * FROM members WHERE id = ?";
+    try {
+        PreparedStatement pre = conn.prepareStatement(sql);
+        pre.setInt(1, id);
+        ResultSet rs = pre.executeQuery();
+        if (rs.next()) {
+            // Lưu ý: Phải truyền đúng 14 tham số theo thứ tự constructor trong Model
+            return new member(
+                rs.getInt("id"),
+                rs.getString("username"),
+                rs.getString("password"),
+                rs.getString("email"),
+                rs.getString("full_name"),
+                rs.getString("phone"),
+                rs.getString("address"),
+                rs.getInt("member_type"),
+                rs.getInt("coop_id"),
+                rs.getString("status"),
+                rs.getString("expiry_date"), // expiry_date trước
+                rs.getString("plan_type"),   // plan_type sau
+                rs.getString("joined_date"), // Thêm cái này
+                rs.getString("created_at")   // Thêm cái này
+            );
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return null;
+}
 public String getPlanTypeByOrderCode(String orderCode) {
     String planType = "NONE";
     String sql = "SELECT sp.plan_name FROM payments p "
@@ -335,31 +450,66 @@ public String getPlanTypeByOrderCode(String orderCode) {
     }
     return planType;
 }
+public boolean updateMember(int id, String name, String email, String phone, String address) {
+    String sql = "UPDATE members SET full_name = ?, email = ?, phone = ?, address = ? WHERE id = ?";
+    try {
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ps.setString(1, name);
+        ps.setString(2, email);
+        ps.setString(3, phone);
+        ps.setString(4, address);
+        ps.setInt(5, id);
+        return ps.executeUpdate() > 0;
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return false;
+}
 public void extendMembership(int memberId, int planId) {
-    // 1. Xác định số ngày cần cộng
-    int daysToAdd = (planId == 1) ? 30 : 365;
-    
-    // 2. Cú pháp MySQL dùng CURDATE() và DATE_ADD
-    String sql = "UPDATE members SET " +
-                 "expiry_date = CASE " +
-                 "    WHEN expiry_date > CURDATE() THEN DATE_ADD(expiry_date, INTERVAL ? DAY) " +
-                 "    ELSE DATE_ADD(CURDATE(), INTERVAL ? DAY) " +
-                 "END, " +
-                 "status = 'Active', " +
-                 "plan_type = ? " + // Cập nhật luôn loại gói (Tháng/Năm)
-                 "WHERE id = ?";
+    // 1. Lấy thông tin ngày hết hạn hiện tại từ Database
+    member user = getMemberById(memberId); // Sử dụng hàm getMemberById bạn đã có
+    if (user == null) return;
 
-    try (PreparedStatement pre = conn.prepareStatement(sql)) {
-        pre.setInt(1, daysToAdd);
-        pre.setInt(2, daysToAdd);
-        pre.setString(3, (planId == 1 ? "Monthly" : "Yearly"));
-        pre.setInt(4, memberId);
+    String sql = "UPDATE members SET expiry_date = ?, status = 'Active' WHERE id = ?";
+    try {
+        LocalDate today = LocalDate.now();
+        LocalDate currentExpiry = null;
         
-        int rowsAffected = pre.executeUpdate();
-        System.out.println("DEBUG: Update thành công " + rowsAffected + " dòng cho Member ID: " + memberId);
-    } catch (SQLException ex) {
-        System.err.println("Lỗi SQL MySQL: " + ex.getMessage());
-        ex.printStackTrace();
+        // Kiểm tra xem đã có ngày hết hạn chưa và định dạng có đúng không
+        if (user.getExpiry_date() != null && !user.getExpiry_date().isEmpty()) {
+            try {
+                currentExpiry = LocalDate.parse(user.getExpiry_date());
+            } catch (Exception e) {
+                currentExpiry = null; // Nếu lỗi định dạng thì coi như chưa có
+            }
+        }
+
+        // 2. LOGIC QUAN TRỌNG: Xác định mốc thời gian bắt đầu cộng thêm
+        LocalDate startDate;
+        if (currentExpiry != null && currentExpiry.isAfter(today)) {
+            // Nếu vẫn còn hạn: Cộng tiếp nối từ ngày hết hạn cũ
+            startDate = currentExpiry;
+        } else {
+            // Nếu đã hết hạn hoặc chưa có hạn: Cộng từ ngày hôm nay
+            startDate = today;
+        }
+
+        // 3. Tính toán ngày hết hạn mới dựa trên gói (Plan)
+        LocalDate newExpiry;
+        if (planId == 1) {
+            newExpiry = startDate.plusMonths(1); // Gói tháng: +1 tháng
+        } else {
+            newExpiry = startDate.plusYears(1);  // Gói năm: +1 năm
+        }
+
+        // 4. Thực thi cập nhật vào Database
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, newExpiry.toString()); // Lưu dạng YYYY-MM-DD
+            ps.setInt(2, memberId);
+            ps.executeUpdate();
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
     }
 }
 
