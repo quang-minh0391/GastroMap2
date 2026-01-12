@@ -1,7 +1,7 @@
 package DAO;
 
 import DAL.DBContext;
-import model.Member;
+import model.member;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,26 +22,40 @@ public class DAOMember extends DBContext {
         try { if (conn != null) conn.close(); } catch (SQLException e) { e.printStackTrace(); }
     }
 
-    public Member getFromResultSet(ResultSet rs) throws SQLException {
-        Member member = new Member();
-        member.setId(rs.getInt("id"));
-        member.setUsername(rs.getString("username"));
-        member.setPassword(rs.getString("password"));
-        member.setFullName(rs.getString("full_name"));
-        member.setPhone(rs.getString("phone"));
-        member.setAddress(rs.getString("address"));
-        member.setMemberType(rs.getInt("member_type"));
-        member.setCoopId(rs.getObject("coop_id") != null ? rs.getInt("coop_id") : null);
-        member.setStatus(rs.getString("status"));
-        member.setExpiryDate(rs.getDate("expiry_date"));
-        member.setPlanType(rs.getString("plan_type"));
-        member.setJoinedDate(rs.getDate("joined_date"));
-        member.setCreatedAt(rs.getTimestamp("created_at"));
-        return member;
+    public member getFromResultSet(ResultSet rs) throws SQLException {
+        member m = new member();
+        m.setId(rs.getInt("id"));
+        m.setUsername(rs.getString("username"));
+        m.setPassword(rs.getString("password"));
+        m.setEmail(rs.getString("email"));
+        m.setFull_name(rs.getString("full_name"));
+        m.setPhone(rs.getString("phone"));
+        m.setAddress(rs.getString("address"));
+        m.setMember_type(rs.getInt("member_type"));
+        
+        // Handle nullable coop_id
+        int coopId = rs.getInt("coop_id");
+        m.setCoop_id(rs.wasNull() ? null : coopId);
+        
+        m.setStatus(rs.getString("status"));
+        
+        // Handle date fields as String
+        Date expiryDate = rs.getDate("expiry_date");
+        m.setExpiry_date(expiryDate != null ? expiryDate.toString() : null);
+        
+        m.setPlan_type(rs.getString("plan_type"));
+        
+        Date joinedDate = rs.getDate("joined_date");
+        m.setJoined_date(joinedDate != null ? joinedDate.toString() : null);
+        
+        Timestamp createdAt = rs.getTimestamp("created_at");
+        m.setCreated_at(createdAt != null ? createdAt.toString() : null);
+        
+        return m;
     }
 
-    public List<Member> getAll() {
-        List<Member> list = new ArrayList<>();
+    public List<member> getAll() {
+        List<member> list = new ArrayList<>();
         String sql = "SELECT * FROM members ORDER BY full_name";
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -59,8 +73,8 @@ public class DAOMember extends DBContext {
         return list;
     }
 
-    public List<Member> getActive() {
-        List<Member> list = new ArrayList<>();
+    public List<member> getActive() {
+        List<member> list = new ArrayList<>();
         String sql = "SELECT * FROM members WHERE status = 'Active' ORDER BY full_name";
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -78,7 +92,7 @@ public class DAOMember extends DBContext {
         return list;
     }
 
-    public Member getById(Integer id) {
+    public member getById(Integer id) {
         String sql = "SELECT * FROM members WHERE id = ?";
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -97,8 +111,8 @@ public class DAOMember extends DBContext {
         return null;
     }
 
-    public List<Member> getPaginated(int page, int pageSize) {
-        List<Member> list = new ArrayList<>();
+    public List<member> getPaginated(int page, int pageSize) {
+        List<member> list = new ArrayList<>();
         String sql = "SELECT * FROM members ORDER BY full_name LIMIT ? OFFSET ?";
         PreparedStatement ps = null;
         ResultSet rs = null;

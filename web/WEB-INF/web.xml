@@ -1,20 +1,59 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<<<<<<< HEAD
-<web-app version="6.0" xmlns="https://jakarta.ee/xml/ns/jakartaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd">
+<web-app version="6.0" xmlns="https://jakarta.ee/xml/ns/jakartaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee                         https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd">
     <servlet>
         <servlet-name>Register</servlet-name>
         <servlet-class>controller.login.Register</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>PartnerServlet</servlet-name>
+        <servlet-class>controller.supply.PartnerServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ContractServlet</servlet-name>
+        <servlet-class>controller.supply.ContractServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>SearchWarehouseServlet</servlet-name>
+        <servlet-class>controller.supply.SearchWarehouseServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>CreateMaterialReceiptServlet</servlet-name>
+        <servlet-class>controller.supply.CreateMaterialReceiptServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>Register</servlet-name>
         <url-pattern>/Register</url-pattern>
     </servlet-mapping>
-=======
-
-<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
-	 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	 xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
-	 version="6.0">
-
->>>>>>> 1ded28e8a0f306cf01fbb9099fb195ecc725bb94
+    <servlet>
+        <servlet-name>SearchMaterialServlet</servlet-name>
+        <servlet-class>controller.supply.SearchMaterialServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>MaterialDetailServlet</servlet-name>
+        <servlet-class>controller.supply.MaterialDetailServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>SearchMaterialServlet</servlet-name>
+        <url-pattern>/SearchMaterialServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>MaterialDetailServlet</servlet-name>
+        <url-pattern>/MaterialDetailServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>PartnerServlet</servlet-name>
+        <url-pattern>/PartnerServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ContractServlet</servlet-name>
+        <url-pattern>/ContractServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>SearchWarehouseServlet</servlet-name>
+        <url-pattern>/SearchWarehouseServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>CreateMaterialReceiptServlet</servlet-name>
+        <url-pattern>/CreateMaterialReceiptServlet</url-pattern>
+    </servlet-mapping>
 </web-app>

@@ -24,6 +24,10 @@ public class Partner {
     // 1. Constructor mặc định (Bắt buộc để JSP/Servlet khởi tạo object)
     public Partner() {
     }
+    public Partner(int id, String name) {
+        this.id = id;
+        this.name = name;
+    }
 
     // 2. Constructor đầy đủ tham số (Dùng khi đọc dữ liệu từ Database lên)
     public Partner(int id, String name, String type, String phone, String address, String taxCode, Date createdDate) {

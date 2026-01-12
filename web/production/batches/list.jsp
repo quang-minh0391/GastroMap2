@@ -59,7 +59,7 @@
                             <td>
                                 <c:forEach var="member" items="${memberList}">
                                     <c:if test="${member.id == batch.memberId}">
-                                        ${member.fullName}
+                                        ${member.full_name}
                                     </c:if>
                                 </c:forEach>
                             </td>

@@ -14,34 +14,63 @@ public class Material {
     private int id;
     private String name;
     private String unit;
-    private double unitPrice;       // Ánh xạ từ cột unit_price (DECIMAL)
+    
     private double stockQuantity;   // Ánh xạ từ cột stock_quantity (DECIMAL)
     private String description;
+    private String image;
+   
 
     // 1. Constructor mặc định (Bắt buộc)
     public Material() {
     }
 
-    // 2. Constructor đầy đủ (Dùng khi SELECT dữ liệu lên)
-    public Material(int id, String name, String unit, double unitPrice, double stockQuantity, String description) {
+    
+
+    public Material(int id, String name, String unit, double stockQuantity, String description, String image) {
         this.id = id;
         this.name = name;
         this.unit = unit;
-        this.unitPrice = unitPrice;
+       
+        this.stockQuantity = stockQuantity;
+        this.description = description;
+        this.image = image;
+        
+    }
+    
+    
+    
+    
+
+    // 2. Constructor đầy đủ (Dùng khi SELECT dữ liệu lên)
+    public Material(int id, String name, String unit, double stockQuantity, String description) {
+        this.id = id;
+        this.name = name;
+        this.unit = unit;
+        
         this.stockQuantity = stockQuantity;
         this.description = description;
     }
 
     // 3. Constructor không có ID (Dùng khi INSERT dữ liệu mới)
-    public Material(String name, String unit, double unitPrice, double stockQuantity, String description) {
+    public Material(String name, String unit, double stockQuantity, String description) {
         this.name = name;
         this.unit = unit;
-        this.unitPrice = unitPrice;
+        
         this.stockQuantity = stockQuantity;
         this.description = description;
     }
 
+    
+    
+    
+    public String getImage() {
+        return image;
+    }
+
     // --- Getters và Setters ---
+    public void setImage(String image) {
+        this.image = image;
+    }
 
     public int getId() {
         return id;
@@ -67,13 +96,7 @@ public class Material {
         this.unit = unit;
     }
 
-    public double getUnitPrice() {
-        return unitPrice;
-    }
-
-    public void setUnitPrice(double unitPrice) {
-        this.unitPrice = unitPrice;
-    }
+    
 
     public double getStockQuantity() {
         return stockQuantity;

@@ -5,7 +5,7 @@ import DAO.DAOFarmProduct;
 import DAO.DAOMember;
 import model.ProductionBatch;
 import model.FarmProduct;
-import model.Member;
+import model.member;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -88,7 +88,7 @@ public class ProductionBatchController extends HttpServlet {
 
         // Get product and member names for display
         List<FarmProduct> products = daoProduct.getAll();
-        List<Member> members = daoMember.getAll();
+        List<member> members = daoMember.getAll();
 
         request.setAttribute("batchList", list);
         request.setAttribute("productList", products);
@@ -107,7 +107,7 @@ public class ProductionBatchController extends HttpServlet {
         DAOProductionBatch daoBatch = new DAOProductionBatch();
 
         List<FarmProduct> products = daoProduct.getActive();
-        List<Member> members = daoMember.getAll();
+        List<member> members = daoMember.getAll();
         String suggestedBatchCode = daoBatch.generateBatchCode();
 
         request.setAttribute("productList", products);
@@ -140,11 +140,11 @@ public class ProductionBatchController extends HttpServlet {
             }
 
             FarmProduct product = daoProduct.getById(batch.getProductId());
-            Member member = daoMember.getById(batch.getMemberId());
+            member memberObj = daoMember.getById(batch.getMemberId());
 
             request.setAttribute("batch", batch);
             request.setAttribute("product", product);
-            request.setAttribute("member", member);
+            request.setAttribute("member", memberObj);
             request.getRequestDispatcher("/production/batches/view.jsp").forward(request, response);
         } catch (NumberFormatException e) {
             response.sendRedirect(request.getContextPath() + "/batches?action=list");

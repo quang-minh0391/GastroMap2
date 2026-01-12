@@ -7,7 +7,7 @@ import DAO.DAOMember;
 import model.BatchQRCode;
 import model.ProductionBatch;
 import model.FarmProduct;
-import model.Member;
+import model.member;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -142,17 +142,17 @@ public class QRCodeController extends HttpServlet {
 
             ProductionBatch batch = daoBatch.getById(qrCode.getBatchId());
             FarmProduct product = null;
-            Member member = null;
+            member memberObj = null;
 
             if (batch != null) {
                 product = daoProduct.getById(batch.getProductId());
-                member = daoMember.getById(batch.getMemberId());
+                memberObj = daoMember.getById(batch.getMemberId());
             }
 
             request.setAttribute("qrCode", qrCode);
             request.setAttribute("batch", batch);
             request.setAttribute("product", product);
-            request.setAttribute("member", member);
+            request.setAttribute("member", memberObj);
 
             request.getRequestDispatcher("/production/qr-codes/view.jsp").forward(request, response);
         } catch (NumberFormatException e) {

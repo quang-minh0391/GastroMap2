@@ -61,7 +61,7 @@
                 <h6 class="mb-0 fw-bold">👤 Thành viên sản xuất</h6>
             </div>
             <div class="card-body">
-                <p class="mb-2"><strong>Họ tên:</strong> ${member.fullName}</p>
+                <p class="mb-2"><strong>Họ tên:</strong> ${member.full_name}</p>
                 <p class="mb-2"><strong>Điện thoại:</strong> ${not empty member.phone ? member.phone : 'N/A'}</p>
                 <p class="mb-0"><strong>Địa chỉ:</strong> ${not empty member.address ? member.address : 'N/A'}</p>
             </div>

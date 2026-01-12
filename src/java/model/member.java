@@ -170,7 +170,4 @@ public class member {
     public void setCreated_at(String created_at) {
         this.created_at = created_at;
     }
-
-   
 }
-
