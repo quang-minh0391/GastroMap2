@@ -18,22 +18,25 @@
     %>
     
     <div class="sidebar shadow">
-        <div class="brand-section py-4 border-bottom border-secondary mb-2 position-relative">
-            <div class="position-absolute" style="top: 15px; right: 20px;">
-                <a href="${pageContext.request.contextPath}/meetingManager?service=list" class="text-decoration-none d-flex flex-column align-items-center">
-                    <i class="bi bi-bell-fill fs-5" id="bell-icon" style="color: #adb5bd;"></i>
-                    <span id="noti-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;">
-                        0
-                    </span>
-                </a>
-            </div>
-
+        <div class="brand-section py-4 border-bottom border-secondary mb-2">
             <div class="text-center">
-                <a href="${pageContext.request.contextPath}/index.jsp" class="text-decoration-none">
-                    <h4 class="text-white m-0 mb-3">🍀 Gastromap</h4>
-                </a>
                 
-                <div class="user-profile-top mt-3">
+                <div class="d-flex align-items-center justify-content-center gap-3 mb-3">
+                    <a href="${pageContext.request.contextPath}/index.jsp" class="text-decoration-none">
+                        <h4 class="text-white m-0">🍀 Gastromap</h4>
+                    </a>
+                    
+                    <div class="notification-wrapper">
+                        <a href="${pageContext.request.contextPath}/meetingManager?service=list" class="text-decoration-none d-inline-block position-relative">
+                            <i class="bi bi-bell-fill fs-5" id="bell-icon" style="color: #adb5bd;"></i>
+                            <span id="noti-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;">
+                                0
+                            </span>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="user-profile-top mt-4">
                     <a href="${pageContext.request.contextPath}/profile" class="text-decoration-none d-flex flex-column align-items-center">
                         <div class="avatar-circle mb-2">
                             <span class="text-white fw-bold"><%= displayLetter %></span>
@@ -45,43 +48,49 @@
             </div>
         </div>
         
-        <nav class="nav flex-column overflow-y-auto" style="max-height: calc(100vh - 250px);">
+        <nav class="nav flex-column w-100 overflow-y-auto" style="max-height: calc(100vh - 250px);">
             
-            <div class="nav-item-group">
-                <div class="text-uppercase px-4 py-2 text-secondary" style="font-size: 0.7rem; letter-spacing: 1px;">Hệ thống</div>
-                <a class="nav-link <%= (currentUri.contains("memberManager") || currentUri.contains("Member.jsp")) ? "active" : "" %>" 
+            <div class="nav-item-group w-100 d-block">
+                <div class="text-uppercase px-4 py-3 text-secondary" style="font-size: 0.7rem; letter-spacing: 1px; opacity: 0.8;">
+                    Hệ thống
+                </div>
+                <a class="nav-link w-100 <%= (currentUri.contains("memberManager") || currentUri.contains("Member.jsp")) ? "active" : "" %>" 
                    href="${pageContext.request.contextPath}/memberManager?service=list">
                     <i class="bi bi-people-fill me-2"></i> Quản lý Thành viên
                 </a>
-                <a class="nav-link <%= currentUri.contains("meeting") ? "active" : "" %>" 
+                <a class="nav-link w-100 <%= currentUri.contains("meeting") ? "active" : "" %>" 
                    href="${pageContext.request.contextPath}/meetingManager?service=list">
                     <i class="bi bi-calendar-check me-2"></i> Quản lý Cuộc họp
                 </a>
             </div>
 
-            <div class="nav-item-group mt-2">
-                <div class="text-uppercase px-4 py-2 text-secondary" style="font-size: 0.7rem; letter-spacing: 1px;">Sản xuất</div>
-                <a class="nav-link <%= currentUri.contains("farm-products") ? "active" : "" %>" 
+            <div class="nav-item-group w-100 d-block mt-2">
+                <div class="text-uppercase px-4 py-3 text-secondary" style="font-size: 0.7rem; letter-spacing: 1px; opacity: 0.8;">
+                    Sản xuất
+                </div>
+                <a class="nav-link w-100 <%= currentUri.contains("farm-products") ? "active" : "" %>" 
                    href="${pageContext.request.contextPath}/farmProduct?service=list">
                     <i class="bi bi-box-seam me-2"></i> Nông sản
                 </a>
-                <a class="nav-link <%= currentUri.contains("production-batches") ? "active" : "" %>" 
+                <a class="nav-link w-100 <%= currentUri.contains("production-batches") ? "active" : "" %>" 
                    href="${pageContext.request.contextPath}/productionBatch?service=list">
                     <i class="bi bi-layers-half me-2"></i> Lô sản xuất
                 </a>
-                <a class="nav-link <%= currentUri.contains("traceability") ? "active" : "" %>" 
+                <a class="nav-link w-100 <%= currentUri.contains("traceability") ? "active" : "" %>" 
                    href="${pageContext.request.contextPath}/traceability?service=history">
                     <i class="bi bi-qr-code-scan me-2"></i> Truy xuất nguồn gốc
                 </a>
             </div>
 
-            <div class="nav-item-group mt-2">
-                <div class="text-uppercase px-4 py-2 text-secondary" style="font-size: 0.7rem; letter-spacing: 1px;">Kho & Tài chính</div>
-                <a class="nav-link <%= currentUri.contains("inventory") ? "active" : "" %>" 
+            <div class="nav-item-group w-100 d-block mt-2">
+                <div class="text-uppercase px-4 py-3 text-secondary" style="font-size: 0.7rem; letter-spacing: 1px; opacity: 0.8;">
+                    Kho & Tài chính
+                </div>
+                <a class="nav-link w-100 <%= currentUri.contains("inventory") ? "active" : "" %>" 
                    href="${pageContext.request.contextPath}/inventory?service=list">
                     <i class="bi bi-archive me-2"></i> Quản lý Tồn kho
                 </a>
-                <a class="nav-link <%= (currentUri.contains("finance.jsp") || currentUri.contains("capital.jsp")) ? "active" : "" %>" 
+                <a class="nav-link w-100 <%= (currentUri.contains("finance.jsp") || currentUri.contains("capital.jsp")) ? "active" : "" %>" 
                    href="${pageContext.request.contextPath}/admin/finance.jsp">
                     <i class="bi bi-cash-stack me-2"></i> Tài chính & Báo cáo
                 </a>
@@ -106,18 +115,14 @@
 
         socket.onmessage = function(event) {
             var message = event.data;
-            
-            // 1. Cập nhật Badge
             var badge = document.getElementById("noti-badge");
             var count = parseInt(badge.innerText);
             badge.innerText = count + 1;
 
-            // 2. Rung chuông (Sử dụng class bell-ring từ style.css đã gộp)
             var bell = document.getElementById("bell-icon");
             bell.classList.add("bell-ring");
             setTimeout(() => { bell.classList.remove("bell-ring"); }, 1000);
 
-            // 3. Popup thông báo
             const Toast = Swal.mixin({
                 toast: true,
                 position: 'top-end',
