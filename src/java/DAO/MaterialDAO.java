@@ -1,8 +1,8 @@
 package DAO;
 
-import DAL.DBContext;
-import model.Material;
 
+import model.Material;
+import DAL.DBContext;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

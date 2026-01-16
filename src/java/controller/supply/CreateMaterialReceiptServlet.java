@@ -11,12 +11,47 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import DAO.MaterialReceiptDAO;
+import DAL.DBContext;
+import jakarta.servlet.http.HttpSession;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 /**
  *
  * @author Admin
  */
 public class CreateMaterialReceiptServlet extends HttpServlet {
+    
+    // Helper class để chứa thông tin member lấy từ DB
+    private class MemberInfo {
+        int id;
+        int memberType;
+        int coopId;
+    }
+    
+    // Hàm lấy thông tin member từ DB (để tránh dữ liệu session bị cũ)
+    private MemberInfo getMemberInfoFromDB(int userId) {
+        MemberInfo info = new MemberInfo();
+        String query = "SELECT id, member_type, coop_id FROM members WHERE id = ?";
+        DBContext db = new DBContext();
+        try (Connection conn = db.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, userId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                info.id = rs.getInt("id");
+                info.memberType = rs.getInt("member_type");
+                info.coopId = rs.getInt("coop_id");
+                if (rs.wasNull()) info.coopId = 0; // Xử lý nếu NULL
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return info;
+    }
    
     /** 
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
@@ -66,7 +101,12 @@ public class CreateMaterialReceiptServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
-        processRequest(request, response);
+        
+        request.setCharacterEncoding("UTF-8"); // Để đọc tiếng Việt
+        HttpSession session = request.getSession();
+            Object userIdObj = session.getAttribute("id");
+        
+        
     }
 
     /** 

@@ -15,7 +15,7 @@ public class member {
     private String full_name;         // Full name
     private String phone;            // Phone number
     private String address;          // Address
-    private int member_type;          // Member type (1: Farmer, 2: Cooperative)
+    private int member_type;          // Member type (1: Farmer, 2: Cooperative;3: quản lí htx)
     private Integer coop_id;          // Cooperative ID (nullable)
     private String status;           // Account status (Active, Inactive, Expired)
     private String expiry_date;       // Account expiry date (formatted as String)
