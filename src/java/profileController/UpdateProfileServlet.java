@@ -66,7 +66,7 @@ public class UpdateProfileServlet extends HttpServlet {
             request.setAttribute("userProfile", user);
             request.getRequestDispatcher("updateProfile.jsp").forward(request, response);
         } else {
-            response.sendRedirect("login.jsp");
+            response.sendRedirect("login/login.jsp");
         }
     }
 
