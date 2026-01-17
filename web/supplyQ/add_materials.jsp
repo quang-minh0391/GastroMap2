@@ -45,6 +45,7 @@
         </style>
     </head>
     <body class="bg-light">
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <%@include file="/common/header.jsp" %>
 
         <div class="container mt-5 mb-5">
@@ -56,7 +57,7 @@
                         </a>
                     </div>
 
-                    <form action="CreateMaterialReceiptServlet" method="post" id="receiptForm">
+                    <form action="${pageContext.request.contextPath}/CreateMaterialReceiptServlet" method="post" id="receiptForm">
                         <div class="card receipt-card">
                             <div class="card-header header-bg py-3">
                                 <div class="d-flex justify-content-between align-items-center">
@@ -201,22 +202,36 @@
         <script>
             const formatter = new Intl.NumberFormat('vi-VN', {style: 'currency', currency: 'VND'});
 
-            // HÀM MỚI: Xử lý nhập tiền có dấu chấm phân cách
             function formatPaymentInput(input) {
-                // 1. Xóa hết các ký tự không phải số
-                let value = input.value.replace(/\D/g, "");
+                // 1. Lấy giá trị đang nhập (loại bỏ ký tự không phải số)
+                let value = parseInt(input.value.replace(/\D/g, "")) || 0;
 
-                // 2. Nếu rỗng thì gán bằng 0
-                if (value === "")
-                    value = "0";
+                // 2. Lấy tổng giá trị phiếu hiện tại từ input ẩn
+                const total = parseFloat($('#hiddenTotal').val()) || 0;
 
-                // 3. Định dạng có dấu chấm và gán lại vào ô hiển thị
-                input.value = new Intl.NumberFormat('vi-VN').format(parseInt(value));
+                // 3. KIỂM TRA VÀ TỰ ĐỘNG CHỈNH SỬA
+                if (value > total) {
+                    value = total; // Ép về bằng giá trị phiếu
 
-                // 4. Gán giá trị thực (không dấu chấm) vào input ẩn để tính toán & gửi server
+                    // Thông báo nhanh cho người dùng (tự đóng sau 1.2 giây)
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Vượt quá giá trị phiếu!',
+                        text: 'Số tiền thanh toán tự động chỉnh về: ' + formatter.format(total),
+                        timer: 1200,
+                        showConfirmButton: false,
+                        position: 'top-end',
+                        toast: true
+                    });
+                }
+
+                // 4. Cập nhật hiển thị (có dấu chấm phân cách)
+                input.value = new Intl.NumberFormat('vi-VN').format(value);
+
+                // 5. Gán giá trị số nguyên vào input ẩn để gửi về Servlet
                 $('#hiddenAmountPaid').val(value);
 
-                // 5. Gọi hàm tính toán logic
+                // 6. Cập nhật lại phần tính toán công nợ bên dưới
                 updatePaymentLogic();
             }
 
@@ -227,22 +242,22 @@
                     let qty = parseFloat($row.find('.qty-input').val()) || 0;
                     let price = parseFloat($row.find('.price-input').val()) || 0;
 
-                    if (qty < 0) {
-                        qty = 1;
-                        $row.find('.qty-input').val(1);
-                    }
-                    if (price < 0) {
-                        price = 1;
-                        $row.find('.price-input').val(1);
-                    }
-
                     const subtotal = qty * price;
                     $row.find('.subtotal').text(formatter.format(subtotal));
                     grandTotal += subtotal;
                 });
 
+                // Cập nhật tổng tiền vào UI và input ẩn
                 $('#displayTotal').text(formatter.format(grandTotal));
                 $('#hiddenTotal').val(grandTotal);
+
+                // KIỂM TRA LẠI SỐ TIỀN ĐÃ NHẬP THANH TOÁN
+                let currentPaid = parseFloat($('#hiddenAmountPaid').val()) || 0;
+                if (currentPaid > grandTotal) {
+                    // Nếu tiền đã trả đang lớn hơn tổng tiền mới -> Ép về bằng tổng tiền mới
+                    $('#hiddenAmountPaid').val(grandTotal);
+                    $('#amountPaid').val(new Intl.NumberFormat('vi-VN').format(grandTotal));
+                }
 
                 updatePaymentLogic();
             }
@@ -250,41 +265,36 @@
             function updatePaymentLogic() {
                 const total = parseFloat($('#hiddenTotal').val()) || 0;
                 const paid = parseFloat($('#hiddenAmountPaid').val()) || 0;
-                const diff = total - paid;
+                const diff = total - paid; // Hiệu số này luôn >= 0
 
-                $('#remainingBalance').val(formatter.format(Math.abs(diff)));
+                // Hiển thị số tiền còn nợ (Số tiền còn lại)
+                $('#remainingBalance').val(formatter.format(diff));
                 $('#balanceValue').val(diff);
 
                 let html = '';
                 const container = $('#paymentLogicContainer');
 
-                if (paid === 0 && total === 0) {
-                    html = `<div class="p-2 rounded border bg-light"><i class="bi bi-info-circle me-2"></i>Nhập số tiền để tính toán công nợ.</div>`;
+                if (total === 0) {
+                    html = `<div class="p-2 rounded border bg-light text-muted small"><i class="bi bi-info-circle me-2"></i>Vui lòng nhập vật tư và số lượng để tính toán.</div>`;
                 } else if (diff > 0) {
-                    // TRƯỜNG HỢP 1: Trả thiếu (Thêm dấu \ trước ${diff})
                     html = `
-        <div class="alert alert-warning d-flex align-items-center mb-0">
-            <div class="form-check">
-                <input class="form-check-input" type="radio" name="paymentAction" id="debtAction" value="DEBT" checked>
-                <label class="form-check-label fw-bold" for="debtAction">
-                    Ghi vào công nợ (HTX nợ NCC: \${formatter.format(diff)})
-                </label>
+        <div class="alert alert-warning d-flex align-items-center mb-0 py-2">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <div class="small fw-bold">
+                Ghi vào công nợ (HTX nợ NCC: \${formatter.format(diff)}
             </div>
         </div>`;
-                } else if (diff < 0) {
-                    // TRƯỜNG HỢP 2: Trả thừa (Thêm dấu \ trước ${surplus})
-                    const surplus = Math.abs(diff);
-                    html = `
-        <div class="alert alert-info mb-0">
-            <p class="mb-2 fw-bold text-primary"><i class="bi bi-info-circle-fill me-2"></i>Số tiền thanh toán dư: \${formatter.format(surplus)}</p>
-            
-        </div>`;
                 } else {
-                    html = `<div class="alert alert-success mb-0"><i class="bi bi-check-circle-fill me-2"></i>Đã thanh toán đủ.</div>`;
+                    html = `
+        <div class="alert alert-success d-flex align-items-center mb-0 py-2">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            <div class="small fw-bold">Đã thanh toán đủ (Không phát sinh nợ).</div>
+        </div>`;
                 }
 
                 container.html(html);
             }
+
             function initWarehouseSelect(element) {
                 $(element).select2({
                     theme: 'bootstrap-5',
@@ -445,6 +455,34 @@
 
                     // Xóa class đỏ sau 3 giây cho đẹp
                     setTimeout(() => $('.price-input').removeClass('is-invalid'), 3000);
+                }
+            });
+        </script>
+        <script>
+            $(document).ready(function () {
+                const urlParams = new URLSearchParams(window.location.search);
+                const status = urlParams.get('status');
+
+                if (status === 'success') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Thành công!',
+                        text: 'Phiếu nhập kho đã được lưu và cập nhật tồn kho.',
+                        confirmButtonColor: '#198754'
+                    });
+
+                    // --- DÒNG QUAN TRỌNG NHẤT: Xóa tham số trên URL mà không load lại trang ---
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                } else if (status === 'error') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi!',
+                        text: 'Không thể lưu phiếu nhập. Vui lòng thử lại!',
+                        confirmButtonColor: '#d33'
+                    });
+
+                    // Xóa tham số lỗi luôn để load lại không hiện lại
+                    window.history.replaceState({}, document.title, window.location.pathname);
                 }
             });
         </script>

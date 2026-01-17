@@ -4,13 +4,14 @@ import java.sql.Date;
 import java.sql.Timestamp;
 
 /**
- * Entity class for members table (READ ONLY for Person 1)
- * Represents cooperative members
+ * Entity class for members table (READ ONLY for Person 1) Represents
+ * cooperative members
  */
 public class member {
+
     private int id;                  // ID of the user
     private String username;         // Username
-    private String password;  
+    private String password;
     private String email;// Password (hashed);
     private String full_name;         // Full name
     private String phone;            // Phone number
@@ -22,6 +23,26 @@ public class member {
     private String plan_type;         // Plan type (MONTHLY, YEARLY, NONE)
     private String joined_date;       // Joined date (formatted as String)
     private String created_at;
+
+    private double current_debt;
+
+    public double getCurrent_debt() {
+        return current_debt;
+    }
+
+    public void setCurrent_debt(double current_debt) {
+        this.current_debt = current_debt;
+    }
+
+    public member(int id, String full_name, String phone, String address, double current_debt) {
+        this.id = id;
+        this.full_name = full_name;
+        this.phone = phone;
+        this.address = address;
+        this.current_debt = current_debt;
+    }
+    
+    
 
     public member() {
     }

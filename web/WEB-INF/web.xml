@@ -20,6 +20,30 @@
         <servlet-name>CreateMaterialReceiptServlet</servlet-name>
         <servlet-class>controller.supply.CreateMaterialReceiptServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>SearchMemberServlet</servlet-name>
+        <servlet-class>controller.supply.SearchMemberServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>SearchWarehouseServlet1</servlet-name>
+        <servlet-class>controller.supply.SearchWarehouseServlet1</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>CreateMaterialSupplyServlet</servlet-name>
+        <servlet-class>controller.supply.CreateMaterialSupplyServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>SearchDebtServlet</servlet-name>
+        <servlet-class>controller.debt.DebtManagementServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>PartnerDebtDetailServlet</servlet-name>
+        <servlet-class>controller.debt.PartnerDebtDetailServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>MemberDebtDetailServlet</servlet-name>
+        <servlet-class>controller.debt.MemberDebtDetailServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>Register</servlet-name>
         <url-pattern>/Register</url-pattern>
@@ -55,5 +79,29 @@
     <servlet-mapping>
         <servlet-name>CreateMaterialReceiptServlet</servlet-name>
         <url-pattern>/CreateMaterialReceiptServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>SearchMemberServlet</servlet-name>
+        <url-pattern>/SearchMemberServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>SearchWarehouseServlet1</servlet-name>
+        <url-pattern>/SearchWarehouseServlet1</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>CreateMaterialSupplyServlet</servlet-name>
+        <url-pattern>/CreateMaterialSupplyServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>DebtManagementServlet</servlet-name>
+        <url-pattern>/DebtManagementServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>PartnerDebtDetailServlet</servlet-name>
+        <url-pattern>/PartnerDebtDetailServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>MemberDebtDetailServlet</servlet-name>
+        <url-pattern>/MemberDebtDetailServlet</url-pattern>
     </servlet-mapping>
 </web-app>
