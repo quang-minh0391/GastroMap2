@@ -52,8 +52,8 @@
             <div class="row justify-content-center">
                 <div class="col-lg-11">
                     <div class="mb-3">
-                        <a href="material-detail.jsp" class="text-decoration-none text-secondary small">
-                            <i class="bi bi-arrow-left"></i> Quay lại kho vật tư
+                        <a href="${pageContext.request.contextPath}/SearchMaterialServlet" class="text-decoration-none text-secondary small">
+                            <i class="bi bi-arrow-left"></i> Quay lại danh sách vật tư
                         </a>
                     </div>
 
@@ -138,8 +138,10 @@
                                                     </select>
                                                 </td>
                                                 <td><input type="number" class="form-control qty-input text-center" name="quantity[]" step="0.01" min="0.01" placeholder="0.0" required></td>
-                                                <td><input type="number" class="form-control price-input text-end" name="importPrice[]" min="1" placeholder="0" required></td>
-                                                <td class="subtotal text-end fw-bold text-secondary">0 đ</td>
+                                                <td>
+                                                    <input type="text" class="form-control price-input text-end fw-bold" placeholder="0" oninput="formatPriceInput(this)" required>
+                                                    <input type="hidden" name="importPrice[]" class="price-hidden">
+                                                </td>                                                <td class="subtotal text-end fw-bold text-secondary">0 đ</td>
                                                 <td class="text-center">
                                                     <button type="button" class="btn btn-link text-danger p-0 remove-row" title="Xóa dòng"><i class="bi bi-trash"></i></button>
                                                 </td>
@@ -202,6 +204,23 @@
         <script>
             const formatter = new Intl.NumberFormat('vi-VN', {style: 'currency', currency: 'VND'});
 
+            function formatPriceInput(input) {
+                // 1. Lọc bỏ ký tự không phải số
+                let value = input.value.replace(/\D/g, "");
+                if (value === "")
+                    value = 0;
+                let numValue = parseInt(value);
+
+                // 2. Hiển thị có dấu chấm phân cách hàng nghìn
+                input.value = new Intl.NumberFormat('vi-VN').format(numValue);
+
+                // 3. Gán giá trị số nguyên vào ô hidden để Servlet đọc được
+                $(input).siblings('.price-hidden').val(numValue);
+
+                // 4. Gọi hàm tính tổng tiền lô hàng
+                calculateGrandTotal();
+            }
+
             function formatPaymentInput(input) {
                 // 1. Lấy giá trị đang nhập (loại bỏ ký tự không phải số)
                 let value = parseInt(input.value.replace(/\D/g, "")) || 0;
@@ -240,8 +259,8 @@
                 $('.distribution-row').each(function () {
                     const $row = $(this);
                     let qty = parseFloat($row.find('.qty-input').val()) || 0;
-                    let price = parseFloat($row.find('.price-input').val()) || 0;
-
+// Đọc từ class .price-hidden thay vì .price-input
+                    let price = parseFloat($row.find('.price-hidden').val()) || 0;
                     const subtotal = qty * price;
                     $row.find('.subtotal').text(formatter.format(subtotal));
                     grandTotal += subtotal;
@@ -403,7 +422,11 @@
                         <tr class="distribution-row">
                             <td><select class="form-select warehouse-select" name="warehouseId[]" required><option value="">-- Tìm kho --</option></select></td>
                             <td><input type="number" class="form-control qty-input text-center" name="quantity[]" step="0.01" min="0.01" required></td>
-                            <td><input type="number" class="form-control price-input text-end" name="importPrice[]" min="1" required></td>
+
+<td>
+    <input type="text" class="form-control price-input text-end fw-bold" placeholder="0" oninput="formatPriceInput(this)" required>
+    <input type="hidden" name="importPrice[]" class="price-hidden">
+</td>
                             <td class="subtotal text-end fw-bold text-secondary">0 đ</td>
                             <td class="text-center"><button type="button" class="btn btn-link text-danger p-0 remove-row"><i class="bi bi-trash"></i></button></td>
                         </tr>`;

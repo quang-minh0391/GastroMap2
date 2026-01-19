@@ -12,13 +12,19 @@ public class ContractDAO extends DBContext {
 
     private ContractDAO() { super(); }
 
-    public List<Contract> searchContracts(String keyword) {
+    public List<Contract> searchContracts(String keyword, int coopId) {
     List<Contract> list = new ArrayList<>();
-    // Thêm document_path vào câu SELECT
-    String sql = "SELECT id, contract_code, contract_type, signing_date, expiry_date, status, document_path " +
-                 "FROM contracts WHERE contract_code LIKE ? LIMIT 10";
+    // Sử dụng JOIN để lọc hợp đồng dựa trên coop_id của thành viên
+    String sql = "SELECT c.id, c.contract_code, c.contract_type, c.signing_date, c.expiry_date, c.status, c.document_path " +
+                 "FROM contracts c " +
+                 "JOIN members m ON c.member_id = m.id " +
+                 "WHERE c.contract_code LIKE ? AND m.coop_id = ? " +
+                 "LIMIT 10";
+                 
     try (PreparedStatement ps = conn.prepareStatement(sql)) {
         ps.setString(1, "%" + keyword + "%");
+        ps.setInt(2, coopId); // Lọc theo coop_id của HTX
+        
         ResultSet rs = ps.executeQuery();
         while (rs.next()) {
             Contract c = new Contract();
@@ -28,10 +34,12 @@ public class ContractDAO extends DBContext {
             c.setSigningDate(rs.getDate("signing_date"));
             c.setExpiryDate(rs.getDate("expiry_date"));
             c.setStatus(rs.getString("status"));
-            c.setDocumentPath(rs.getString("document_path")); // Lấy đường dẫn file
+            c.setDocumentPath(rs.getString("document_path"));
             list.add(c);
         }
-    } catch (Exception e) { e.printStackTrace(); }
+    } catch (Exception e) { 
+        e.printStackTrace(); 
+    }
     return list;
 }
 }

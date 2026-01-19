@@ -11,34 +11,11 @@
         <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
         <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
         <style>
-            .supply-card {
-                border: none;
-                box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-            }
-            .header-bg {
-                background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
-                color: white;
-            }
-            .total-display-box {
-                background-color: #f8f9fa;
-                border: 2px dashed #0d6efd;
-                border-radius: 8px;
-                padding: 10px;
-                text-align: center;
-            }
-            .total-value {
-                font-size: 1.6rem;
-                font-weight: 800;
-                color: #0d6efd;
-            }
-            /* Style mới cho hiển thị tồn kho */
-            .stock-info-tag {
-                font-size: 0.75rem;
-                font-weight: bold;
-                color: #dc3545;
-                display: block;
-                margin-top: 2px;
-            }
+            .supply-card { border: none; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); }
+            .header-bg { background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%); color: white; }
+            .total-display-box { background-color: #f8f9fa; border: 2px dashed #0d6efd; border-radius: 8px; padding: 10px; text-align: center; }
+            .total-value { font-size: 1.6rem; font-weight: 800; color: #0d6efd; }
+            .stock-info-tag { font-size: 0.75rem; font-weight: bold; color: #dc3545; display: block; margin-top: 2px; }
         </style>
     </head>
     <body class="bg-light">
@@ -76,12 +53,10 @@
                                         <label class="form-label fw-bold small">Chọn thành viên nhận vật tư (*)</label>
                                         <select class="form-select" name="memberId" id="memberSelect" required></select>
                                     </div>
-
                                     <div class="col-md-4">
                                         <label class="form-label fw-bold small">Hợp đồng liên kết</label>
                                         <select class="form-select" name="contractId" id="contractSelect"></select>
                                     </div>
-
                                     <div class="col-md-6 d-none" id="contractInfoBox">
                                         <div class="card border-0 bg-light info-box">
                                             <div class="card-body p-2 border-start border-info border-4">
@@ -91,7 +66,6 @@
                                             </div>
                                         </div>
                                     </div>
-
                                     <div class="col-md-12 d-none" id="memberInfoBox">
                                         <div class="card border-0 bg-light info-box">
                                             <div class="card-body p-2 border-start border-primary border-4">
@@ -106,9 +80,7 @@
                                                         <div class="small" id="mInfoAddress">---</div>
                                                     </div>
                                                     <div class="col-md-4 text-end">
-                                                        <p class="mb-0 small text-danger fw-bold">Dư nợ hiện tại:</p>
-                                                        <div class="h5 mb-0 fw-bold text-danger" id="mInfoDebt">0 đ</div>
-                                                        <small class="text-muted">(Số tiền thành viên đang nợ HTX)</small>
+                                                        <div class="h6 mb-0 fw-bold text-danger" id="mInfoDebt">0 đ</div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -149,7 +121,10 @@
                                                     <span class="stock-info-tag d-none">Tồn thực tế: <span class="stock-val">0</span></span>
                                                 </td>
                                                 <td><input type="number" class="form-control qty-input text-center" name="quantity[]" step="0.01" min="0.01" required></td>
-                                                <td><input type="number" class="form-control price-input text-end" name="supplyPrice[]" min="1" required></td>
+                                                <td>
+                                                    <input type="text" class="form-control price-input text-end fw-bold" placeholder="0" oninput="formatPriceInput(this)" required>
+                                                    <input type="hidden" name="supplyPrice[]" class="price-hidden">
+                                                </td>
                                                 <td class="subtotal text-end fw-bold text-secondary">0 đ</td>
                                                 <td class="text-center">
                                                     <button type="button" class="btn btn-link text-danger p-0 remove-row"><i class="bi bi-trash"></i></button>
@@ -206,7 +181,20 @@
         <script>
             const formatter = new Intl.NumberFormat('vi-VN', {style: 'currency', currency: 'VND'});
 
-            // HÀM 1: Định dạng tiền và chặn trả lố
+            // MỚI: Hàm định dạng đơn giá khi nhập
+            function formatPriceInput(input) {
+                let value = input.value.replace(/\D/g, ""); // Xóa ký tự không phải số
+                if (value === "") value = 0;
+                let numValue = parseInt(value);
+                
+                // Hiển thị định dạng có dấu chấm
+                input.value = new Intl.NumberFormat('vi-VN').format(numValue);
+                // Lưu giá trị số vào hidden input để submit server
+                $(input).siblings('.price-hidden').val(numValue);
+                
+                calculateGrandTotal();
+            }
+
             function formatPaymentInput(input) {
                 let value = parseInt(input.value.replace(/\D/g, "")) || 0;
                 const total = parseFloat($('#hiddenTotal').val()) || 0;
@@ -214,8 +202,7 @@
                 if (value > total && total > 0) {
                     value = total;
                     Swal.fire({
-                        icon: 'warning',
-                        title: 'Vượt quá giá trị phiếu!',
+                        icon: 'warning', title: 'Vượt quá giá trị phiếu!',
                         text: 'Thành viên chỉ thanh toán tối đa: ' + formatter.format(total),
                         timer: 1500, showConfirmButton: false, toast: true, position: 'top-end'
                     });
@@ -225,12 +212,12 @@
                 updateDebtLogic();
             }
 
-            // HÀM 2: Tính tổng và chặn bám đuổi (nếu giảm số lượng hàng)
             function calculateGrandTotal() {
                 let grandTotal = 0;
                 $('.distribution-row').each(function () {
                     const qty = parseFloat($(this).find('.qty-input').val()) || 0;
-                    const price = parseFloat($(this).find('.price-input').val()) || 0;
+                    // Lấy giá từ class hidden mới
+                    const price = parseFloat($(this).find('.price-hidden').val()) || 0;
                     const subtotal = qty * price;
                     $(this).find('.subtotal').text(formatter.format(subtotal));
                     grandTotal += subtotal;
@@ -247,26 +234,23 @@
                 updateDebtLogic();
             }
 
-            // HÀM 3: Hiển thị nợ chi tiết (Fix lỗi \${})
             function updateDebtLogic() {
                 const total = parseFloat($('#hiddenTotal').val()) || 0;
                 const paid = parseFloat($('#hiddenAmountPaid').val()) || 0;
                 const debt = total - paid;
-
                 $('#remainingBalance').val(formatter.format(debt));
 
                 let html = '';
                 if (total === 0) {
                     html = '<div class="p-2 rounded border bg-light text-muted small"><i class="bi bi-info-circle me-2"></i>Chọn vật tư và nhập kho để tính toán.</div>';
                 } else if (debt > 0) {
-                    html = `<div class="alert alert-warning d-flex align-items-center mb-0 py-2"><i class="bi bi-exclamation-triangle-fill me-2"></i><div class="small fw-bold">Ghi vào công nợ (Thành viên nợ HTX: \${formatter.format(debt)})</div></div>`;
+                    html = '<div class="alert alert-warning d-flex align-items-center mb-0 py-2"><i class="bi bi-exclamation-triangle-fill me-2"></i><div class="small fw-bold">Ghi vào công nợ (Thành viên nợ HTX)</div></div>';
                 } else {
                     html = '<div class="alert alert-success d-flex align-items-center mb-0 py-2"><i class="bi bi-check-circle-fill me-2"></i><div class="small fw-bold">Thành viên đã thanh toán đủ.</div></div>';
                 }
                 $('#paymentLogicContainer').html(html);
             }
 
-            // HÀM 4: Tìm kho theo đúng vật tư (Dùng Servlet 1)
             function initWH(el) {
                 const materialId = $('#materialSelect').val();
                 if (!materialId) {
@@ -280,18 +264,21 @@
                     placeholder: '-- Chọn kho xuất --',
                     ajax: {
                         url: '${pageContext.request.contextPath}/SearchWarehouseServlet1',
-                        type: 'POST',
-                        dataType: 'json',
-                        data: params => ({ term: params.term, materialId: materialId }),
-                        processResults: data => ({
-                            results: $.map(data, item => ({
-                                id: item.id, 
-                                text: item.name + " (Tồn: " + item.current_stock + ")",
-                                stock: item.current_stock
-                            }))
-                        })
+                        type: 'POST', dataType: 'json',
+                        data: params => ({term: params.term, materialId: materialId}),
+                        processResults: data => {
+                            // MỚI: Lọc bỏ những kho có tồn kho <= 0
+                            const filteredData = data.filter(item => item.current_stock > 0);
+                            return {
+                                results: $.map(filteredData, item => ({
+                                    id: item.id,
+                                    text: item.name + " (Tồn: " + item.current_stock + ")",
+                                    stock: item.current_stock
+                                }))
+                            };
+                        }
                     }
-                }).on('select2:select', function(e) {
+                }).on('select2:select', function (e) {
                     const data = e.params.data;
                     const $row = $(this).closest('tr');
                     $row.find('.qty-input').attr('max', data.stock);
@@ -303,42 +290,62 @@
             $(document).ready(function () {
                 $('#supplyDate').val(new Date().toISOString().split('T')[0]);
 
-                // SELECT2: THÀNH VIÊN
                 $('#memberSelect').select2({
-                    theme: 'bootstrap-5',
-                    placeholder: '-- Tìm thành viên nhận hàng --',
-                    minimumInputLength: 1,
+                    theme: 'bootstrap-5', placeholder: '-- Tìm thành viên nhận hàng --', minimumInputLength: 1,
                     ajax: {
                         url: '${pageContext.request.contextPath}/SearchMemberServlet',
-                        dataType: 'json',
-                        data: params => ({term: params.term}),
-                        processResults: data => ({
-                            results: $.map(data, item => ({
-                                id: item.id, text: item.full_name + " (" + item.phone + ")",
-                                phone: item.phone, address: item.address, debt: item.current_debt || 0
-                            }))
-                        })
+                        dataType: 'json', data: params => ({term: params.term}),
+                        processResults: data => ({results: $.map(data, item => ({id: item.id, text: item.full_name + " (" + item.phone + ")", phone: item.phone, address: item.address, debt: item.current_debt || 0}))})
                     }
                 }).on('select2:select', function (e) {
                     const data = e.params.data;
                     $('#mInfoName').text(data.text);
                     $('#mInfoPhone').text(data.phone || 'Chưa cập nhật');
                     $('#mInfoAddress').text(data.address || 'Chưa cập nhật');
-                    $('#mInfoDebt').text(formatter.format(data.debt));
+                    const debt = data.debt || 0;
+                    if (debt < 0) $('#mInfoDebt').text('HTX nợ thành viên: ' + formatter.format(Math.abs(debt)));
+                    else if (debt > 0) $('#mInfoDebt').text('Thành viên nợ HTX: ' + formatter.format(debt));
+                    else $('#mInfoDebt').text('Không có công nợ');
                     $('#memberInfoBox').removeClass('d-none');
-                }).on('select2:clear', () => $('#memberInfoBox').addClass('d-none'));
-
-                // SELECT2: VẬT TƯ (MỞ KHÓA KHO)
-                $('#materialSelect').select2({
+                });
+                
+                // C. SELECT2 - HỢP ĐỒNG (Có hiển thị thông tin)
+                $('#contractSelect').select2({
                     theme: 'bootstrap-5',
-                    placeholder: '-- Chọn vật tư trước khi chọn kho --',
+                    minimumInputLength: 1,
+                    placeholder: '-- Tìm hợp đồng --',
+                    allowClear: true,
+                    ajax: {
+                        url: '${pageContext.request.contextPath}/ContractServlet',
+                        dataType: 'json',
+                        data: params => ({term: params.term}),
+                        processResults: data => ({
+                                results: $.map(data, item => ({
+                                        id: item.id, text: item.contractCode,
+                                        type: item.contractType, sign: item.signingDate,
+                                        expiry: item.expiryDate, status: item.status
+                                    }))
+                            })
+                    }
+                }).on('select2:select', function (e) {
+                    const d = e.params.data;
+                    $('#dtType').text(d.type);
+                    $('#dtStatus').text(d.status);
+                    $('#dtSign').text(d.sign);
+                    $('#dtExpiry').text(d.expiry);
+                    $('#contractInfoBox').removeClass('d-none');
+                }).on('select2:clear', function () {
+                    $('#contractInfoBox').addClass('d-none');
+                });
+
+                $('#materialSelect').select2({
+                    theme: 'bootstrap-5', placeholder: '-- Chọn vật tư --',
                     ajax: {
                         url: '${pageContext.request.contextPath}/SearchMaterialServlet',
-                        type: 'POST', dataType: 'json',
-                        data: params => ({ term: params.term }),
-                        processResults: data => ({ results: $.map(data, item => ({ id: item.id, text: item.name, unit: item.unit })) })
+                        type: 'POST', dataType: 'json', data: params => ({term: params.term}),
+                        processResults: data => ({results: $.map(data, item => ({id: item.id, text: item.name, unit: item.unit}))})
                     }
-                }).on('select2:select', function(e) {
+                }).on('select2:select', function (e) {
                     $('#unitDisplay').val(e.params.data.unit);
                     $('#btnAddRow').prop('disabled', false);
                     $('.distribution-row:not(:first)').remove();
@@ -349,23 +356,24 @@
                     initWH('.warehouse-select');
                 });
 
-                // CHẶN NHẬP QUÁ TỒN KHO TỨC THÌ
-                $(document).on('input', '.qty-input', function() {
+                $(document).on('input', '.qty-input', function () {
                     const qty = parseFloat($(this).val()) || 0;
                     const max = parseFloat($(this).attr('max')) || 0;
                     if (qty > max && max >= 0) {
-                        Swal.fire({ icon: 'error', title: 'Không đủ hàng!', text: 'Kho chỉ còn tồn: ' + max, timer: 1500 });
+                        Swal.fire({icon: 'error', title: 'Không đủ hàng!', text: 'Kho chỉ còn tồn: ' + max, timer: 1500});
                         $(this).val(max);
                     }
                     calculateGrandTotal();
                 });
 
-                // THÊM DÒNG MỚI
                 $('#btnAddRow').click(() => {
                     const row = `<tr class="distribution-row">
                         <td><select class="form-select warehouse-select" name="warehouseId[]" required></select><span class="stock-info-tag d-none">Tồn: <span class="stock-val">0</span></span></td>
                         <td><input type="number" class="form-control qty-input text-center" name="quantity[]" step="0.01" required></td>
-                        <td><input type="number" class="form-control price-input text-end" name="supplyPrice[]" required></td>
+                        <td>
+                            <input type="text" class="form-control price-input text-end fw-bold" placeholder="0" oninput="formatPriceInput(this)" required>
+                            <input type="hidden" name="supplyPrice[]" class="price-hidden">
+                        </td>
                         <td class="subtotal text-end fw-bold">0 đ</td>
                         <td class="text-center"><button type="button" class="btn btn-link text-danger remove-row"><i class="bi bi-trash"></i></button></td>
                     </tr>`;
@@ -373,29 +381,19 @@
                     initWH($row.find('.warehouse-select'));
                 });
 
-                $(document).on('click', '.remove-row', function() { $(this).closest('tr').remove(); calculateGrandTotal(); });
-                $(document).on('input', '.price-input', calculateGrandTotal);
-
-                // HỢP ĐỒNG
-                $('#contractSelect').select2({
-                    theme: 'bootstrap-5', placeholder: '-- Tìm hợp đồng --', allowClear: true,
-                    ajax: {
-                        url: '${pageContext.request.contextPath}/ContractServlet', dataType: 'json',
-                        data: params => ({term: params.term}),
-                        processResults: data => ({ results: $.map(data, item => ({ id: item.id, text: item.contractCode, type: item.contractType, sign: item.signingDate, expiry: item.expiryDate, status: item.status })) })
+                $(document).on('click', '.remove-row', function () {
+                    if ($('#distributionTable tbody tr').length > 1) {
+                        $(this).closest('tr').remove();
+                        calculateGrandTotal();
                     }
-                }).on('select2:select', function (e) {
-                    const d = e.params.data;
-                    $('#dtType').text(d.type); $('#dtStatus').text(d.status); $('#dtSign').text(d.sign); $('#dtExpiry').text(d.expiry);
-                    $('#contractInfoBox').removeClass('d-none');
-                }).on('select2:clear', () => $('#contractInfoBox').addClass('d-none'));
+                });
 
-                // THÔNG BÁO THÀNH CÔNG
                 if (new URLSearchParams(window.location.search).get('status') === 'success') {
                     Swal.fire('Thành công', 'Phiếu cung ứng đã được lưu và trừ kho.', 'success');
                     window.history.replaceState({}, document.title, window.location.pathname);
                 }
             });
+            
         </script>
     </body>
 </html>

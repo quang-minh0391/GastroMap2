@@ -2,10 +2,9 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
  */
-package controller.supply;
+package controller.material;
 
-import DAO.MaterialDAO;
-import com.google.gson.Gson;
+import DAO.PartnerDAO;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -13,17 +12,14 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import java.util.ArrayList;
 import java.util.List;
-import model.Material;
+import java.util.Map;
 
 /**
  *
  * @author Admin
  */
-public class SearchMaterialServlet extends HttpServlet {
-
-    private final Gson gson = new Gson();
+public class ListPartnerServlet extends HttpServlet {
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -42,10 +38,10 @@ public class SearchMaterialServlet extends HttpServlet {
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
-            out.println("<title>Servlet SearchMaterialServlet</title>");
+            out.println("<title>Servlet ListPartnerServlet</title>");
             out.println("</head>");
             out.println("<body>");
-            out.println("<h1>Servlet SearchMaterialServlet at " + request.getContextPath() + "</h1>");
+            out.println("<h1>Servlet ListPartnerServlet at " + request.getContextPath() + "</h1>");
             out.println("</body>");
             out.println("</html>");
         }
@@ -66,37 +62,24 @@ public class SearchMaterialServlet extends HttpServlet {
 
         HttpSession session = request.getSession(false);
 
-        // 1. Kiểm tra đăng nhập và điều hướng tuyệt đối nếu session hết hạn
+        // 1. Kiểm tra đăng nhập và điều hướng tuyệt đối nếu cần
         if (session == null || session.getAttribute("id") == null) {
             response.sendRedirect(request.getContextPath() + "/login.jsp");
             return;
         }
 
-        // 2. Xác định coop_id từ session (Xử lý cho cả 3 loại tài khoản)
+        // 2. Xác định coop_id (Xử lý cho cả Nông dân, HTX và Quản lý)
         Integer coopId = (Integer) session.getAttribute("coop_id");
         if (coopId == null || coopId == 0) {
-            coopId = (Integer) session.getAttribute("id"); // Type 2 dùng chính ID tài khoản
+            coopId = (Integer) session.getAttribute("id"); // Nếu là Type 2, lấy chính ID tài khoản
         }
 
-        // 3. Lấy từ khóa và kiểu lọc
-        String keyword = request.getParameter("keyword");
-        if (keyword == null) {
-            keyword = "";
-        }
-        String sort = request.getParameter("sort");
-        if (sort == null || sort.isEmpty()) {
-            sort = "";
-        }
+        // 3. Gọi DAO với tham số coopId
+        List<Map<String, Object>> partners = PartnerDAO.INSTANCE.getAllPartners(coopId);
 
-        // 4. Gọi DAO với tham số coopId
-        List<Material> MaterialList = MaterialDAO.INSTANCE.listMaterials(keyword, sort, coopId);
-
-        // 5. Đẩy dữ liệu sang JSP
-        request.setAttribute("keyword", keyword);
-        request.setAttribute("sort", sort);
-        request.setAttribute("materialList", MaterialList);
-
-        request.getRequestDispatcher("supplyQ/list_materials.jsp").forward(request, response);
+        // 4. Gửi dữ liệu sang trang danh sách
+        request.setAttribute("partners", partners);
+        request.getRequestDispatcher("/supplyQ/list_partners.jsp").forward(request, response);
     }
 
     /**
@@ -110,35 +93,7 @@ public class SearchMaterialServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        request.setCharacterEncoding("UTF-8");
-
-        // 1. Lấy Session và kiểm tra đăng nhập
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("id") == null) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
-        }
-
-        // 2. Xác định coop_id dựa trên loại tài khoản (Type 1, 2, 3)
-        Integer coopId = (Integer) session.getAttribute("coop_id");
-        if (coopId == null || coopId == 0) {
-            coopId = (Integer) session.getAttribute("id"); // Type 2 dùng chính ID của mình
-        }
-
-        // 3. Lấy từ khóa tìm kiếm
-        String keyword = request.getParameter("term");
-        if (keyword == null) {
-            keyword = "";
-        }
-
-        // 4. Gọi DAO với tham số coopId
-        List<Material> materials = MaterialDAO.INSTANCE.searchMaterials(keyword, coopId);
-
-        // 5. Trả về JSON
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        String json = gson.toJson(materials);
-        response.getWriter().write(json);
+        processRequest(request, response);
     }
 
     /**

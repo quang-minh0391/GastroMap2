@@ -35,8 +35,8 @@
                             <th>Ngày</th>
                             <th>Mã/Loại</th>
                             <th>Ghi chú nội dung</th>
-                            <th class="text-end">HTX Trả nợ</th>
-                            <th class="text-end">HTX Thu nợ</th>
+                            <th class="text-end">Phát sinh tăng</th>
+                            <th class="text-end">Phát sinh giảm</th>
                             <th class="text-end">Số dư lũy kế</th>
                             <th>Minh chứng</th>
                         </tr>

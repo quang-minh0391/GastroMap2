@@ -44,6 +44,54 @@
         <servlet-name>MemberDebtDetailServlet</servlet-name>
         <servlet-class>controller.debt.MemberDebtDetailServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>CreateMaterialServlet</servlet-name>
+        <servlet-class>controller.material.CreateMaterialServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>EditMaterialServlet</servlet-name>
+        <servlet-class>controller.material.EditMaterialServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ListWarehouseServlet</servlet-name>
+        <servlet-class>controller.material.ListWarehouseServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>CreateWarehouseServlet</servlet-name>
+        <servlet-class>controller.material.CreateWarehouseServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>WarehouseInventoryServlet</servlet-name>
+        <servlet-class>controller.material.WarehouseInventoryServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>EditWarehouseServlet</servlet-name>
+        <servlet-class>controller.material.EditWarehouseServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ListPartnerServlet</servlet-name>
+        <servlet-class>controller.material.ListPartnerServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>EditPartnerServlet</servlet-name>
+        <servlet-class>controller.material.EditPartnerServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>CreatePartnerServlet</servlet-name>
+        <servlet-class>controller.material.CreatePartnerServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>SearchProductServlet</servlet-name>
+        <servlet-class>controller.purchase.SearchProductServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>CreatePurchaseReceiptServlet</servlet-name>
+        <servlet-class>controller.purchase.CreatePurchaseReceiptServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>SearchProductWarehouseServlet</servlet-name>
+        <servlet-class>controller.purchase.SearchProductWarehouseServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>Register</servlet-name>
         <url-pattern>/Register</url-pattern>
@@ -103,5 +151,53 @@
     <servlet-mapping>
         <servlet-name>MemberDebtDetailServlet</servlet-name>
         <url-pattern>/MemberDebtDetailServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>CreateMaterialServlet</servlet-name>
+        <url-pattern>/CreateMaterialServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>EditMaterialServlet</servlet-name>
+        <url-pattern>/EditMaterialServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ListWarehouseServlet</servlet-name>
+        <url-pattern>/ListWarehouseServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>CreateWarehouseServlet</servlet-name>
+        <url-pattern>/CreateWarehouseServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>WarehouseInventoryServlet</servlet-name>
+        <url-pattern>/WarehouseInventoryServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>EditWarehouseServlet</servlet-name>
+        <url-pattern>/EditWarehouseServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ListPartnerServlet</servlet-name>
+        <url-pattern>/ListPartnerServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>EditPartnerServlet</servlet-name>
+        <url-pattern>/EditPartnerServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>CreatePartnerServlet</servlet-name>
+        <url-pattern>/CreatePartnerServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>SearchProductServlet</servlet-name>
+        <url-pattern>/SearchProductServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>CreatePurchaseReceiptServlet</servlet-name>
+        <url-pattern>/CreatePurchaseReceiptServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>SearchProductWarehouseServlet</servlet-name>
+        <url-pattern>/SearchProductWarehouseServlet</url-pattern>
     </servlet-mapping>
 </web-app>

@@ -80,15 +80,15 @@ public class inventoryDAO extends DBContext {
         return inventories;
     }
 
-   public List<MaterialWarehouse> searchWarehouses(String keyword) {
+   public List<MaterialWarehouse> searchWarehouses(String keyword, int coopId) {
     List<MaterialWarehouse> list = new ArrayList<>();
-    String sql = "SELECT id, name, location FROM material_warehouses WHERE name LIKE ? LIMIT 10";
+    // Thêm điều kiện lọc theo coop_id vào câu lệnh SELECT
+    String sql = "SELECT id, name, location FROM material_warehouses WHERE name LIKE ? AND coop_id = ? LIMIT 10";
     
-    // Tuyệt đối KHÔNG dùng try (Connection conn = ...) ở đây
     try {
-        // Chỉ dùng try-with-resources cho PreparedStatement và ResultSet
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, "%" + keyword + "%");
+            ps.setInt(2, coopId); // Gán ID của HTX/Cửa hàng
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     MaterialWarehouse w = new MaterialWarehouse();
@@ -102,7 +102,7 @@ public class inventoryDAO extends DBContext {
     } catch (Exception e) {
         e.printStackTrace();
     }
-    return list; // Sau khi chạy xong, PreparedStatement và ResultSet tự đóng, conn vẫn mở.
+    return list;
 }
 
 }

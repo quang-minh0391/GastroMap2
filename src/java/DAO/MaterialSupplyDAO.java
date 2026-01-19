@@ -11,7 +11,7 @@ public class MaterialSupplyDAO extends DBContext {
 
     public boolean saveFullSupply(int memberId, int staffId, int materialId, Integer contractId,
             String note, double total, double paid,
-            String[] whIds, String[] qtys, String[] prices) {
+            String[] whIds, String[] qtys, String[] prices,int coopId) {
         Connection conn = null;
         try {
             conn = this.getConnection();
@@ -47,8 +47,8 @@ public class MaterialSupplyDAO extends DBContext {
 
             // 3. Lưu Chi Tiết & Trừ Kho (Kiểm tra tồn kho thực tế)
             String sqlD = "INSERT INTO material_supply_details (supply_id, material_id, warehouse_id, quantity, unit_price, subtotal) VALUES (?,?,?,?,?,?)";
-            String sqlUpdateInv = "UPDATE material_inventory SET quantity = quantity - ? WHERE material_id = ? AND warehouse_id = ? AND quantity >= ?";
-
+            String sqlUpdateInv = "UPDATE material_inventory SET quantity = quantity - ? "
+                    + "WHERE material_id = ? AND warehouse_id = ? AND coop_id = ? AND quantity >= ?";
             try (PreparedStatement psD = conn.prepareStatement(sqlD); PreparedStatement psI = conn.prepareStatement(sqlUpdateInv)) {
 
                 for (int i = 0; i < whIds.length; i++) {
@@ -69,7 +69,8 @@ public class MaterialSupplyDAO extends DBContext {
                     psI.setDouble(1, q);
                     psI.setInt(2, materialId);
                     psI.setInt(3, w);
-                    psI.setDouble(4, q); // Điều kiện: số tồn hiện tại phải >= số xuất
+                    psI.setInt(4, coopId); // Xác định kho của HTX
+                psI.setDouble(5, q);    // Điều kiện số lượng >= q
                     int affected = psI.executeUpdate();
 
                     if (affected == 0) {

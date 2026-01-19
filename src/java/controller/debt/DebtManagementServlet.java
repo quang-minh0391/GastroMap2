@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 
 @WebServlet(name = "DebtManagementServlet", urlPatterns = {"/DebtManagementServlet"})
+
 @MultipartConfig(fileSizeThreshold = 1024 * 1024 * 2, maxFileSize = 1024 * 1024 * 10)
 public class DebtManagementServlet extends HttpServlet {
 
@@ -17,7 +18,7 @@ public class DebtManagementServlet extends HttpServlet {
             throws ServletException, IOException {
         HttpSession session = request.getSession();
         Integer coopId = (Integer) session.getAttribute("id");
-        if (coopId == null) { response.sendRedirect("login.jsp"); return; }
+        if (coopId == null) { response.sendRedirect(request.getContextPath() + "/login.jsp"); return; }
 
         DebtDAO dao = new DebtDAO();
         request.setAttribute("memberDebts", dao.getMemberDebtList(coopId));

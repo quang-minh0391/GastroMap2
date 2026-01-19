@@ -13,15 +13,31 @@
         <%@include file="/common/header.jsp" %>
 
         <div class="container mt-4">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3><i class="bi bi-box-seam"></i> Kho Vật Tư</h3>
+            <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+                <h3 class="mb-0 fw-bold text-primary">
+                    <i class="bi bi-box-seam me-2"></i>Kho Vật Tư
+                </h3>
 
-                <div class="btn-group shadow-sm" role="group">
-                    <a href="supplyQ/add_materials.jsp" class="btn btn-success">
-                        <i class="bi bi-plus-circle"></i> Nhập kho
+                <div class="d-flex gap-2">
+                    <a href="ListPartnerServlet" class="btn btn-outline-info shadow-sm">
+                        <i class="bi bi-truck me-1"></i> Quản lý NCC
                     </a>
-                    <a href="supplyQ/mem_supply_materials.jsp" class="btn btn-outline-primary">
-                        <i class="bi bi-person-up"></i> Cung ứng thành viên
+
+                    <a href="ListWarehouseServlet" class="btn btn-outline-dark shadow-sm">
+                        <i class="bi bi-buildings me-1"></i> Quản lý danh sách kho
+                    </a>
+
+                    <div class="btn-group shadow-sm" role="group">
+                        <a href="supplyQ/add_materials.jsp" class="btn btn-outline-success">
+                            <i class="bi bi-plus-lg"></i> Nhập kho
+                        </a>
+                        <a href="supplyQ/mem_supply_materials.jsp" class="btn btn-outline-primary">
+                            <i class="bi bi-person-up"></i> Cung ứng thành viên
+                        </a>
+                    </div>
+
+                    <a href="CreateMaterialServlet" class="btn btn-success shadow-sm px-3">
+                        <i class="bi bi-plus-circle me-1"></i> Thêm vật tư mới
                     </a>
                 </div>
             </div>
@@ -97,7 +113,11 @@
                                     </td>
                                     <td class="text-center">
                                         <a href="${pageContext.request.contextPath}/MaterialDetailServlet?id=${i.id}" class="btn btn-sm btn-outline-info" title="Xem chi tiết"><i class="bi bi-eye"></i></a>
-                                        <button class="btn btn-sm btn-outline-warning" title="Sửa"><i class="bi bi-pencil"></i></button>
+                                        <a href="EditMaterialServlet?id=${i.id}" 
+                                           class="btn btn-sm btn-outline-warning" 
+                                           title="Sửa">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
                                     </td>
                                 </tr>
                             </c:forEach>

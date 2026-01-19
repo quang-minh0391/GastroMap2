@@ -13,6 +13,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.util.List;
 import model.MaterialWarehouse;
 
@@ -75,17 +76,30 @@ public class SearchWarehouseServlet extends HttpServlet {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
 
-        // 1. Lấy từ khóa
+        // 1. Lấy session và kiểm tra đăng nhập
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("id") == null) {
+            response.getWriter().write("[]");
+            return;
+        }
+
+        // 2. Xác định coop_id của HTX/Cửa hàng
+        Integer coopId = (Integer) session.getAttribute("coop_id");
+        if (coopId == null || coopId == 0) {
+            coopId = (Integer) session.getAttribute("id"); // Tài khoản HTX lấy chính ID của mình
+        }
+
+        // 3. Lấy từ khóa
         String keyword = request.getParameter("term");
 
-        // 2. LOGIC QUAN TRỌNG: Nếu không nhập gì (null hoặc rỗng) thì trả về danh sách rỗng luôn
+        // 4. Kiểm tra từ khóa trống
         if (keyword == null || keyword.trim().isEmpty()) {
             response.getWriter().write("[]");
             return;
         }
 
-        // 3. Nếu có từ khóa thì mới gọi DB
-        List<MaterialWarehouse> warehouses = inventoryDAO.INSTANCE.searchWarehouses(keyword.trim());
+        // 5. Gọi DAO với từ khóa và coopId
+        List<MaterialWarehouse> warehouses = inventoryDAO.INSTANCE.searchWarehouses(keyword.trim(), coopId);
         response.getWriter().write(gson.toJson(warehouses));
     }
 

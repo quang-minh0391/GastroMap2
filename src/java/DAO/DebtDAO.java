@@ -196,7 +196,7 @@ public class DebtDAO extends DBContext {
                 psL.setInt(2, pId);
                 psL.setString(3, "CASH_PAYMENT");
                 psL.setDouble(4, amount);
-                psL.setString(5, "CREDIT");
+                psL.setString(5, "DEBIT");
                 psL.setDouble(6, newBal);
                 psL.setString(7, note + " (Trả nợ NCC)");
                 psL.setInt(8, voucherId);
@@ -258,36 +258,39 @@ public class DebtDAO extends DBContext {
     }
     // Lấy lịch sử giao dịch riêng cho Nông dân (partner_id IS NULL)
 
-    public List<Map<String, Object>> getMemberTransactionHistory(int memberId) {
-        List<Map<String, Object>> history = new ArrayList<>();
-        // JOIN với payment_vouchers để lấy image_path và voucher_code
-        String sql = "SELECT l.transaction_date, l.reference_type, l.amount, l.entry_type, l.balance_after, l.note, "
-                + "COALESCE(v.voucher_code, l.id) as doc_code, "
-                + "v.image_path "
-                + "FROM member_transaction_ledger l "
-                + "LEFT JOIN payment_vouchers v ON l.reference_id = v.id AND l.reference_type IN ('CASH_PAYMENT', 'CASH_RECEIPT') "
-                + "WHERE l.member_id = ? AND l.partner_id IS NULL "
-                + "ORDER BY l.id ASC";
+public List<Map<String, Object>> getMemberTransactionHistory(int memberId) {
+    List<Map<String, Object>> history = new ArrayList<>();
 
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, memberId);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Map<String, Object> row = new HashMap<>();
-                    row.put("date", rs.getTimestamp("transaction_date"));
-                    row.put("type", rs.getString("reference_type"));
-                    row.put("amount", rs.getDouble("amount"));
-                    row.put("entry", rs.getString("entry_type"));
-                    row.put("balance", rs.getDouble("balance_after"));
-                    row.put("note", rs.getString("note"));
-                    row.put("code", rs.getString("doc_code"));
-                    row.put("img", rs.getString("image_path"));
-                    history.add(row);
-                }
+    // Cập nhật SQL: Thêm LEFT JOIN với produce_receipts (pr)
+    String sql = "SELECT l.transaction_date, l.reference_type, l.amount, l.entry_type, l.balance_after, l.note, "
+            + "COALESCE(v.voucher_code, s.supply_code, pr.receipt_code, CAST(l.id AS CHAR)) as doc_code, "
+            + "v.image_path "
+            + "FROM member_transaction_ledger l "
+            + "LEFT JOIN payment_vouchers v ON l.reference_id = v.id AND l.reference_type IN ('CASH_PAYMENT', 'CASH_RECEIPT') "
+            + "LEFT JOIN material_supplies s ON l.reference_id = s.id AND l.reference_type = 'MATERIAL_EXPORT' "
+            + "LEFT JOIN produce_receipts pr ON l.reference_id = pr.id AND l.reference_type = 'FARM_PURCHASE' "
+            + "WHERE l.member_id = ? AND l.partner_id IS NULL "
+            + "ORDER BY l.id ASC";
+
+    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setInt(1, memberId);
+        try (ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("date", rs.getTimestamp("transaction_date"));
+                row.put("type", rs.getString("reference_type"));
+                row.put("amount", rs.getDouble("amount"));
+                row.put("entry", rs.getString("entry_type"));
+                row.put("balance", rs.getDouble("balance_after"));
+                row.put("note", rs.getString("note"));
+                row.put("code", rs.getString("doc_code")); // Sẽ lấy được receipt_code nếu là FARM_PURCHASE
+                row.put("img", rs.getString("image_path"));
+                history.add(row);
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
-        return history;
+    } catch (SQLException e) {
+        e.printStackTrace();
     }
+    return history;
+}
 }

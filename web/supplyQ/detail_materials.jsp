@@ -64,7 +64,6 @@
         <div class="container mt-3">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="#">Trang chủ</a></li>
                     <li class="breadcrumb-item"><a href="SearchMaterialServlet">Kho vật tư</a></li>
                     <li class="breadcrumb-item active" aria-current="page">${i.name}</li>
                 </ol>
@@ -109,16 +108,16 @@
                                     <span class="stat-label">Đơn vị tính</span>
                                     <span class="stat-value">${material.unit}</span>
                                 </li>
-                                
 
-                                
+
+
 
                             </ul>
 
-                            <div class="d-grid gap-2">
+<!--                            <div class="d-grid gap-2">
                                 <button class="btn btn-primary"><i class="bi bi-pencil-square"></i> Cập nhật</button>
                                 <button class="btn btn-outline-danger"><i class="bi bi-trash"></i> Tạm Ngưng</button>
-                            </div>
+                            </div>-->
                         </div>
                     </div>
                 </div>
@@ -151,27 +150,24 @@
                                     <p>${material.description}</p>
 
                                     <div class="row mt-4">
-                                        
-                                            <div class="alert alert-light border">
-                                                <h6><i class="bi bi-geo-alt"></i> Vị trí kho</h6>
-                                                <c:forEach var="inv" items="${inventories}">
-                                                    <div>
-                                                        ${inv.warehouse.name} - ${inv.warehouse.location} : ${inv.quantity} ${inv.unit}
-                                                    </div>
-                                                </c:forEach>
-                                            </div>
 
-                                       
-                                        
+                                        <div class="alert alert-light border">
+                                            <h6><i class="bi bi-geo-alt"></i> Vị trí kho</h6>
+                                            <c:forEach var="inv" items="${inventories}">
+                                                <div>
+                                                    ${inv.warehouse.name} - ${inv.warehouse.location} : ${inv.quantity} ${inv.unit}
+                                                </div>
+                                            </c:forEach>
+                                        </div>
+
+
+
                                     </div>
                                 </div>
 
                                 <div class="tab-pane fade" id="inbound-pane" role="tabpanel">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <h5 class="mb-0 text-success">Nhật ký nhập từ Nhà cung cấp</h5>
-                                        <div class="btn-group">
-                                            <button class="btn btn-sm btn-outline-success">Xuất Excel</button>
-                                        </div>
                                     </div>
 
                                     <div class="table-responsive">
@@ -180,52 +176,37 @@
                                                 <tr>
                                                     <th>Ngày nhập</th>
                                                     <th>Phiếu nhập</th>
-                                                    <th>Nhà cung cấp (Partner)</th>
-                                                    <th>Hợp đồng nhập (Contract)</th>
+                                                    <th>Nhà cung cấp</th>
+                                                    <th>Hợp đồng nhập</th>
                                                     <th class="text-center">Số lượng</th>
-                                                    <th class="text-end">Giá vốn/Đơn vị</th>
-                                                </tr>
+                                                    <th class="text-center">ĐVT</th>
+                                                    <th class="text-end">Giá vốn/Đơn vị</th>                                                </tr>
                                             </thead>
                                             <tbody>
-                                                <tr>
-                                                    <td>10/05/2024</td>
-                                                    <td><a href="#" class="fw-bold text-dark">PN-2024-001</a></td>
-                                                    <td>Cty VTNN Bình Điền</td>
-                                                    <td>
-                                                        <a href="contract-detail.jsp?id=5" class="badge contract-badge-in p-2">
-                                                            <i class="bi bi-file-earmark-check"></i> HĐ-MUA-BD01
-                                                        </a>
-                                                        <div class="small text-muted mt-1">HĐ Cung ứng vật tư 2024</div>
-                                                    </td>
-                                                    <td class="text-center text-success fw-bold">+ 200</td>
-                                                    <td class="text-end">820,000 đ</td>
-                                                </tr>
-
-                                                <tr>
-                                                    <td>01/04/2024</td>
-                                                    <td><a href="#" class="fw-bold text-dark">PN-2024-005</a></td>
-                                                    <td>Đại lý Cấp 1 An Giang</td>
-                                                    <td>
-                                                        <span class="badge bg-secondary bg-opacity-25 text-dark border">
-                                                            <i class="bi bi-shop"></i> Mua lẻ/Ngoài HĐ
-                                                        </span>
-                                                    </td>
-                                                    <td class="text-center text-success fw-bold">+ 50</td>
-                                                    <td class="text-end">850,000 đ</td>
-                                                </tr>
-
-                                                <tr>
-                                                    <td>15/03/2024</td>
-                                                    <td><a href="#" class="fw-bold text-dark">PN-2024-008</a></td>
-                                                    <td>Tập đoàn Lộc Trời</td>
-                                                    <td>
-                                                        <a href="contract-detail.jsp?id=8" class="badge contract-badge-in p-2">
-                                                            <i class="bi bi-file-earmark-check"></i> HĐ-LT-2024
-                                                        </a>
-                                                    </td>
-                                                    <td class="text-center text-success fw-bold">+ 100</td>
-                                                    <td class="text-end">830,000 đ</td>
-                                                </tr>
+                                                <c:forEach var="item" items="${inboundHistory}">
+                                                    <tr>
+                                                        <td><fmt:formatDate value="${item.receipt_date}" pattern="dd/MM/yyyy"/></td>
+                                                        <td><span class="fw-bold text-dark">${item.receipt_code}</span></td>
+                                                        <td>${item.partner_name}</td>
+                                                        <td>
+                                                            <c:choose>
+                                                                <c:when test="${not empty item.contract_code}">
+                                                                    <a href="ContractDetailServlet?id=${item.contract_id}" class="badge contract-badge-in p-2">
+                                                                        <i class="bi bi-file-earmark-check"></i> ${item.contract_code}
+                                                                    </a>
+                                                                </c:when>
+                                                                <c:otherwise>
+                                                                    <span class="badge bg-secondary bg-opacity-25 text-dark border small">Mua lẻ</span>
+                                                                </c:otherwise>
+                                                            </c:choose>
+                                                        </td>
+                                                        <td class="text-center text-success fw-bold">+ ${item.quantity}</td>
+                                                        <td class="text-center text-muted">${item.unit}</td> 
+                                                        <td class="text-end"><fmt:formatNumber value="${item.unit_price}" pattern="#,###"/> đ</td>                                                    </tr>
+                                                    </c:forEach>
+                                                    <c:if test="${empty inboundHistory}">
+                                                    <tr><td colspan="6" class="text-center text-muted">Chưa có lịch sử nhập hàng cho vật tư này.</td></tr>
+                                                </c:if>
                                             </tbody>
                                         </table>
                                     </div>
@@ -234,10 +215,6 @@
                                 <div class="tab-pane fade" id="outbound-pane" role="tabpanel">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <h5 class="mb-0 text-danger">Nhật ký cung ứng cho Thành viên</h5>
-                                        <div class="btn-group">
-                                            <button class="btn btn-sm btn-outline-secondary">Tất cả</button>
-                                            <button class="btn btn-sm btn-outline-secondary">Có hợp đồng</button>
-                                        </div>
                                     </div>
 
                                     <div class="table-responsive">
@@ -245,40 +222,38 @@
                                             <thead class="table-light">
                                                 <tr>
                                                     <th>Ngày</th>
-                                                    <th>Đơn hàng (SO)</th>
-                                                    <th>Thành viên (Member)</th>
-                                                    <th>Hợp đồng bao tiêu (Contract)</th>
+                                                    <th>Mã cung ứng</th>
+                                                    <th>Thành viên</th>
+                                                    <th>Hợp đồng</th>
                                                     <th class="text-center">Số lượng</th>
-                                                    <th class="text-end">Giá bán</th>
-                                                </tr>
+                                                    <th class="text-center">ĐVT</th> 
+                                                    <th class="text-end">Giá bán</th>                                                </tr>
                                             </thead>
                                             <tbody>
-                                                <tr>
-                                                    <td>22/05/2024</td>
-                                                    <td><a href="#" class="fw-bold text-dark">SO-2024-050</a></td>
-                                                    <td>Nguyễn Văn A</td>
-                                                    <td>
-                                                        <a href="contract-detail.jsp?id=10" class="badge contract-badge-out p-2">
-                                                            <i class="bi bi-file-earmark-text"></i> HĐ-LUA-01
-                                                        </a>
-                                                        <div class="small text-muted mt-1">HĐ Bao tiêu lúa</div>
-                                                    </td>
-                                                    <td class="text-center text-danger fw-bold">- 20</td>
-                                                    <td class="text-end">850,000 đ</td>
-                                                </tr>
-
-                                                <tr>
-                                                    <td>20/05/2024</td>
-                                                    <td><a href="#" class="fw-bold text-dark">SO-2024-048</a></td>
-                                                    <td>Trần Thị B</td>
-                                                    <td>
-                                                        <span class="badge bg-secondary bg-opacity-25 text-dark border">
-                                                            <i class="bi bi-cart"></i> Mua lẻ
-                                                        </span>
-                                                    </td>
-                                                    <td class="text-center text-danger fw-bold">- 5</td>
-                                                    <td class="text-end">880,000 đ</td>
-                                                </tr>
+                                                <c:forEach var="item" items="${outboundHistory}">
+                                                    <tr>
+                                                        <td><fmt:formatDate value="${item.supply_date}" pattern="dd/MM/yyyy"/></td>
+                                                        <td><span class="fw-bold text-dark">${item.supply_code}</span></td>
+                                                        <td>${item.member_name}</td>
+                                                        <td>
+                                                            <c:choose>
+                                                                <c:when test="${not empty item.contract_code}">
+                                                                    <a href="ContractDetailServlet?id=${item.contract_id}" class="badge contract-badge-out p-2">
+                                                                        <i class="bi bi-file-earmark-text"></i> ${item.contract_code}
+                                                                    </a>
+                                                                </c:when>
+                                                                <c:otherwise>
+                                                                    <span class="badge bg-secondary bg-opacity-25 text-dark border small">Cấp lẻ</span>
+                                                                </c:otherwise>
+                                                            </c:choose>
+                                                        </td>
+                                                        <td class="text-center text-danger fw-bold">- ${item.quantity}</td>
+                                                        <td class="text-center text-muted">${item.unit}</td> 
+                                                        <td class="text-end"><fmt:formatNumber value="${item.unit_price}" pattern="#,###"/> đ</td>                                                    </tr>
+                                                    </c:forEach>
+                                                    <c:if test="${empty outboundHistory}">
+                                                    <tr><td colspan="6" class="text-center text-muted">Chưa có lịch sử cung ứng cho vật tư này.</td></tr>
+                                                </c:if>
                                             </tbody>
                                         </table>
                                     </div>

@@ -21,6 +21,7 @@ import jakarta.servlet.http.HttpSession;
  * @author Admin
  */
 public class SearchMemberServlet extends HttpServlet {
+
     private final Gson gson = new Gson();
 
     /**
@@ -65,17 +66,20 @@ public class SearchMemberServlet extends HttpServlet {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
 
-        HttpSession session = request.getSession();
+        // 1. Lấy Session hiện tại (dùng false để không tạo session mới nếu đã hết hạn)
+        HttpSession session = request.getSession(false);
 
-        // 1. Lấy thông tin người dùng hiện tại từ Session
+// 2. Kiểm tra nếu session không tồn tại hoặc thông tin đăng nhập bị trống
+        if (session == null || session.getAttribute("id") == null) {
+            // Chuyển hướng về trang login.jsp (sử dụng getContextPath để đảm bảo đường dẫn đúng)
+            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            return; // Dừng xử lý các lệnh phía dưới
+        }
+
+// 3. Nếu session hợp lệ, tiếp tục lấy thông tin
         Integer currentUserId = (Integer) session.getAttribute("id");
         Integer memberType = (Integer) session.getAttribute("member_type");
         Integer userCoopId = (Integer) session.getAttribute("coop_id");
-
-        if (currentUserId == null) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
-        }
 
         // 2. LOGIC XÁC ĐỊNH COOP_ID MỤC TIÊU
         int targetCoopId = 0;
@@ -102,27 +106,27 @@ public class SearchMemberServlet extends HttpServlet {
         response.getWriter().write(json);
     }
 
-
-/**
- * Handles the HTTP <code>POST</code> method.
- *
- * @param request servlet request
- * @param response servlet response
- * @throws ServletException if a servlet-specific error occurs
- * @throws IOException if an I/O error occurs
- */
-@Override
-protected void doPost(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
+    /**
+     * Handles the HTTP <code>POST</code> method.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
         processRequest(request, response);
     }
 
-    /** 
+    /**
      * Returns a short description of the servlet.
+     *
      * @return a String containing servlet description
      */
     @Override
-public String getServletInfo() {
+    public String getServletInfo() {
         return "Short description";
     }// </editor-fold>
 

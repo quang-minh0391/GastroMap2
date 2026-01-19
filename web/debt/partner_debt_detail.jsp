@@ -52,8 +52,8 @@
                                     <th style="width: 15%;">Ngày giao dịch</th>
                                     <th style="width: 15%;">Mã chứng từ</th>
                                     <th style="width: 25%;">Nội dung / Ghi chú</th>
-                                    <th style="width: 12%;" class="text-end">Phát sinh tăng</th>
-                                    <th style="width: 12%;" class="text-end">Phát sinh giảm</th>
+                                    <th style="width: 12%;" class="text-end">HTX nợ thêm</th>
+                                    <th style="width: 12%;" class="text-end">HTX trả nợ</th>
                                     <th style="width: 12%;" class="text-end">Số dư cuối</th>
                                     <th style="width: 9%;">Minh chứng</th>
                                 </tr>
@@ -70,16 +70,16 @@
                                             <div class="small text-muted">${item.note}</div>
                                         </td>
 
-                                        <%-- PHÁT SINH TĂNG: Hiển thị nếu là DEBIT (+) --%>
+                                        <%-- Cột 4: HTX NỢ THÊM (Chỉ hiện các loại phiếu Nhập hàng) --%>
                                         <td class="text-end text-danger fw-bold">
-                                            <c:if test="${item.entry == 'DEBIT'}">
+                                            <c:if test="${item.type == 'MATERIAL_RECEIPT' || item.type == 'FARM_PURCHASE'}">
                                                 +<fmt:formatNumber value="${item.amount}" pattern="#,###"/>
                                             </c:if>
                                         </td>
 
-                                        <%-- PHÁT SINH GIẢM: Hiển thị nếu là CREDIT (-) --%>
+                                        <%-- Cột 5: HTX TRẢ NỢ (Chỉ hiện các loại phiếu Chi tiền/Thanh toán) --%>
                                         <td class="text-end text-success fw-bold">
-                                            <c:if test="${item.entry == 'CREDIT'}">
+                                            <c:if test="${item.type == 'CASH_PAYMENT' || item.type == 'CASH_RECEIPT'}">
                                                 -<fmt:formatNumber value="${item.amount}" pattern="#,###"/>
                                             </c:if>
                                         </td>
