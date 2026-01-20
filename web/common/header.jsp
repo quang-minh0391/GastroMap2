@@ -109,6 +109,10 @@
                        href="${pageContext.request.contextPath}/purchase/purchase_receipt.jsp">
                         <i class="bi bi-cash-stack me-2"></i> Thu mua sản phẩm
                     </a>
+                        <a class="nav-link w-100 <%= (currentUri.contains("contractManager")) ? "active" : "" %>" 
+   href="${pageContext.request.contextPath}/contractManager?service=list">
+    <i class="bi bi-file-earmark-text-fill me-2"></i> Quản lý Hợp đồng
+</a>
                 </div>
             </nav>
 
