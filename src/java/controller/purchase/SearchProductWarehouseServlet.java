@@ -28,7 +28,7 @@ public class SearchProductWarehouseServlet extends HttpServlet {
         // 2. Lấy Session và xác định coop_id
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("id") == null) {
-            response.getWriter().write("[]");
+            response.sendRedirect(request.getContextPath() + "/login/login.jsp");
             return;
         }
 

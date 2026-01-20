@@ -68,7 +68,7 @@ public class SearchMaterialServlet extends HttpServlet {
 
         // 1. Kiểm tra đăng nhập và điều hướng tuyệt đối nếu session hết hạn
         if (session == null || session.getAttribute("id") == null) {
-            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            response.sendRedirect("login/login.jsp");
             return;
         }
 

@@ -20,7 +20,7 @@ public class CreateMaterialSupplyServlet extends HttpServlet {
         Integer staffId = (Integer) session.getAttribute("id");
 
         if (staffId == null) {
-            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            response.sendRedirect("login/login.jsp");
             return;
         }
 

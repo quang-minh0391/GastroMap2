@@ -19,7 +19,7 @@ public class CreatePurchaseReceiptServlet extends HttpServlet {
         
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("id") == null) {
-            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            response.sendRedirect(request.getContextPath() + "/login/login.jsp");
             return;
         }
 

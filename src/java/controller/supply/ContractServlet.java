@@ -21,7 +21,7 @@ public class ContractServlet extends HttpServlet {
     
     // 1. Kiểm tra đăng nhập để tránh lỗi 500
     if (session == null || session.getAttribute("id") == null) {
-        response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+            response.sendRedirect("login/login.jsp");
         return;
     }
 

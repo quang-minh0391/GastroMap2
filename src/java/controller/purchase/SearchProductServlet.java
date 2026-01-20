@@ -26,7 +26,7 @@ public class SearchProductServlet extends HttpServlet {
     HttpSession session = request.getSession(false);
     // 1. Kiểm tra quyền truy cập
     if (session == null || session.getAttribute("id") == null) {
-        response.getWriter().write("[]");
+            response.sendRedirect(request.getContextPath() + "/login/login.jsp");
         return;
     }
 

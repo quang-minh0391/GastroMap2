@@ -72,7 +72,7 @@ public class SearchMemberServlet extends HttpServlet {
 // 2. Kiểm tra nếu session không tồn tại hoặc thông tin đăng nhập bị trống
         if (session == null || session.getAttribute("id") == null) {
             // Chuyển hướng về trang login.jsp (sử dụng getContextPath để đảm bảo đường dẫn đúng)
-            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            response.sendRedirect("login/login.jsp");
             return; // Dừng xử lý các lệnh phía dưới
         }
 

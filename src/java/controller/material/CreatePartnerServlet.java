@@ -35,7 +35,7 @@ public class CreatePartnerServlet extends HttpServlet {
     
     // 2. Kiểm tra Session và điều hướng tuyệt đối nếu hết hạn
     if (session == null || session.getAttribute("id") == null) {
-        response.sendRedirect(request.getContextPath() + "/login.jsp");
+            response.sendRedirect(request.getContextPath() + "/login/login.jsp");
         return;
     }
 

@@ -32,7 +32,7 @@ public class CreateWarehouseServlet extends HttpServlet {
 
         // 2. Kiểm tra đăng nhập và điều hướng tuyệt đối nếu Session hết hạn
         if (session == null || session.getAttribute("id") == null) {
-            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            response.sendRedirect(request.getContextPath() + "/login/login.jsp");
             return;
         }
 

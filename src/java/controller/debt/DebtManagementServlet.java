@@ -18,7 +18,8 @@ public class DebtManagementServlet extends HttpServlet {
             throws ServletException, IOException {
         HttpSession session = request.getSession();
         Integer coopId = (Integer) session.getAttribute("id");
-        if (coopId == null) { response.sendRedirect(request.getContextPath() + "/login.jsp"); return; }
+        if (coopId == null) {             response.sendRedirect("login/login.jsp");
+ return; }
 
         DebtDAO dao = new DebtDAO();
         request.setAttribute("memberDebts", dao.getMemberDebtList(coopId));

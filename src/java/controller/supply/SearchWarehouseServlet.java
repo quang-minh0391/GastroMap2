@@ -79,7 +79,7 @@ public class SearchWarehouseServlet extends HttpServlet {
         // 1. Lấy session và kiểm tra đăng nhập
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("id") == null) {
-            response.getWriter().write("[]");
+            response.sendRedirect("login/login.jsp");
             return;
         }
 
