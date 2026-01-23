@@ -191,7 +191,7 @@
                                                         <td>
                                                             <c:choose>
                                                                 <c:when test="${not empty item.contract_code}">
-                                                                    <a href="ContractDetailServlet?id=${item.contract_id}" class="badge contract-badge-in p-2">
+                                                                    <a href="${pageContext.request.contextPath}/contractManager" class="badge contract-badge-in p-2">
                                                                         <i class="bi bi-file-earmark-check"></i> ${item.contract_code}
                                                                     </a>
                                                                 </c:when>
@@ -238,7 +238,7 @@
                                                         <td>
                                                             <c:choose>
                                                                 <c:when test="${not empty item.contract_code}">
-                                                                    <a href="ContractDetailServlet?id=${item.contract_id}" class="badge contract-badge-out p-2">
+                                                                    <a href="${pageContext.request.contextPath}/contractManager" class="badge contract-badge-out p-2">
                                                                         <i class="bi bi-file-earmark-text"></i> ${item.contract_code}
                                                                     </a>
                                                                 </c:when>
