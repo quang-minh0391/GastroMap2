@@ -82,10 +82,21 @@
                                 </c:choose>
                             </td>
                             <td class="text-center">
-                                <a href="${pageContext.request.contextPath}/production-batches?action=view&id=${batch.id}" 
-                                   class="btn btn-sm btn-outline-primary" title="Xem">👁️</a>
-                                <a href="${pageContext.request.contextPath}/qr-codes?action=generate&batchId=${batch.id}" 
-                                   class="btn btn-sm btn-outline-success" title="Tạo QR">📱</a>
+                                <div class="btn-group" role="group">
+                                    <a href="${pageContext.request.contextPath}/production-batches?action=view&id=${batch.id}" 
+                                       class="btn btn-sm btn-outline-primary" title="Xem">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="${pageContext.request.contextPath}/qr-codes?action=generate&batchId=${batch.id}" 
+                                       class="btn btn-sm btn-outline-success" title="Tạo QR">
+                                        <i class="bi bi-qr-code"></i>
+                                    </a>
+                                    <a href="${pageContext.request.contextPath}/production-batches?action=delete&id=${batch.id}" 
+                                       class="btn btn-sm btn-outline-danger" title="Xóa"
+                                       onclick="return confirm('Bạn có chắc muốn xóa lô sản xuất này?')">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                     </c:forEach>

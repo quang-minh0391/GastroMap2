@@ -7,6 +7,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
 
@@ -125,6 +126,10 @@ public class FarmProductController extends HttpServlet {
 
     private void handleSave(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Lấy user ID từ session để lưu createdBy
+        HttpSession session = request.getSession();
+        Integer userId = (Integer) session.getAttribute("id");
+        
         String name = request.getParameter("name");
         String unit = request.getParameter("unit");
         String description = request.getParameter("description");
@@ -141,6 +146,7 @@ public class FarmProductController extends HttpServlet {
         product.setUnit(unit != null && !unit.isEmpty() ? unit.trim() : "kg");
         product.setDescription(description != null ? description.trim() : null);
         product.setStatus(status != null && !status.isEmpty() ? status : "ACTIVE");
+        product.setCreatedBy(userId); // Lưu người tạo
 
         DAOFarmProduct dao = new DAOFarmProduct();
         boolean success = dao.insert(product);

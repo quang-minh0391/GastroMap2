@@ -66,13 +66,21 @@
                                 </c:choose>
                             </td>
                             <td class="text-center">
-                                <a href="${pageContext.request.contextPath}/batch-inventory?warehouseId=${warehouse.id}" 
-                                   class="btn btn-sm btn-outline-info" title="Xem tồn kho">📊</a>
-                                <a href="${pageContext.request.contextPath}/warehouses?action=edit&id=${warehouse.id}" 
-                                   class="btn btn-sm btn-outline-primary" title="Sửa">✏️</a>
-                                <a href="${pageContext.request.contextPath}/warehouses?action=delete&id=${warehouse.id}" 
-                                   class="btn btn-sm btn-outline-danger" title="Xóa"
-                                   onclick="return confirm('Bạn có chắc muốn xóa kho này?')">🗑️</a>
+                                <div class="btn-group" role="group">
+                                    <a href="${pageContext.request.contextPath}/batch-inventory?warehouseId=${warehouse.id}" 
+                                       class="btn btn-sm btn-outline-info" title="Xem tồn kho">
+                                        <i class="bi bi-bar-chart"></i>
+                                    </a>
+                                    <a href="${pageContext.request.contextPath}/warehouses?action=edit&id=${warehouse.id}" 
+                                       class="btn btn-sm btn-outline-primary" title="Sửa">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="${pageContext.request.contextPath}/warehouses?action=delete&id=${warehouse.id}" 
+                                       class="btn btn-sm btn-outline-danger" title="Xóa"
+                                       onclick="return confirm('Bạn có chắc muốn xóa kho này?')">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                     </c:forEach>

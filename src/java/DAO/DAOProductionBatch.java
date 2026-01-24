@@ -157,6 +157,21 @@ public class DAOProductionBatch extends DBContext {
         return false;
     }
 
+    public boolean delete(Integer id) {
+        String sql = "DELETE FROM production_batches WHERE id = ?";
+        PreparedStatement ps = null;
+        try {
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, id);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeResources(null, ps, null);
+        }
+        return false;
+    }
+
     public List<ProductionBatch> getPaginated(int page, int pageSize) {
         List<ProductionBatch> list = new ArrayList<>();
         String sql = "SELECT * FROM production_batches ORDER BY id DESC LIMIT ? OFFSET ?";

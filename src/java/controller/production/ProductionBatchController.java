@@ -40,6 +40,9 @@ public class ProductionBatchController extends HttpServlet {
             case "view":
                 handleView(request, response);
                 break;
+            case "delete":
+                handleDelete(request, response);
+                break;
             default:
                 handleList(request, response);
         }
@@ -208,6 +211,30 @@ public class ProductionBatchController extends HttpServlet {
             request.setAttribute("error", "Định dạng ngày không hợp lệ (YYYY-MM-DD)");
             showCreateForm(request, response);
         }
+    }
+
+    private void handleDelete(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String idStr = request.getParameter("id");
+        if (idStr == null || idStr.isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/production-batches?action=list");
+            return;
+        }
+
+        try {
+            Integer id = Integer.parseInt(idStr);
+            DAOProductionBatch dao = new DAOProductionBatch();
+            boolean success = dao.delete(id);
+
+            if (success) {
+                request.setAttribute("success", "Xóa lô sản xuất thành công");
+            } else {
+                request.setAttribute("error", "Xóa lô sản xuất thất bại. Lô có thể đang được sử dụng (có QR code hoặc tồn kho).");
+            }
+        } catch (NumberFormatException e) {
+            request.setAttribute("error", "ID không hợp lệ");
+        }
+        handleList(request, response);
     }
 }
 
