@@ -540,7 +540,34 @@ public class DAOMember1 extends DBContext {
         }
         return false;
     }
+    // 1. Kiểm tra mật khẩu cũ (Phải băm mật khẩu nhập vào rồi mới so sánh với DB)
+public boolean checkOldPassword(int id, String oldPassword) {
+    String sql = "SELECT * FROM members WHERE id = ? AND password = ?";
+    try {
+        PreparedStatement pre = conn.prepareStatement(sql);
+        pre.setInt(1, id);
+        // Dùng hàm hashPassword có sẵn trong DAO của bạn
+        pre.setString(2, hashPassword(oldPassword)); 
+        ResultSet rs = pre.executeQuery();
+        return rs.next(); // Nếu trả về true tức là mật khẩu cũ khớp
+    } catch (SQLException ex) {
+        ex.printStackTrace();
+    }
+    return false;
+}
 
+// 2. Cập nhật mật khẩu mới (Mật khẩu mới cũng được băm trước khi lưu)
+public boolean changePassword(int id, String newPassword) {
+    String sql = "UPDATE members SET password = ? WHERE id = ?";
+    try (PreparedStatement pre = conn.prepareStatement(sql)) {
+        pre.setString(1, hashPassword(newPassword)); // Mã hóa ở đây
+        pre.setInt(2, id);
+        return pre.executeUpdate() > 0;
+    } catch (SQLException ex) {
+        ex.printStackTrace();
+    }
+    return false;
+}
     public List<member> searchMembersByCoop(int coopId, String keyword) {
         List<member> list = new ArrayList<>();
 
