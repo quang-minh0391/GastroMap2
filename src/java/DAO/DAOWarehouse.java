@@ -207,4 +207,45 @@ public class DAOWarehouse extends DBContext {
         }
         return list;
     }
+
+    public List<StorageWarehouse> getPaginatedByCoopId(int page, int pageSize, Integer coopId) {
+        List<StorageWarehouse> list = new ArrayList<>();
+        String sql = "SELECT * FROM storage_warehouses WHERE coop_id = ? ORDER BY id DESC LIMIT ? OFFSET ?";
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, coopId);
+            ps.setInt(2, pageSize);
+            ps.setInt(3, (page - 1) * pageSize);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(getFromResultSet(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeResources(null, ps, rs);
+        }
+        return list;
+    }
+
+    public int countByCoopId(Integer coopId) {
+        String sql = "SELECT COUNT(*) FROM storage_warehouses WHERE coop_id = ?";
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, coopId);
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeResources(null, ps, rs);
+        }
+        return 0;
+    }
 }

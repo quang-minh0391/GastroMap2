@@ -7,6 +7,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
 
@@ -66,6 +67,13 @@ public class WarehouseController extends HttpServlet {
 
     private void handleList(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Lấy coop_id từ session
+        HttpSession session = request.getSession();
+        Integer coopId = (Integer) session.getAttribute("coop_id");
+        if (coopId == null || coopId == 0) {
+            coopId = (Integer) session.getAttribute("id"); // Tài khoản HTX (Type 2) dùng chính ID của mình
+        }
+        
         int page = 1;
         int pageSize = 10;
 
@@ -80,8 +88,19 @@ public class WarehouseController extends HttpServlet {
         }
 
         DAOWarehouse dao = new DAOWarehouse();
-        List<StorageWarehouse> list = dao.getPaginated(page, pageSize);
-        int totalRecords = dao.countAll();
+        List<StorageWarehouse> list;
+        int totalRecords;
+        
+        if (coopId != null) {
+            // Lọc theo coop_id
+            list = dao.getPaginatedByCoopId(page, pageSize, coopId);
+            totalRecords = dao.countByCoopId(coopId);
+        } else {
+            // Nếu không có coop_id, hiển thị tất cả (cho admin)
+            list = dao.getPaginated(page, pageSize);
+            totalRecords = dao.countAll();
+        }
+        
         int totalPages = (int) Math.ceil((double) totalRecords / pageSize);
 
         request.setAttribute("warehouseList", list);
@@ -125,6 +144,19 @@ public class WarehouseController extends HttpServlet {
 
     private void handleSave(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Lấy coop_id từ session
+        HttpSession session = request.getSession();
+        Integer coopId = (Integer) session.getAttribute("coop_id");
+        if (coopId == null || coopId == 0) {
+            coopId = (Integer) session.getAttribute("id"); // Tài khoản HTX (Type 2) dùng chính ID của mình
+        }
+        
+        if (coopId == null) {
+            request.setAttribute("error", "Không xác định được HTX. Vui lòng đăng nhập lại.");
+            request.getRequestDispatcher("/production/warehouses/create.jsp").forward(request, response);
+            return;
+        }
+        
         String name = request.getParameter("name");
         String location = request.getParameter("location");
         String description = request.getParameter("description");
@@ -139,6 +171,7 @@ public class WarehouseController extends HttpServlet {
         warehouse.setName(name.trim());
         warehouse.setLocation(location != null ? location.trim() : null);
         warehouse.setDescription(description != null ? description.trim() : null);
+        warehouse.setCoopId(coopId);
 
         DAOWarehouse dao = new DAOWarehouse();
         boolean success = dao.insert(warehouse);
@@ -153,6 +186,13 @@ public class WarehouseController extends HttpServlet {
 
     private void handleUpdate(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Lấy coop_id từ session
+        HttpSession session = request.getSession();
+        Integer coopId = (Integer) session.getAttribute("coop_id");
+        if (coopId == null || coopId == 0) {
+            coopId = (Integer) session.getAttribute("id"); // Tài khoản HTX (Type 2) dùng chính ID của mình
+        }
+        
         String idStr = request.getParameter("id");
         String name = request.getParameter("name");
         String location = request.getParameter("location");
@@ -171,6 +211,7 @@ public class WarehouseController extends HttpServlet {
             warehouse.setName(name.trim());
             warehouse.setLocation(location != null ? location.trim() : null);
             warehouse.setDescription(description != null ? description.trim() : null);
+            warehouse.setCoopId(coopId); // Cập nhật coopId
 
             DAOWarehouse dao = new DAOWarehouse();
             boolean success = dao.update(warehouse);
