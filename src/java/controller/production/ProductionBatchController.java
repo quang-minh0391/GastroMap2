@@ -11,6 +11,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.Date;
 import java.util.List;
@@ -68,6 +69,13 @@ public class ProductionBatchController extends HttpServlet {
 
     private void handleList(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Lấy coop_id từ session
+        HttpSession session = request.getSession();
+        Integer coopId = (Integer) session.getAttribute("coop_id");
+        if (coopId == null || coopId == 0) {
+            coopId = (Integer) session.getAttribute("id");
+        }
+        
         int page = 1;
         int pageSize = 10;
 
@@ -85,13 +93,25 @@ public class ProductionBatchController extends HttpServlet {
         DAOFarmProduct daoProduct = new DAOFarmProduct();
         DAOMember daoMember = new DAOMember();
 
-        List<ProductionBatch> list = dao.getPaginated(page, pageSize);
-        int totalRecords = dao.countAll();
+        List<ProductionBatch> list;
+        int totalRecords;
+        List<FarmProduct> products;
+        List<member> members;
+        
+        if (coopId != null) {
+            // Filter by coop_id
+            list = dao.getPaginatedByCoopId(page, pageSize, coopId);
+            totalRecords = dao.countByCoopId(coopId);
+            products = daoProduct.getActiveByCoopId(coopId);
+            members = daoMember.getAllByCoopId(coopId);
+        } else {
+            list = dao.getPaginated(page, pageSize);
+            totalRecords = dao.countAll();
+            products = daoProduct.getAll();
+            members = daoMember.getAll();
+        }
+        
         int totalPages = (int) Math.ceil((double) totalRecords / pageSize);
-
-        // Get product and member names for display
-        List<FarmProduct> products = daoProduct.getAll();
-        List<member> members = daoMember.getAll();
 
         request.setAttribute("batchList", list);
         request.setAttribute("productList", products);
@@ -105,12 +125,28 @@ public class ProductionBatchController extends HttpServlet {
 
     private void showCreateForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Lấy coop_id từ session
+        HttpSession session = request.getSession();
+        Integer coopId = (Integer) session.getAttribute("coop_id");
+        if (coopId == null || coopId == 0) {
+            coopId = (Integer) session.getAttribute("id");
+        }
+        
         DAOFarmProduct daoProduct = new DAOFarmProduct();
         DAOMember daoMember = new DAOMember();
         DAOProductionBatch daoBatch = new DAOProductionBatch();
 
-        List<FarmProduct> products = daoProduct.getActive();
-        List<member> members = daoMember.getAll();
+        List<FarmProduct> products;
+        List<member> members;
+        
+        if (coopId != null) {
+            products = daoProduct.getActiveByCoopId(coopId);
+            members = daoMember.getAllByCoopId(coopId);
+        } else {
+            products = daoProduct.getActive();
+            members = daoMember.getAll();
+        }
+        
         String suggestedBatchCode = daoBatch.generateBatchCode();
 
         request.setAttribute("productList", products);

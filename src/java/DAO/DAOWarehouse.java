@@ -248,4 +248,27 @@ public class DAOWarehouse extends DBContext {
         }
         return 0;
     }
+    
+    /**
+     * Get all warehouses belonging to a cooperative
+     */
+    public List<StorageWarehouse> getAllByCoopId(Integer coopId) {
+        List<StorageWarehouse> list = new ArrayList<>();
+        String sql = "SELECT * FROM storage_warehouses WHERE coop_id = ? ORDER BY name";
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, coopId);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(getFromResultSet(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeResources(null, ps, rs);
+        }
+        return list;
+    }
 }

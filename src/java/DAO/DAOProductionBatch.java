@@ -230,5 +230,114 @@ public class DAOProductionBatch extends DBContext {
         }
         return prefix + "000001";
     }
+    
+    /**
+     * Get paginated batches by cooperative ID
+     * Batches are linked to coop through member_id -> members.coop_id
+     */
+    public List<ProductionBatch> getPaginatedByCoopId(int page, int pageSize, Integer coopId) {
+        List<ProductionBatch> list = new ArrayList<>();
+        String sql = "SELECT pb.* FROM production_batches pb " +
+                     "INNER JOIN members m ON pb.member_id = m.id " +
+                     "WHERE m.coop_id = ? OR m.id = ? " +
+                     "ORDER BY pb.id DESC LIMIT ? OFFSET ?";
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, coopId);
+            ps.setInt(2, coopId); // For coop account (member_type = 2), member_id might be coop's own id
+            ps.setInt(3, pageSize);
+            ps.setInt(4, (page - 1) * pageSize);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(getFromResultSet(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeResources(null, ps, rs);
+        }
+        return list;
+    }
+    
+    /**
+     * Count batches by cooperative ID
+     */
+    public int countByCoopId(Integer coopId) {
+        String sql = "SELECT COUNT(*) FROM production_batches pb " +
+                     "INNER JOIN members m ON pb.member_id = m.id " +
+                     "WHERE m.coop_id = ? OR m.id = ?";
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, coopId);
+            ps.setInt(2, coopId);
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeResources(null, ps, rs);
+        }
+        return 0;
+    }
+    
+    /**
+     * Get all batches by cooperative ID
+     */
+    public List<ProductionBatch> getAllByCoopId(Integer coopId) {
+        List<ProductionBatch> list = new ArrayList<>();
+        String sql = "SELECT pb.* FROM production_batches pb " +
+                     "INNER JOIN members m ON pb.member_id = m.id " +
+                     "WHERE m.coop_id = ? OR m.id = ? " +
+                     "ORDER BY pb.id DESC";
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, coopId);
+            ps.setInt(2, coopId);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(getFromResultSet(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeResources(null, ps, rs);
+        }
+        return list;
+    }
+    
+    /**
+     * Get available batches by cooperative ID
+     */
+    public List<ProductionBatch> getAvailableByCoopId(Integer coopId) {
+        List<ProductionBatch> list = new ArrayList<>();
+        String sql = "SELECT pb.* FROM production_batches pb " +
+                     "INNER JOIN members m ON pb.member_id = m.id " +
+                     "WHERE pb.status = 'AVAILABLE' AND (m.coop_id = ? OR m.id = ?) " +
+                     "ORDER BY pb.batch_code";
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, coopId);
+            ps.setInt(2, coopId);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(getFromResultSet(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeResources(null, ps, rs);
+        }
+        return list;
+    }
 }
 

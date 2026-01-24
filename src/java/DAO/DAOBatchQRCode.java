@@ -221,5 +221,89 @@ public class DAOBatchQRCode extends DBContext {
     public String generateQRValue(Integer batchId) {
         return "QR-" + batchId + "-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
     }
+    
+    /**
+     * Get paginated QR codes by cooperative ID (through batch -> member -> coop)
+     */
+    public List<BatchQRCode> getPaginatedByCoopId(int page, int pageSize, Integer coopId) {
+        List<BatchQRCode> list = new ArrayList<>();
+        String sql = "SELECT qr.* FROM batch_qr_codes qr " +
+                     "INNER JOIN production_batches pb ON qr.batch_id = pb.id " +
+                     "INNER JOIN members m ON pb.member_id = m.id " +
+                     "WHERE m.coop_id = ? OR m.id = ? " +
+                     "ORDER BY qr.created_at DESC LIMIT ? OFFSET ?";
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, coopId);
+            ps.setInt(2, coopId);
+            ps.setInt(3, pageSize);
+            ps.setInt(4, (page - 1) * pageSize);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(getFromResultSet(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeResources(null, ps, rs);
+        }
+        return list;
+    }
+    
+    /**
+     * Count QR codes by cooperative ID
+     */
+    public int countByCoopId(Integer coopId) {
+        String sql = "SELECT COUNT(*) FROM batch_qr_codes qr " +
+                     "INNER JOIN production_batches pb ON qr.batch_id = pb.id " +
+                     "INNER JOIN members m ON pb.member_id = m.id " +
+                     "WHERE m.coop_id = ? OR m.id = ?";
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, coopId);
+            ps.setInt(2, coopId);
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeResources(null, ps, rs);
+        }
+        return 0;
+    }
+    
+    /**
+     * Get all QR codes by batch IDs (for coop-filtered views)
+     */
+    public List<BatchQRCode> getAllByCoopId(Integer coopId) {
+        List<BatchQRCode> list = new ArrayList<>();
+        String sql = "SELECT qr.* FROM batch_qr_codes qr " +
+                     "INNER JOIN production_batches pb ON qr.batch_id = pb.id " +
+                     "INNER JOIN members m ON pb.member_id = m.id " +
+                     "WHERE m.coop_id = ? OR m.id = ? " +
+                     "ORDER BY qr.created_at DESC";
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, coopId);
+            ps.setInt(2, coopId);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(getFromResultSet(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeResources(null, ps, rs);
+        }
+        return list;
+    }
 }
 

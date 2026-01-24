@@ -187,43 +187,114 @@ public class DAOFarmProduct extends DBContext {
     }
     
     public List<FarmProduct> searchProducts(String keyword, int coopId) {
-    List<FarmProduct> list = new ArrayList<>();
-    // Tìm sản phẩm: 
-    // 1. Được tạo bởi HTX trực tiếp (created_by = coopId)
-    // 2. Hoặc được tạo bởi thành viên thuộc HTX đó
-    String sql = "SELECT DISTINCT p.id, p.name, p.unit, p.description, p.status " +
-                 "FROM farm_products p " +
-                 "LEFT JOIN members m ON p.created_by = m.id " +
-                 "WHERE p.name LIKE ? AND p.status = 'ACTIVE' " +
-                 "AND (p.created_by = ? OR m.coop_id = ?) " +
-                 "LIMIT 20";
-    
-    try {
-        if (conn != null) {
-            try (PreparedStatement ps = conn.prepareStatement(sql)) {
-                ps.setString(1, "%" + keyword + "%");
-                ps.setInt(2, coopId); // Sản phẩm tạo bởi HTX trực tiếp
-                ps.setInt(3, coopId); // Sản phẩm tạo bởi thành viên của HTX
-                
-                try (ResultSet rs = ps.executeQuery()) {
-                    while (rs.next()) {
-                        FarmProduct p = new FarmProduct();
-                        p.setId(rs.getInt("id"));
-                        p.setName(rs.getString("name"));
-                        p.setUnit(rs.getString("unit"));
-                        p.setDescription(rs.getString("description"));
-                        p.setStatus(rs.getString("status"));
-                        list.add(p);
+        List<FarmProduct> list = new ArrayList<>();
+        String sql = "SELECT DISTINCT p.* " +
+                     "FROM farm_products p " +
+                     "LEFT JOIN members m ON p.created_by = m.id " +
+                     "WHERE p.name LIKE ? AND p.status = 'ACTIVE' " +
+                     "AND (p.created_by = ? OR m.coop_id = ?) " +
+                     "LIMIT 20";
+        
+        try {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                    ps.setString(1, "%" + keyword + "%");
+                    ps.setInt(2, coopId);
+                    ps.setInt(3, coopId);
+                    
+                    try (ResultSet rs = ps.executeQuery()) {
+                        while (rs.next()) {
+                            list.add(getFromResultSet(rs));
+                        }
                     }
                 }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-    } catch (Exception e) {
-        e.printStackTrace();
+        return list;
     }
-    return list;
-}
     
+    /**
+     * Get paginated farm products by cooperative ID
+     * Returns products created by the coop or its members
+     */
+    public List<FarmProduct> getPaginatedByCoopId(int page, int pageSize, Integer coopId) {
+        List<FarmProduct> list = new ArrayList<>();
+        String sql = "SELECT DISTINCT p.* FROM farm_products p " +
+                     "LEFT JOIN members m ON p.created_by = m.id " +
+                     "WHERE p.created_by = ? OR m.coop_id = ? " +
+                     "ORDER BY p.id DESC LIMIT ? OFFSET ?";
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, coopId);
+            ps.setInt(2, coopId);
+            ps.setInt(3, pageSize);
+            ps.setInt(4, (page - 1) * pageSize);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(getFromResultSet(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeResources(null, ps, rs);
+        }
+        return list;
+    }
     
+    /**
+     * Count farm products by cooperative ID
+     */
+    public int countByCoopId(Integer coopId) {
+        String sql = "SELECT COUNT(DISTINCT p.id) FROM farm_products p " +
+                     "LEFT JOIN members m ON p.created_by = m.id " +
+                     "WHERE p.created_by = ? OR m.coop_id = ?";
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, coopId);
+            ps.setInt(2, coopId);
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeResources(null, ps, rs);
+        }
+        return 0;
+    }
+    
+    /**
+     * Get all active products by cooperative ID
+     */
+    public List<FarmProduct> getActiveByCoopId(Integer coopId) {
+        List<FarmProduct> list = new ArrayList<>();
+        String sql = "SELECT DISTINCT p.* FROM farm_products p " +
+                     "LEFT JOIN members m ON p.created_by = m.id " +
+                     "WHERE p.status = 'ACTIVE' AND (p.created_by = ? OR m.coop_id = ?) " +
+                     "ORDER BY p.name";
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, coopId);
+            ps.setInt(2, coopId);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(getFromResultSet(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeResources(null, ps, rs);
+        }
+        return list;
+    }
 }
 

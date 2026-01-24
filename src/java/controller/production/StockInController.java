@@ -13,6 +13,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.Date;
 import java.util.List;
@@ -64,6 +65,13 @@ public class StockInController extends HttpServlet {
 
     private void handleList(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Lấy coop_id từ session
+        HttpSession session = request.getSession();
+        Integer coopId = (Integer) session.getAttribute("coop_id");
+        if (coopId == null || coopId == 0) {
+            coopId = (Integer) session.getAttribute("id");
+        }
+        
         int page = 1;
         int pageSize = 10;
 
@@ -82,14 +90,28 @@ public class StockInController extends HttpServlet {
         DAOProductionBatch daoBatch = new DAOProductionBatch();
         DAOFarmProduct daoProduct = new DAOFarmProduct();
 
-        List<BatchStockIn> list = dao.getPaginated(page, pageSize);
-        int totalRecords = dao.countAll();
+        List<BatchStockIn> list;
+        int totalRecords;
+        List<StorageWarehouse> warehouses;
+        List<ProductionBatch> batches;
+        List<FarmProduct> products;
+        
+        if (coopId != null) {
+            // Filter by coop_id
+            list = dao.getPaginatedByCoopId(page, pageSize, coopId);
+            totalRecords = dao.countByCoopId(coopId);
+            warehouses = daoWarehouse.getAllByCoopId(coopId);
+            batches = daoBatch.getAllByCoopId(coopId);
+            products = daoProduct.getActiveByCoopId(coopId);
+        } else {
+            list = dao.getPaginated(page, pageSize);
+            totalRecords = dao.countAll();
+            warehouses = daoWarehouse.getAll();
+            batches = daoBatch.getAll();
+            products = daoProduct.getAll();
+        }
+        
         int totalPages = (int) Math.ceil((double) totalRecords / pageSize);
-
-        // Get warehouses and batches for display
-        List<StorageWarehouse> warehouses = daoWarehouse.getAll();
-        List<ProductionBatch> batches = daoBatch.getAll();
-        List<FarmProduct> products = daoProduct.getAll();
 
         request.setAttribute("stockInList", list);
         request.setAttribute("warehouseList", warehouses);
@@ -104,13 +126,30 @@ public class StockInController extends HttpServlet {
 
     private void showCreateForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Lấy coop_id từ session
+        HttpSession session = request.getSession();
+        Integer coopId = (Integer) session.getAttribute("coop_id");
+        if (coopId == null || coopId == 0) {
+            coopId = (Integer) session.getAttribute("id");
+        }
+        
         DAOWarehouse daoWarehouse = new DAOWarehouse();
         DAOProductionBatch daoBatch = new DAOProductionBatch();
         DAOFarmProduct daoProduct = new DAOFarmProduct();
 
-        List<StorageWarehouse> warehouses = daoWarehouse.getAll();
-        List<ProductionBatch> batches = daoBatch.getAvailable();
-        List<FarmProduct> products = daoProduct.getAll();
+        List<StorageWarehouse> warehouses;
+        List<ProductionBatch> batches;
+        List<FarmProduct> products;
+        
+        if (coopId != null) {
+            warehouses = daoWarehouse.getAllByCoopId(coopId);
+            batches = daoBatch.getAvailableByCoopId(coopId);
+            products = daoProduct.getActiveByCoopId(coopId);
+        } else {
+            warehouses = daoWarehouse.getAll();
+            batches = daoBatch.getAvailable();
+            products = daoProduct.getAll();
+        }
 
         request.setAttribute("warehouseList", warehouses);
         request.setAttribute("batchList", batches);

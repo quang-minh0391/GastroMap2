@@ -67,6 +67,13 @@ public class FarmProductController extends HttpServlet {
 
     private void handleList(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Lấy coop_id từ session
+        HttpSession session = request.getSession();
+        Integer coopId = (Integer) session.getAttribute("coop_id");
+        if (coopId == null || coopId == 0) {
+            coopId = (Integer) session.getAttribute("id"); // Tài khoản HTX (Type 2) dùng chính ID của mình
+        }
+        
         int page = 1;
         int pageSize = 10;
 
@@ -81,8 +88,19 @@ public class FarmProductController extends HttpServlet {
         }
 
         DAOFarmProduct dao = new DAOFarmProduct();
-        List<FarmProduct> list = dao.getPaginated(page, pageSize);
-        int totalRecords = dao.countAll();
+        List<FarmProduct> list;
+        int totalRecords;
+        
+        if (coopId != null) {
+            // Filter by coop_id
+            list = dao.getPaginatedByCoopId(page, pageSize, coopId);
+            totalRecords = dao.countByCoopId(coopId);
+        } else {
+            // Fallback for admin or no coop
+            list = dao.getPaginated(page, pageSize);
+            totalRecords = dao.countAll();
+        }
+        
         int totalPages = (int) Math.ceil((double) totalRecords / pageSize);
 
         request.setAttribute("productList", list);
