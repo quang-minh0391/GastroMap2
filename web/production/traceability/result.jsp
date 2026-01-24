@@ -10,10 +10,28 @@
 
 <div class="card shadow-sm border-0 bg-success text-white mb-4">
     <div class="card-body text-center py-4">
-        <div style="font-size: 3rem;">✅</div>
-        <h4 class="mt-2 mb-1">Thông tin Nguồn gốc Xác thực</h4>
-        <p class="mb-2">Mã QR: <strong>${qrCode.qrValue}</strong></p>
-        <span class="badge bg-light text-success">✓ Đã xác minh</span>
+        <div class="row align-items-center">
+            <div class="col-md-4">
+                <!-- QR Code Image -->
+                <div class="bg-white p-2 d-inline-block rounded">
+                    <img src="${pageContext.request.contextPath}/qr-image?id=${qrCode.id}" 
+                         alt="QR Code" width="150" height="150"
+                         style="image-rendering: pixelated;">
+                </div>
+            </div>
+            <div class="col-md-8 text-md-start">
+                <h4 class="mt-2 mb-2">✅ Thông tin Nguồn gốc Xác thực</h4>
+                <p class="mb-2">Mã QR: <strong>${qrCode.qrValue}</strong></p>
+                <span class="badge bg-light text-success fs-6">✓ Đã xác minh</span>
+                <div class="mt-2">
+                    <a href="${pageContext.request.contextPath}/qr-image?id=${qrCode.id}" 
+                       download="QR_${qrCode.qrValue}.png"
+                       class="btn btn-sm btn-light">
+                        <i class="bi bi-download"></i> Tải QR
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
