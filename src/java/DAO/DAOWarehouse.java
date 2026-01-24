@@ -16,9 +16,27 @@ public class DAOWarehouse extends DBContext {
     }
 
     protected void closeResources(Connection conn, PreparedStatement ps, ResultSet rs) {
-        try { if (rs != null) rs.close(); } catch (SQLException e) { e.printStackTrace(); }
-        try { if (ps != null) ps.close(); } catch (SQLException e) { e.printStackTrace(); }
-        try { if (conn != null) conn.close(); } catch (SQLException e) { e.printStackTrace(); }
+        try {
+            if (rs != null) {
+                rs.close();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        try {
+            if (ps != null) {
+                ps.close();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        try {
+            if (conn != null) {
+                conn.close();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     public StorageWarehouse getFromResultSet(ResultSet rs) throws SQLException {
@@ -156,5 +174,33 @@ public class DAOWarehouse extends DBContext {
         }
         return 0;
     }
-}
 
+    public List<StorageWarehouse> searchStorageWarehouses(String keyword, int coopId) {
+        List<StorageWarehouse> list = new ArrayList<>();
+
+        // Thêm điều kiện lọc theo coop_id để phân tách kho giữa các HTX
+        String sql = "SELECT id, name, location, description FROM storage_warehouses "
+                + "WHERE name LIKE ? AND coop_id = ?";
+
+        try {
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setString(1, "%" + keyword + "%");
+                ps.setInt(2, coopId); // Gán ID của HTX hoặc cửa hàng
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        StorageWarehouse w = new StorageWarehouse();
+                        w.setId(rs.getInt("id"));
+                        w.setName(rs.getString("name"));
+                        w.setLocation(rs.getString("location"));
+                        w.setDescription(rs.getString("description"));
+                        list.add(w);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+}

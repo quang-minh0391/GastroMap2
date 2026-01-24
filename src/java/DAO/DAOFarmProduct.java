@@ -178,5 +178,41 @@ public class DAOFarmProduct extends DBContext {
         }
         return 0;
     }
+    
+    public List<FarmProduct> searchProducts(String keyword, int coopId) {
+    List<FarmProduct> list = new ArrayList<>();
+    // JOIN với bảng members để lấy ra sản phẩm thuộc về HTX tương ứng
+    String sql = "SELECT p.id, p.name, p.unit, p.description, p.status " +
+                 "FROM farm_products p " +
+                 "JOIN members m ON p.created_by = m.id " +
+                 "WHERE p.name LIKE ? AND p.status = 'ACTIVE' AND m.coop_id = ? " +
+                 "LIMIT 20";
+    
+    try {
+        if (conn != null) {
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setString(1, "%" + keyword + "%");
+                ps.setInt(2, coopId); // Lọc theo ID của HTX
+                
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        FarmProduct p = new FarmProduct();
+                        p.setId(rs.getInt("id"));
+                        p.setName(rs.getString("name"));
+                        p.setUnit(rs.getString("unit"));
+                        p.setDescription(rs.getString("description"));
+                        p.setStatus(rs.getString("status"));
+                        list.add(p);
+                    }
+                }
+            }
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    return list;
+}
+    
+    
 }
 

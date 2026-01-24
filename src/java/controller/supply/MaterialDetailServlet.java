@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
+import java.util.Map;
 import model.Material;
 import model.MaterialInventory;
 
@@ -59,15 +60,29 @@ public class MaterialDetailServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        int id = Integer.parseInt(request.getParameter("id"));
+        try {
+            int id = Integer.parseInt(request.getParameter("id"));
 
-        Material material = MaterialDAO.INSTANCE.getMaterialById(id);
-        List<MaterialInventory> inventories = inventoryDAO.INSTANCE.getInventoryByMaterialId(id);
-        request.setAttribute("inventories", inventories);
+            // Lấy thông tin cơ bản vật tư
+            Material material = MaterialDAO.INSTANCE.getMaterialById(id);
 
-        request.setAttribute("material", material);
-        request.getRequestDispatcher("/supplyQ/detail_materials.jsp")
-                .forward(request, response);
+            // Lấy thông tin tồn kho tại các kho
+            List<MaterialInventory> inventories = inventoryDAO.INSTANCE.getInventoryByMaterialId(id);
+
+            // MỚI: Lấy lịch sử nhập và cung ứng
+            List<Map<String, Object>> inbound = MaterialDAO.INSTANCE.getInboundHistory(id);
+            List<Map<String, Object>> outbound = MaterialDAO.INSTANCE.getOutboundHistory(id);
+
+            // Gửi dữ liệu sang JSP
+            request.setAttribute("material", material);
+            request.setAttribute("inventories", inventories);
+            request.setAttribute("inboundHistory", inbound);
+            request.setAttribute("outboundHistory", outbound);
+
+            request.getRequestDispatcher("/supplyQ/detail_materials.jsp").forward(request, response);
+        } catch (Exception e) {
+            response.sendRedirect("SearchMaterialServlet");
+        }
     }
 
     /**

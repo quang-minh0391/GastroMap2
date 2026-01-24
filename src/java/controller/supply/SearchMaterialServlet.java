@@ -5,12 +5,14 @@
 package controller.supply;
 
 import DAO.MaterialDAO;
+import com.google.gson.Gson;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.List;
 import model.Material;
@@ -20,6 +22,8 @@ import model.Material;
  * @author Admin
  */
 public class SearchMaterialServlet extends HttpServlet {
+
+    private final Gson gson = new Gson();
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -60,26 +64,39 @@ public class SearchMaterialServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // Lấy từ khóa tìm kiếm từ request
+        HttpSession session = request.getSession(false);
+
+        // 1. Kiểm tra đăng nhập và điều hướng tuyệt đối nếu session hết hạn
+        if (session == null || session.getAttribute("id") == null) {
+            response.sendRedirect("login/login.jsp");
+            return;
+        }
+
+        // 2. Xác định coop_id từ session (Xử lý cho cả 3 loại tài khoản)
+        Integer coopId = (Integer) session.getAttribute("coop_id");
+        if (coopId == null || coopId == 0) {
+            coopId = (Integer) session.getAttribute("id"); // Type 2 dùng chính ID tài khoản
+        }
+
+        // 3. Lấy từ khóa và kiểu lọc
         String keyword = request.getParameter("keyword");
         if (keyword == null) {
-            keyword = ""; // Nếu không có từ khóa, tìm tất cả
+            keyword = "";
         }
         String sort = request.getParameter("sort");
         if (sort == null || sort.isEmpty()) {
             sort = "";
         }
-        
-        List<Material> MaterialList = new ArrayList<>();
-        MaterialList = MaterialDAO.INSTANCE.listMaterials(keyword, sort);
-                
-        
+
+        // 4. Gọi DAO với tham số coopId
+        List<Material> MaterialList = MaterialDAO.INSTANCE.listMaterials(keyword, sort, coopId);
+
+        // 5. Đẩy dữ liệu sang JSP
         request.setAttribute("keyword", keyword);
         request.setAttribute("sort", sort);
         request.setAttribute("materialList", MaterialList);
 
         request.getRequestDispatcher("supplyQ/list_materials.jsp").forward(request, response);
-
     }
 
     /**
@@ -93,7 +110,35 @@ public class SearchMaterialServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        request.setCharacterEncoding("UTF-8");
+
+        // 1. Lấy Session và kiểm tra đăng nhập
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("id") == null) {
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
+        }
+
+        // 2. Xác định coop_id dựa trên loại tài khoản (Type 1, 2, 3)
+        Integer coopId = (Integer) session.getAttribute("coop_id");
+        if (coopId == null || coopId == 0) {
+            coopId = (Integer) session.getAttribute("id"); // Type 2 dùng chính ID của mình
+        }
+
+        // 3. Lấy từ khóa tìm kiếm
+        String keyword = request.getParameter("term");
+        if (keyword == null) {
+            keyword = "";
+        }
+
+        // 4. Gọi DAO với tham số coopId
+        List<Material> materials = MaterialDAO.INSTANCE.searchMaterials(keyword, coopId);
+
+        // 5. Trả về JSON
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        String json = gson.toJson(materials);
+        response.getWriter().write(json);
     }
 
     /**

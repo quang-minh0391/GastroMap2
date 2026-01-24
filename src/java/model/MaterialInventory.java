@@ -12,11 +12,11 @@ import java.sql.Timestamp;
 
 public class MaterialInventory {
     private int id;
-    private Material material;          // Vật tư
-    private MaterialWarehouse warehouse; // Kho
-    private double quantity;           // Số lượng tồn
-    private String unit;               // Đơn vị
-    private Timestamp updatedAt;       // Thời gian cập nhật
+    private Material material;          
+    private MaterialWarehouse warehouse;
+    private double quantity;          
+    private String unit;               
+    private Timestamp updatedAt;      
 
     // Constructor
     public MaterialInventory() {}
