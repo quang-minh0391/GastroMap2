@@ -25,15 +25,36 @@ body {
     display: flex;
     flex-direction: column;
     z-index: 1000;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* Scrollbar tùy chỉnh cho sidebar */
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: #23272b;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: #495057;
+    border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: #6c757d;
 }
 
 .sidebar .nav-link {
     color: #adb5bd;
-    padding: 15px 20px;
+    padding: 10px 18px;
     border-bottom: 1px solid #495057;
     text-decoration: none;
     transition: 0.3s;
-    font-size: 0.95rem; /* Lấy font-size từ bản của bạn */
+    font-size: 0.9rem;
+    white-space: nowrap;
 }
 
 .sidebar .nav-link:hover { 

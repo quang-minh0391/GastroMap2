@@ -18,40 +18,40 @@
         %>
 
         <div class="sidebar shadow">
-            <div class="brand-section py-4 border-bottom border-secondary mb-2">
+            <div class="brand-section py-3 border-bottom border-secondary mb-1">
                 <div class="text-center">
 
-                    <div class="d-flex align-items-center justify-content-center gap-3 mb-3">
+                    <div class="d-flex align-items-center justify-content-center gap-3 mb-2">
                         <a href="${pageContext.request.contextPath}/index.jsp" class="text-decoration-none">
-                            <h4 class="text-white m-0">🍀 Gastromap</h4>
+                            <h5 class="text-white m-0">🍀 Gastromap</h5>
                         </a>
 
                         <div class="notification-wrapper">
                             <a href="${pageContext.request.contextPath}/meetingManager?service=list" class="text-decoration-none d-inline-block position-relative">
-                                <i class="bi bi-bell-fill fs-5" id="bell-icon" style="color: #adb5bd;"></i>
-                                <span id="noti-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;">
+                                <i class="bi bi-bell-fill fs-6" id="bell-icon" style="color: #adb5bd;"></i>
+                                <span id="noti-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.55rem;">
                                     0
                                 </span>
                             </a>
                         </div>
                     </div>
 
-                    <div class="user-profile-top mt-4">
+                    <div class="user-profile-top mt-2">
                         <a href="${pageContext.request.contextPath}/profile" class="text-decoration-none d-flex flex-column align-items-center">
-                            <div class="avatar-circle mb-2">
-                                <span class="text-white fw-bold"><%= displayLetter %></span>
+                            <div class="avatar-circle mb-1" style="width: 38px; height: 38px;">
+                                <span class="text-white fw-bold" style="font-size: 0.9rem;"><%= displayLetter %></span>
                             </div>
-                            <span class="text-white fw-bold"><%= (fullName != null) ? fullName : "Người dùng" %></span>
-                            <small class="text-success" style="font-size: 0.75rem;">● Đang hoạt động</small>
+                            <span class="text-white fw-bold" style="font-size: 0.85rem;"><%= (fullName != null) ? fullName : "Người dùng" %></span>
+                            <small class="text-success" style="font-size: 0.7rem;">● Đang hoạt động</small>
                         </a>
                     </div>
                 </div>
             </div>
 
-            <nav class="nav flex-column w-100 overflow-y-auto" style="max-height: calc(100vh - 250px);">
+            <nav class="nav flex-column w-100 overflow-y-auto flex-grow-1" style="min-height: 0;">
 
                 <div class="nav-item-group w-100 d-block">
-                    <div class="text-uppercase px-4 py-3 text-secondary" style="font-size: 0.7rem; letter-spacing: 1px; opacity: 0.8;">
+                    <div class="text-uppercase px-3 py-2 text-secondary" style="font-size: 0.65rem; letter-spacing: 1px; opacity: 0.8;">
                         Hệ thống
                     </div>
                     <a class="nav-link w-100 <%= (currentUri.contains("memberManager") || currentUri.contains("Member.jsp")) ? "active" : "" %>" 
@@ -64,8 +64,8 @@
                     </a>
                 </div>
 
-                <div class="nav-item-group w-100 d-block mt-2">
-                    <div class="text-uppercase px-4 py-3 text-secondary" style="font-size: 0.7rem; letter-spacing: 1px; opacity: 0.8;">
+                <div class="nav-item-group w-100 d-block mt-1">
+                    <div class="text-uppercase px-3 py-2 text-secondary" style="font-size: 0.65rem; letter-spacing: 1px; opacity: 0.8;">
                         Sản xuất
                     </div>
                     <a class="nav-link w-100 <%= currentUri.contains("farm-products") ? "active" : "" %>" 
@@ -98,8 +98,8 @@
                     </a>
                 </div>
 
-                <div class="nav-item-group w-100 d-block mt-2">
-                    <div class="text-uppercase px-4 py-3 text-secondary" style="font-size: 0.7rem; letter-spacing: 1px; opacity: 0.8;">
+                <div class="nav-item-group w-100 d-block mt-1">
+                    <div class="text-uppercase px-3 py-2 text-secondary" style="font-size: 0.65rem; letter-spacing: 1px; opacity: 0.8;">
                         Kho & Tài chính
                     </div>
                     <a class="nav-link w-100 <%= (currentUri.contains("finance.jsp") || currentUri.contains("capital.jsp")) ? "active" : "" %>" 
@@ -128,11 +128,11 @@
                 </div>
             </nav>
 
-            <div class="logout-section mt-auto p-3">
+            <div class="logout-section mt-auto p-2">
                 <form action="${pageContext.request.contextPath}/loginURL" method="POST" class="m-0">
                     <input type="hidden" name="service" value="logoutUser">
-                    <button type="submit" class="btn btn-outline-danger btn-sm w-100 py-2">
-                        <i class="bi bi-box-arrow-right me-2"></i> Đăng xuất
+                    <button type="submit" class="btn btn-outline-danger btn-sm w-100 py-1">
+                        <i class="bi bi-box-arrow-right me-1"></i> Đăng xuất
                     </button>
                 </form>
             </div>

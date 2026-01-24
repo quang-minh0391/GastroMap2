@@ -188,18 +188,22 @@ public class DAOFarmProduct extends DBContext {
     
     public List<FarmProduct> searchProducts(String keyword, int coopId) {
     List<FarmProduct> list = new ArrayList<>();
-    // JOIN với bảng members để lấy ra sản phẩm thuộc về HTX tương ứng
-    String sql = "SELECT p.id, p.name, p.unit, p.description, p.status " +
+    // Tìm sản phẩm: 
+    // 1. Được tạo bởi HTX trực tiếp (created_by = coopId)
+    // 2. Hoặc được tạo bởi thành viên thuộc HTX đó
+    String sql = "SELECT DISTINCT p.id, p.name, p.unit, p.description, p.status " +
                  "FROM farm_products p " +
-                 "JOIN members m ON p.created_by = m.id " +
-                 "WHERE p.name LIKE ? AND p.status = 'ACTIVE' AND m.coop_id = ? " +
+                 "LEFT JOIN members m ON p.created_by = m.id " +
+                 "WHERE p.name LIKE ? AND p.status = 'ACTIVE' " +
+                 "AND (p.created_by = ? OR m.coop_id = ?) " +
                  "LIMIT 20";
     
     try {
         if (conn != null) {
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
                 ps.setString(1, "%" + keyword + "%");
-                ps.setInt(2, coopId); // Lọc theo ID của HTX
+                ps.setInt(2, coopId); // Sản phẩm tạo bởi HTX trực tiếp
+                ps.setInt(3, coopId); // Sản phẩm tạo bởi thành viên của HTX
                 
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
