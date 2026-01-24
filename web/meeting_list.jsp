@@ -33,9 +33,8 @@
                                 <tr>
                                     <th class="ps-4 py-3">Tên cuộc họp</th>
                                     <th>Thời gian</th>
-                                    <th>Địa điểm</th>
-                                    <%-- Cột Trạng thái đã được lược bỏ --%>
-                                    <th class="text-center">Thao tác</th>
+                                    <th>Địa điểm / Link tham gia</th>
+                                    <th class="text-center">Chi tiết</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -51,11 +50,21 @@
                                             <i class="bi bi-clock me-1"></i> ${m.meeting_date}
                                         </td>
                                         <td>
-                                            <i class="bi bi-geo-alt me-1 text-danger"></i> ${m.location}
+                                            <%-- PHẦN SỬA ĐỔI: Tự động chuyển link --%>
+                                            <c:choose>
+                                                <c:when test="${m.location.startsWith('http')}">
+                                                    <a href="${m.location}" target="_blank" class="link-danger text-decoration-none fw-bold">
+                                                        <i class="bi bi-camera-video me-1"></i> Link họp trực tuyến
+                                                    </a>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <i class="bi bi-geo-alt me-1 text-danger"></i> ${m.location}
+                                                </c:otherwise>
+                                            </c:choose>
                                         </td>
                                         <td class="text-center">
-                                            <a href="meetingManager?service=viewDetail&id=${m.id}" class="btn btn-sm btn-primary px-4 rounded-pill shadow-sm">
-                                                <i class="bi bi-box-arrow-in-right me-1"></i> Vào họp
+                                            <a href="meetingManager?service=viewDetail&id=${m.id}" class="btn btn-sm btn-outline-primary px-3 rounded-pill shadow-sm">
+                                                <i class="bi bi-info-circle me-1"></i> Chi tiết
                                             </a>
                                         </td>
                                     </tr>
@@ -63,7 +72,6 @@
                                 
                                 <c:if test="${empty listMeetings}">
                                     <tr>
-                                        <%-- Sửa colspan từ 5 xuống 4 vì đã bỏ 1 cột --%>
                                         <td colspan="4" class="text-center py-5 text-muted">
                                             <i class="bi bi-inbox fs-1 d-block mb-2 opacity-25"></i>
                                             Hiện tại chưa có cuộc họp nào được lên lịch.
@@ -109,8 +117,9 @@
                             <input type="datetime-local" name="meeting_date" class="form-control" required>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold text-dark">Địa điểm</label>
-                            <input type="text" name="location" class="form-control" placeholder="Phòng họp..." required>
+                            <label class="form-label fw-bold text-dark">Địa điểm / Link họp</label>
+                            <input type="text" name="location" class="form-control" placeholder="Dán link Zoom/Meet hoặc địa chỉ..." required>
+                            <small class="text-muted" style="font-size: 0.7rem;">Dán link để hiển thị nút tham gia online.</small>
                         </div>
                     </div>
                 </div>
