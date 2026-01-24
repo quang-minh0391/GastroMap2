@@ -1,4 +1,4 @@
-package controller;
+package controller.production;
 
 import DAO.DAOProductionBatch;
 import DAO.DAOFarmProduct;
@@ -17,9 +17,9 @@ import java.util.List;
 
 /**
  * Controller for Production Batches management
- * URL Pattern: /batches
+ * URL Pattern: /production-batches
  */
-@WebServlet(name = "ProductionBatchController", urlPatterns = {"/batches"})
+@WebServlet(name = "ProductionBatchController", urlPatterns = {"/production-batches"})
 public class ProductionBatchController extends HttpServlet {
 
     @Override
@@ -121,7 +121,7 @@ public class ProductionBatchController extends HttpServlet {
             throws ServletException, IOException {
         String idStr = request.getParameter("id");
         if (idStr == null || idStr.isEmpty()) {
-            response.sendRedirect(request.getContextPath() + "/batches?action=list");
+            response.sendRedirect(request.getContextPath() + "/production-batches?action=list");
             return;
         }
 
@@ -147,7 +147,7 @@ public class ProductionBatchController extends HttpServlet {
             request.setAttribute("member", memberObj);
             request.getRequestDispatcher("/production/batches/view.jsp").forward(request, response);
         } catch (NumberFormatException e) {
-            response.sendRedirect(request.getContextPath() + "/batches?action=list");
+            response.sendRedirect(request.getContextPath() + "/production-batches?action=list");
         }
     }
 

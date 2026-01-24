@@ -69,15 +69,31 @@
                         Sản xuất
                     </div>
                     <a class="nav-link w-100 <%= currentUri.contains("farm-products") ? "active" : "" %>" 
-                       href="${pageContext.request.contextPath}/farmProduct?service=list">
+                       href="${pageContext.request.contextPath}/farm-products?action=list">
                         <i class="bi bi-box-seam me-2"></i> Nông sản
                     </a>
                     <a class="nav-link w-100 <%= currentUri.contains("production-batches") ? "active" : "" %>" 
-                       href="${pageContext.request.contextPath}/productionBatch?service=list">
+                       href="${pageContext.request.contextPath}/production-batches?action=list">
                         <i class="bi bi-layers-half me-2"></i> Lô sản xuất
                     </a>
+                    <a class="nav-link w-100 <%= currentUri.contains("warehouses") ? "active" : "" %>" 
+                       href="${pageContext.request.contextPath}/warehouses?action=list">
+                        <i class="bi bi-building me-2"></i> Kho nông sản
+                    </a>
+                    <a class="nav-link w-100 <%= currentUri.contains("stock-ins") ? "active" : "" %>" 
+                       href="${pageContext.request.contextPath}/stock-ins?action=list">
+                        <i class="bi bi-box-arrow-in-down me-2"></i> Nhập kho
+                    </a>
+                    <a class="nav-link w-100 <%= currentUri.contains("batch-inventory") ? "active" : "" %>" 
+                       href="${pageContext.request.contextPath}/batch-inventory?action=list">
+                        <i class="bi bi-archive me-2"></i> Tồn kho nông sản
+                    </a>
+                    <a class="nav-link w-100 <%= currentUri.contains("qr-codes") ? "active" : "" %>" 
+                       href="${pageContext.request.contextPath}/qr-codes?action=list">
+                        <i class="bi bi-qr-code me-2"></i> QR Code
+                    </a>
                     <a class="nav-link w-100 <%= currentUri.contains("traceability") ? "active" : "" %>" 
-                       href="${pageContext.request.contextPath}/traceability?service=history">
+                       href="${pageContext.request.contextPath}/traceability?action=search">
                         <i class="bi bi-qr-code-scan me-2"></i> Truy xuất nguồn gốc
                     </a>
                 </div>
@@ -86,10 +102,6 @@
                     <div class="text-uppercase px-4 py-3 text-secondary" style="font-size: 0.7rem; letter-spacing: 1px; opacity: 0.8;">
                         Kho & Tài chính
                     </div>
-                    <a class="nav-link w-100 <%= currentUri.contains("inventory") ? "active" : "" %>" 
-                       href="${pageContext.request.contextPath}/inventory?service=list">
-                        <i class="bi bi-archive me-2"></i> Quản lý Tồn kho
-                    </a>
                     <a class="nav-link w-100 <%= (currentUri.contains("finance.jsp") || currentUri.contains("capital.jsp")) ? "active" : "" %>" 
                        href="${pageContext.request.contextPath}/admin/finance.jsp">
                         <i class="bi bi-cash-stack me-2"></i> Tài chính & Báo cáo
@@ -97,17 +109,17 @@
 
                     <a class="nav-link w-100 <%= (currentUri.contains("list_materials.jsp") || currentUri.contains("list_materials.jsp")) ? "active" : "" %>" 
                        href="${pageContext.request.contextPath}/SearchMaterialServlet">
-                        <i class="bi bi-cash-stack me-2"></i> Quản lí vật tư
+                        <i class="bi bi-boxes me-2"></i> Quản lí vật tư
                     </a>
                     
                     <a class="nav-link w-100 <%= (currentUri.contains("debt_management.jsp") || currentUri.contains("debt_management.jsp")) ? "active" : "" %>" 
                        href="${pageContext.request.contextPath}/DebtManagementServlet">
-                        <i class="bi bi-cash-stack me-2"></i> Quản lí nợ
+                        <i class="bi bi-wallet2 me-2"></i> Quản lí nợ
                     </a>
                      
                         <a class="nav-link w-100 <%= (currentUri.contains("purchase_receipt.jsp") || currentUri.contains("purchase_receipt.jsp")) ? "active" : "" %>" 
                        href="${pageContext.request.contextPath}/purchase/purchase_receipt.jsp">
-                        <i class="bi bi-cash-stack me-2"></i> Thu mua sản phẩm
+                        <i class="bi bi-cart-check me-2"></i> Thu mua sản phẩm
                     </a>
                         <a class="nav-link w-100 <%= (currentUri.contains("contractManager")) ? "active" : "" %>" 
    href="${pageContext.request.contextPath}/contractManager?service=list">

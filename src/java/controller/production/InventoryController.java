@@ -1,4 +1,4 @@
-package controller;
+package controller.production;
 
 import DAO.DAOBatchInventory;
 import DAO.DAOWarehouse;
@@ -18,9 +18,9 @@ import java.util.List;
 
 /**
  * Controller for Batch Inventory management
- * URL Pattern: /inventory
+ * URL Pattern: /batch-inventory
  */
-@WebServlet(name = "InventoryController", urlPatterns = {"/inventory"})
+@WebServlet(name = "InventoryController", urlPatterns = {"/batch-inventory"})
 public class InventoryController extends HttpServlet {
 
     @Override

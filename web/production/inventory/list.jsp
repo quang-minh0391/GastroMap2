@@ -18,7 +18,7 @@
 <!-- Filter -->
 <div class="card shadow-sm border-0 mb-4">
     <div class="card-body">
-        <form action="${pageContext.request.contextPath}/inventory" method="get" class="row g-3 align-items-end">
+        <form action="${pageContext.request.contextPath}/batch-inventory" method="get" class="row g-3 align-items-end">
             <div class="col-md-4">
                 <label for="warehouseId" class="form-label fw-bold">Lọc theo Kho</label>
                 <select class="form-select" id="warehouseId" name="warehouseId">
@@ -90,7 +90,7 @@
                             <td>
                                 <c:forEach var="batch" items="${batchList}">
                                     <c:if test="${batch.id == inventory.batchId}">
-                                        <a href="${pageContext.request.contextPath}/batches?action=view&id=${batch.id}">
+                                        <a href="${pageContext.request.contextPath}/production-batches?action=view&id=${batch.id}">
                                             <strong>${batch.batchCode}</strong>
                                         </a>
                                     </c:if>

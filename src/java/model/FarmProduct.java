@@ -10,16 +10,20 @@ public class FarmProduct {
     private String unit;
     private String description;
     private String status;
+    private Integer createdBy;
+    private String createdAt;
 
     public FarmProduct() {
     }
 
-    public FarmProduct(Integer id, String name, String unit, String description, String status) {
+    public FarmProduct(Integer id, String name, String unit, String description, String status, Integer createdBy, String createdAt) {
         this.id = id;
         this.name = name;
         this.unit = unit;
         this.description = description;
         this.status = status;
+        this.createdBy = createdBy;
+        this.createdAt = createdAt;
     }
 
     public Integer getId() {
@@ -60,6 +64,22 @@ public class FarmProduct {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public Integer getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(Integer createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public String getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
     }
 }
 

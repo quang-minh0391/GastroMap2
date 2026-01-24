@@ -1,4 +1,4 @@
-package controller;
+package controller.production;
 
 import DAO.DAOBatchStockIn;
 import DAO.DAOWarehouse;

@@ -57,7 +57,7 @@
                 <div class="card-body">
                     <p class="mb-1">
                         <strong>Mã lô:</strong> 
-                        <a href="${pageContext.request.contextPath}/batches?action=view&id=${batch.id}">
+                        <a href="${pageContext.request.contextPath}/production-batches?action=view&id=${batch.id}">
                             ${batch.batchCode}
                         </a>
                     </p>

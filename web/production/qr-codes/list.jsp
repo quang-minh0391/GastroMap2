@@ -51,7 +51,7 @@
                             <td>
                                 <c:forEach var="batch" items="${batchList}">
                                     <c:if test="${batch.id == qrCode.batchId}">
-                                        <a href="${pageContext.request.contextPath}/batches?action=view&id=${batch.id}">
+                                        <a href="${pageContext.request.contextPath}/production-batches?action=view&id=${batch.id}">
                                             ${batch.batchCode}
                                         </a>
                                     </c:if>

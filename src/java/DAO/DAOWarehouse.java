@@ -45,6 +45,7 @@ public class DAOWarehouse extends DBContext {
         warehouse.setName(rs.getString("name"));
         warehouse.setLocation(rs.getString("location"));
         warehouse.setDescription(rs.getString("description"));
+        warehouse.setCoopId(rs.getInt("coop_id"));
         return warehouse;
     }
 
@@ -87,13 +88,14 @@ public class DAOWarehouse extends DBContext {
     }
 
     public boolean insert(StorageWarehouse warehouse) {
-        String sql = "INSERT INTO storage_warehouses (name, location, description) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO storage_warehouses (name, location, description, coop_id) VALUES (?, ?, ?, ?)";
         PreparedStatement ps = null;
         try {
             ps = conn.prepareStatement(sql);
             ps.setString(1, warehouse.getName());
             ps.setString(2, warehouse.getLocation());
             ps.setString(3, warehouse.getDescription());
+            ps.setInt(4, warehouse.getCoopId());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -104,14 +106,15 @@ public class DAOWarehouse extends DBContext {
     }
 
     public boolean update(StorageWarehouse warehouse) {
-        String sql = "UPDATE storage_warehouses SET name = ?, location = ?, description = ? WHERE id = ?";
+        String sql = "UPDATE storage_warehouses SET name = ?, location = ?, description = ?, coop_id = ? WHERE id = ?";
         PreparedStatement ps = null;
         try {
             ps = conn.prepareStatement(sql);
             ps.setString(1, warehouse.getName());
             ps.setString(2, warehouse.getLocation());
             ps.setString(3, warehouse.getDescription());
-            ps.setInt(4, warehouse.getId());
+            ps.setInt(4, warehouse.getCoopId());
+            ps.setInt(5, warehouse.getId());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -179,7 +182,7 @@ public class DAOWarehouse extends DBContext {
         List<StorageWarehouse> list = new ArrayList<>();
 
         // Thêm điều kiện lọc theo coop_id để phân tách kho giữa các HTX
-        String sql = "SELECT id, name, location, description FROM storage_warehouses "
+        String sql = "SELECT id, name, location, description, coop_id FROM storage_warehouses "
                 + "WHERE name LIKE ? AND coop_id = ?";
 
         try {
@@ -194,6 +197,7 @@ public class DAOWarehouse extends DBContext {
                         w.setName(rs.getString("name"));
                         w.setLocation(rs.getString("location"));
                         w.setDescription(rs.getString("description"));
+                        w.setCoopId(rs.getInt("coop_id"));
                         list.add(w);
                     }
                 }

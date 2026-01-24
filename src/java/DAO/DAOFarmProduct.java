@@ -28,6 +28,8 @@ public class DAOFarmProduct extends DBContext {
         product.setUnit(rs.getString("unit"));
         product.setDescription(rs.getString("description"));
         product.setStatus(rs.getString("status"));
+        product.setCreatedBy((Integer) rs.getObject("created_by"));
+        product.setCreatedAt(rs.getString("created_at"));
         return product;
     }
 
@@ -89,7 +91,7 @@ public class DAOFarmProduct extends DBContext {
     }
 
     public boolean insert(FarmProduct product) {
-        String sql = "INSERT INTO farm_products (name, unit, description, status) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO farm_products (name, unit, description, status, created_by) VALUES (?, ?, ?, ?, ?)";
         PreparedStatement ps = null;
         try {
             ps = conn.prepareStatement(sql);
@@ -97,6 +99,11 @@ public class DAOFarmProduct extends DBContext {
             ps.setString(2, product.getUnit());
             ps.setString(3, product.getDescription());
             ps.setString(4, product.getStatus() != null ? product.getStatus() : "ACTIVE");
+            if (product.getCreatedBy() != null) {
+                ps.setInt(5, product.getCreatedBy());
+            } else {
+                ps.setNull(5, Types.INTEGER);
+            }
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();

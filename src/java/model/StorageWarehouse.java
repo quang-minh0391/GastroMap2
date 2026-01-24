@@ -9,15 +9,17 @@ public class StorageWarehouse {
     private String name;
     private String location;
     private String description;
+    private Integer coopId;
 
     public StorageWarehouse() {
     }
 
-    public StorageWarehouse(Integer id, String name, String location, String description) {
+    public StorageWarehouse(Integer id, String name, String location, String description, Integer coopId) {
         this.id = id;
         this.name = name;
         this.location = location;
         this.description = description;
+        this.coopId = coopId;
     }
 
     public Integer getId() {
@@ -50,6 +52,14 @@ public class StorageWarehouse {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Integer getCoopId() {
+        return coopId;
+    }
+
+    public void setCoopId(Integer coopId) {
+        this.coopId = coopId;
     }
 }
 

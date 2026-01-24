@@ -66,7 +66,7 @@
                                 </c:choose>
                             </td>
                             <td class="text-center">
-                                <a href="${pageContext.request.contextPath}/inventory?warehouseId=${warehouse.id}" 
+                                <a href="${pageContext.request.contextPath}/batch-inventory?warehouseId=${warehouse.id}" 
                                    class="btn btn-sm btn-outline-info" title="Xem tồn kho">📊</a>
                                 <a href="${pageContext.request.contextPath}/warehouses?action=edit&id=${warehouse.id}" 
                                    class="btn btn-sm btn-outline-primary" title="Sửa">✏️</a>

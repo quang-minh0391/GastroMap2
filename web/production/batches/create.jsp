@@ -18,7 +18,7 @@
                     </div>
                 </c:if>
 
-                <form action="${pageContext.request.contextPath}/batches" method="post">
+                <form action="${pageContext.request.contextPath}/production-batches" method="post">
                     <input type="hidden" name="action" value="save">
                     
                     <div class="row">
