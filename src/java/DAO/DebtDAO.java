@@ -4,8 +4,103 @@ import DAL.DBContext;
 import java.sql.*;
 import java.util.*;
 import model.DebtDTO;
+import model.member;
 
 public class DebtDAO extends DBContext {
+
+    // 1. Lấy thông tin cơ bản và nợ hiện tại (giữ tên theo yêu cầu)
+    public member getFarmerDebtDetail(int memberId) {
+        member m = null;
+        String sql = "SELECT m.id, m.full_name, m.phone, m.address, "
+                + "(SELECT l.balance_after FROM member_transaction_ledger l "
+                + " WHERE l.member_id = m.id AND l.partner_id IS NULL "
+                + " ORDER BY l.id DESC LIMIT 1) as current_debt "
+                + "FROM members m WHERE m.id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, memberId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    m = new member();
+                    m.setId(rs.getInt("id"));
+                    m.setFull_name(rs.getString("full_name"));
+                    m.setPhone(rs.getString("phone"));
+                    m.setAddress(rs.getString("address"));
+                    m.setCurrent_debt(rs.getDouble("current_debt"));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return m;
+    }
+
+    // 2. Lấy danh sách lịch sử giao dịch kèm ID tham chiếu
+    public List<Map<String, Object>> getFarmerTransactionHistoryList(int memberId) {
+        List<Map<String, Object>> history = new ArrayList<>();
+        String sql = "SELECT l.transaction_date, l.reference_type, l.reference_id, l.amount, l.entry_type, l.balance_after, l.note, "
+                + "COALESCE(v.voucher_code, s.supply_code, pr.receipt_code, CAST(l.id AS CHAR)) as doc_code "
+                + "FROM member_transaction_ledger l "
+                + "LEFT JOIN payment_vouchers v ON l.reference_id = v.id AND l.reference_type IN ('CASH_PAYMENT', 'CASH_RECEIPT') "
+                + "LEFT JOIN material_supplies s ON l.reference_id = s.id AND l.reference_type = 'MATERIAL_EXPORT' "
+                + "LEFT JOIN produce_receipts pr ON l.reference_id = pr.id AND l.reference_type = 'FARM_PURCHASE' "
+                + "WHERE l.member_id = ? AND l.partner_id IS NULL ORDER BY l.id DESC";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, memberId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> row = new HashMap<>();
+                    row.put("date", rs.getTimestamp("transaction_date"));
+                    row.put("type", rs.getString("reference_type"));
+                    row.put("refId", rs.getInt("reference_id"));
+                    row.put("amount", rs.getDouble("amount"));
+                    row.put("entry", rs.getString("entry_type"));
+                    row.put("balance", rs.getDouble("balance_after"));
+                    row.put("note", rs.getString("note"));
+                    row.put("code", rs.getString("doc_code"));
+                    history.add(row);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return history;
+    }
+
+    // 3. Lấy dữ liệu chi tiết từng dòng trong phiếu cho Popup
+    public Map<String, Object> getFarmerTransactionPopupDetail(int refId, String type) {
+    Map<String, Object> detail = new HashMap<>();
+    List<Map<String, String>> items = new ArrayList<>();
+    String sql = "";
+
+    if ("MATERIAL_EXPORT".equals(type)) {
+        sql = "SELECT m.name, d.quantity, d.unit_price, d.subtotal, m.unit FROM material_supply_details d JOIN materials m ON d.material_id = m.id WHERE d.supply_id = ?";
+    } else if ("FARM_PURCHASE".equals(type)) {
+        sql = "SELECT p.name, d.quantity, d.unit_price, d.subtotal, p.unit FROM produce_receipt_details d JOIN farm_products p ON d.product_id = p.id WHERE d.receipt_id = ?";
+    } else {
+        // Phiếu Thu/Chi lẻ: Lấy thêm image_path để hiện trong Popup
+        sql = "SELECT description, 'N/A', amount, amount, payment_method, image_path FROM payment_vouchers WHERE id = ?";
+    }
+
+    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setInt(1, refId);
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            Map<String, String> item = new HashMap<>();
+            item.put("name", rs.getString(1));
+            item.put("qty", rs.getString(2));
+            item.put("price", rs.getString(3));
+            item.put("total", rs.getString(4));
+            item.put("unit", rs.getString(5)); 
+            if (type.contains("CASH")) {
+                detail.put("img", rs.getString("image_path")); // Lưu đường dẫn ảnh vào detail
+            }
+            items.add(item);
+        }
+        detail.put("items", items);
+    } catch (SQLException e) { e.printStackTrace(); }
+    return detail;
+}
 
     public List<DebtDTO> getMemberDebtList(int coopId) {
         List<DebtDTO> list = new ArrayList<>();
@@ -258,39 +353,39 @@ public class DebtDAO extends DBContext {
     }
     // Lấy lịch sử giao dịch riêng cho Nông dân (partner_id IS NULL)
 
-public List<Map<String, Object>> getMemberTransactionHistory(int memberId) {
-    List<Map<String, Object>> history = new ArrayList<>();
+    public List<Map<String, Object>> getMemberTransactionHistory(int memberId) {
+        List<Map<String, Object>> history = new ArrayList<>();
 
-    // Cập nhật SQL: Thêm LEFT JOIN với produce_receipts (pr)
-    String sql = "SELECT l.transaction_date, l.reference_type, l.amount, l.entry_type, l.balance_after, l.note, "
-            + "COALESCE(v.voucher_code, s.supply_code, pr.receipt_code, CAST(l.id AS CHAR)) as doc_code, "
-            + "v.image_path "
-            + "FROM member_transaction_ledger l "
-            + "LEFT JOIN payment_vouchers v ON l.reference_id = v.id AND l.reference_type IN ('CASH_PAYMENT', 'CASH_RECEIPT') "
-            + "LEFT JOIN material_supplies s ON l.reference_id = s.id AND l.reference_type = 'MATERIAL_EXPORT' "
-            + "LEFT JOIN produce_receipts pr ON l.reference_id = pr.id AND l.reference_type = 'FARM_PURCHASE' "
-            + "WHERE l.member_id = ? AND l.partner_id IS NULL "
-            + "ORDER BY l.id ASC";
+        // Cập nhật SQL: Thêm LEFT JOIN với produce_receipts (pr)
+        String sql = "SELECT l.transaction_date, l.reference_type, l.amount, l.entry_type, l.balance_after, l.note, "
+                + "COALESCE(v.voucher_code, s.supply_code, pr.receipt_code, CAST(l.id AS CHAR)) as doc_code, "
+                + "v.image_path "
+                + "FROM member_transaction_ledger l "
+                + "LEFT JOIN payment_vouchers v ON l.reference_id = v.id AND l.reference_type IN ('CASH_PAYMENT', 'CASH_RECEIPT') "
+                + "LEFT JOIN material_supplies s ON l.reference_id = s.id AND l.reference_type = 'MATERIAL_EXPORT' "
+                + "LEFT JOIN produce_receipts pr ON l.reference_id = pr.id AND l.reference_type = 'FARM_PURCHASE' "
+                + "WHERE l.member_id = ? AND l.partner_id IS NULL "
+                + "ORDER BY l.id ASC";
 
-    try (PreparedStatement ps = conn.prepareStatement(sql)) {
-        ps.setInt(1, memberId);
-        try (ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                Map<String, Object> row = new HashMap<>();
-                row.put("date", rs.getTimestamp("transaction_date"));
-                row.put("type", rs.getString("reference_type"));
-                row.put("amount", rs.getDouble("amount"));
-                row.put("entry", rs.getString("entry_type"));
-                row.put("balance", rs.getDouble("balance_after"));
-                row.put("note", rs.getString("note"));
-                row.put("code", rs.getString("doc_code")); // Sẽ lấy được receipt_code nếu là FARM_PURCHASE
-                row.put("img", rs.getString("image_path"));
-                history.add(row);
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, memberId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> row = new HashMap<>();
+                    row.put("date", rs.getTimestamp("transaction_date"));
+                    row.put("type", rs.getString("reference_type"));
+                    row.put("amount", rs.getDouble("amount"));
+                    row.put("entry", rs.getString("entry_type"));
+                    row.put("balance", rs.getDouble("balance_after"));
+                    row.put("note", rs.getString("note"));
+                    row.put("code", rs.getString("doc_code")); // Sẽ lấy được receipt_code nếu là FARM_PURCHASE
+                    row.put("img", rs.getString("image_path"));
+                    history.add(row);
+                }
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-    } catch (SQLException e) {
-        e.printStackTrace();
+        return history;
     }
-    return history;
-}
 }
