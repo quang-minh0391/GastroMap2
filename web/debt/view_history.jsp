@@ -37,6 +37,13 @@
                     </div>
                 </div>
             </div>
+                        <div class="alert alert-info d-flex align-items-center py-2 mb-3" role="alert">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        <div>
+                            <small class="me-4"><b>Số dương (+):</b> Nông dân đang nợ HTX</small>
+                            <small><b>Số âm (-):</b> HTX đang nợ Nông dân</small>
+                        </div>
+                    </div>
 
             <div class="card shadow-sm">
                 <div class="card-header bg-white py-3">
