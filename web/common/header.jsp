@@ -15,6 +15,11 @@
             String currentUri = request.getRequestURI(); 
             String fullName = (String) session.getAttribute("full_name");
             String displayLetter = (fullName != null && !fullName.isEmpty()) ? fullName.substring(0, 1).toUpperCase() : "U";
+            Integer memberType = (Integer) session.getAttribute("member_type");
+            // memberType: 1 = Nông dân, 2 = HTX, 3 = Quản lý HTX
+            boolean isFarmer = (memberType != null && memberType == 1);
+            boolean isHTX = (memberType != null && memberType == 2);
+            boolean isManager = (memberType != null && memberType == 3);
         %>
 
         <div class="sidebar shadow">
@@ -50,6 +55,8 @@
 
             <nav class="nav flex-column w-100 overflow-y-auto flex-grow-1" style="min-height: 0;">
 
+                <%-- ========== MENU CHO HTX VÀ QUẢN LÝ HTX (Type 2, 3) ========== --%>
+                <% if (isHTX || isManager) { %>
                 <div class="nav-item-group w-100 d-block">
                     <div class="text-uppercase px-3 py-2 text-secondary" style="font-size: 0.65rem; letter-spacing: 1px; opacity: 0.8;">
                         Hệ thống
@@ -102,32 +109,19 @@
                     <div class="text-uppercase px-3 py-2 text-secondary" style="font-size: 0.65rem; letter-spacing: 1px; opacity: 0.8;">
                         Kho & Tài chính
                     </div>
-
-                    <% 
-    Integer mType = (Integer) session.getAttribute("member_type"); 
-    if (mType != null && mType == 1) { 
-                    %>
-                    <a class="nav-link w-100 <%= currentUri.contains("FarmerDebtHistoryServlet") ? "active" : "" %>" 
-                       href="${pageContext.request.contextPath}/FarmerDebtHistoryServlet">
-                        <i class="bi bi-clock-history me-2"></i> Lịch sử nợ của tôi
-                    </a>
-                    <% } %>
                     <a class="nav-link w-100 <%= (currentUri.contains("finance.jsp") || currentUri.contains("capital.jsp")) ? "active" : "" %>" 
                        href="${pageContext.request.contextPath}/admin/finance.jsp">
                         <i class="bi bi-cash-stack me-2"></i> Tài chính & Báo cáo
                     </a>
-
-                    <a class="nav-link w-100 <%= (currentUri.contains("list_materials.jsp") || currentUri.contains("list_materials.jsp")) ? "active" : "" %>" 
+                    <a class="nav-link w-100 <%= (currentUri.contains("list_materials.jsp")) ? "active" : "" %>" 
                        href="${pageContext.request.contextPath}/SearchMaterialServlet">
                         <i class="bi bi-boxes me-2"></i> Quản lí vật tư
                     </a>
-
-                    <a class="nav-link w-100 <%= (currentUri.contains("debt_management.jsp") || currentUri.contains("debt_management.jsp")) ? "active" : "" %>" 
+                    <a class="nav-link w-100 <%= (currentUri.contains("debt_management.jsp")) ? "active" : "" %>" 
                        href="${pageContext.request.contextPath}/DebtManagementServlet">
                         <i class="bi bi-wallet2 me-2"></i> Quản lí nợ
                     </a>
-
-                    <a class="nav-link w-100 <%= (currentUri.contains("purchase_receipt.jsp") || currentUri.contains("purchase_receipt.jsp")) ? "active" : "" %>" 
+                    <a class="nav-link w-100 <%= (currentUri.contains("purchase_receipt.jsp")) ? "active" : "" %>" 
                        href="${pageContext.request.contextPath}/purchase/purchase_receipt.jsp">
                         <i class="bi bi-cart-check me-2"></i> Thu mua sản phẩm
                     </a>
@@ -136,6 +130,29 @@
                         <i class="bi bi-file-earmark-text-fill me-2"></i> Quản lý Hợp đồng
                     </a>
                 </div>
+                <% } %>
+
+                <%-- ========== MENU CHO NÔNG DÂN (Type 1) ========== --%>
+                <% if (isFarmer) { %>
+                <div class="nav-item-group w-100 d-block">
+                    <div class="text-uppercase px-3 py-2 text-secondary" style="font-size: 0.65rem; letter-spacing: 1px; opacity: 0.8;">
+                        Chức năng
+                    </div>
+                    <a class="nav-link w-100 <%= currentUri.contains("meeting") ? "active" : "" %>" 
+                       href="${pageContext.request.contextPath}/meetingManager?service=list">
+                        <i class="bi bi-calendar-check me-2"></i> Quản lý Cuộc họp
+                    </a>
+                    <a class="nav-link w-100 <%= (currentUri.contains("finance.jsp") || currentUri.contains("capital.jsp")) ? "active" : "" %>" 
+                       href="${pageContext.request.contextPath}/admin/finance.jsp">
+                        <i class="bi bi-cash-stack me-2"></i> Tài chính & Báo cáo
+                    </a>
+                    <a class="nav-link w-100 <%= currentUri.contains("FarmerDebtHistoryServlet") ? "active" : "" %>" 
+                       href="${pageContext.request.contextPath}/FarmerDebtHistoryServlet">
+                        <i class="bi bi-clock-history me-2"></i> Lịch sử nợ của tôi
+                    </a>
+                </div>
+                <% } %>
+
             </nav>
 
             <div class="logout-section mt-auto p-2">
