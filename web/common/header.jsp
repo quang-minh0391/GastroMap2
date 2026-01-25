@@ -139,10 +139,10 @@
                        href="${pageContext.request.contextPath}/admin/finance.jsp">
                         <i class="bi bi-cash-stack me-2"></i> Tài chính & Báo cáo
                     </a>
-                    <a class="nav-link w-100 <%= (currentUri.contains("list_materials.jsp")) ? "active" : "" %>" 
+-->                    <a class="nav-link w-100 <%= (currentUri.contains("list_materials.jsp")) ? "active" : "" %>" 
                        href="${pageContext.request.contextPath}/SearchMaterialServlet">
                         <i class="bi bi-boxes me-2"></i> Quản lí vật tư
-                    </a>
+                    </a><!--
                     <a class="nav-link w-100 <%= (currentUri.contains("debt_management.jsp")) ? "active" : "" %>" 
 
                     -->

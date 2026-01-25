@@ -103,6 +103,8 @@
     <servlet>
         <servlet-name>FundServlet</servlet-name>
         <servlet-class>controller.finance.FundServlet</servlet-class>
+    </servlet>
+    <servlet>
         <servlet-name>FarmerDebtHistoryServlet</servlet-name>
         <servlet-class>controller.debt.FarmerDebtHistoryServlet</servlet-class>
     </servlet>
@@ -230,7 +232,8 @@
     <servlet-mapping>
         <servlet-name>FundServlet</servlet-name>
         <url-pattern>/fund</url-pattern>
-
+    </servlet-mapping>
+    <servlet-mapping>
         <servlet-name>FarmerDebtHistoryServlet</servlet-name>
         <url-pattern>/FarmerDebtHistoryServlet</url-pattern>
     </servlet-mapping>
