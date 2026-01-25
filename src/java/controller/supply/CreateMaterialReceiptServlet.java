@@ -12,11 +12,15 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import DAO.MaterialReceiptDAO;
 import DAL.DBContext;
+import DAO.PaymentVoucherDAO;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import model.PaymentVoucher;
 
 /**
  *
@@ -136,6 +140,36 @@ public class CreateMaterialReceiptServlet extends HttpServlet {
 
             if (isSuccess) {
                 // Thêm context path và thư mục supplyQ vào trước tên file JSP
+                // ================== TỰ ĐỘNG TẠO PHIẾU CHI ==================
+                // Nếu có trả tiền ngay (amountPaid > 0) -> Ghi sổ
+               if (amountPaid > 0) {
+                    try {
+                        PaymentVoucherDAO voucherDao = new PaymentVoucherDAO();
+                        PaymentVoucher v = new PaymentVoucher();
+                        
+                        // Tạo mã phiếu chi: PC + Thời gian hiện tại
+                        long timeCode = System.currentTimeMillis();
+                        v.setVoucherCode("PC-MAT-" + timeCode); 
+                        
+                        v.setVoucherType("PAYMENT"); // Loại: PHIẾU CHI
+                        v.setPartnerId(partnerId);   // Chi trả cho Nhà cung cấp
+                        v.setMemberId(null);
+                        
+                        // Chuyển đổi double -> BigDecimal
+                        v.setAmount(BigDecimal.valueOf(amountPaid)); 
+                        
+                        v.setPaymentMethod("Tiền mặt/Chuyển khoản");
+                        v.setDescription("Chi tiền nhập vật tư (Ngày nhập: " + receiptDate + ")");
+                        v.setCreatedDate(new Timestamp(System.currentTimeMillis()));
+
+                        // Lưu vào DB (Tự động ghi vào financial_ledger)
+                        voucherDao.insertVoucher(v);
+                        
+                    } catch (Exception e) {
+                        e.printStackTrace(); // Log lỗi nhưng không chặn luồng chính
+                    }
+                }
+                // ================== [KẾT THÚC] ==================
                 response.sendRedirect(request.getContextPath() + "/supplyQ/add_materials.jsp?status=success");
             } else {
                 // Thất bại
