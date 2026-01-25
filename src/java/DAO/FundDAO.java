@@ -108,6 +108,7 @@ public class FundDAO {
 
         String insertFundLog = "INSERT INTO fund_transactions (fund_id, member_id, transaction_type, amount, note, transaction_date) VALUES (?, ?, ?, ?, ?, ?)";
         String updateBalance = "UPDATE fund_categories SET current_balance = current_balance + ? WHERE id = ?";
+        String checkCategory = "SELECT id FROM transaction_categories WHERE type = ? LIMIT 1";
         String insertLedger = "INSERT INTO financial_ledger (transaction_date, category_id, amount, transaction_type, description, source_table, source_id) VALUES (?, ?, ?, ?, ?, 'fund_transactions', ?)";
 
         try {
@@ -147,20 +148,29 @@ public class FundDAO {
             ps.executeUpdate();
             ps.close();
 
-            // B3: Insert Ledger
-            ps = conn.prepareStatement(insertLedger);
-            ps.setTimestamp(1, trans.getTransactionDate());
-            if ("DEPOSIT".equals(trans.getTransactionType())) {
-                ps.setInt(2, 1); // ID 1: Thu khác
-                ps.setString(4, "IN");
-            } else {
-                ps.setInt(2, 3); // ID 3: Chi khác
-                ps.setString(4, "OUT");
+            // B3: Kiểm tra và Insert Ledger (nếu có category phù hợp)
+            String categoryType = "DEPOSIT".equals(trans.getTransactionType()) ? "REVENUE" : "EXPENSE";
+            String ledgerType = "DEPOSIT".equals(trans.getTransactionType()) ? "IN" : "OUT";
+            
+            ps = conn.prepareStatement(checkCategory);
+            ps.setString(1, categoryType);
+            rs = ps.executeQuery();
+            
+            if (rs.next()) {
+                // Có category phù hợp, insert vào ledger
+                int categoryId = rs.getInt("id");
+                ps.close();
+                
+                ps = conn.prepareStatement(insertLedger);
+                ps.setTimestamp(1, trans.getTransactionDate());
+                ps.setInt(2, categoryId);
+                ps.setBigDecimal(3, trans.getAmount());
+                ps.setString(4, ledgerType);
+                ps.setString(5, "Tự động từ Quỹ: " + trans.getNote());
+                ps.setInt(6, fundTransId);
+                ps.executeUpdate();
             }
-            ps.setBigDecimal(3, trans.getAmount());
-            ps.setString(5, "Tự động từ Quỹ: " + trans.getNote());
-            ps.setInt(6, fundTransId);
-            ps.executeUpdate();
+            // Nếu không có category, bỏ qua việc ghi ledger (không gây lỗi)
 
             conn.commit(); // Lưu tất cả
             success = true;
