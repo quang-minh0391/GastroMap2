@@ -25,36 +25,59 @@ body {
     display: flex;
     flex-direction: column;
     z-index: 1000;
+    overflow: hidden;
+}
+
+/* Phần brand và user profile - cố định ở trên */
+.sidebar .brand-section {
+    flex-shrink: 0;
+}
+
+/* Phần nav menu - scroll được */
+.sidebar .nav {
+    flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
+    min-height: 0; /* Quan trọng để flex item có thể scroll */
+}
+
+/* Phần logout - cố định ở dưới */
+.sidebar .logout-section {
+    flex-shrink: 0;
 }
 
 /* Scrollbar tùy chỉnh cho sidebar */
-.sidebar::-webkit-scrollbar {
+.sidebar::-webkit-scrollbar,
+.sidebar .nav::-webkit-scrollbar {
     width: 6px;
 }
 
-.sidebar::-webkit-scrollbar-track {
+.sidebar::-webkit-scrollbar-track,
+.sidebar .nav::-webkit-scrollbar-track {
     background: #23272b;
 }
 
-.sidebar::-webkit-scrollbar-thumb {
+.sidebar::-webkit-scrollbar-thumb,
+.sidebar .nav::-webkit-scrollbar-thumb {
     background: #495057;
     border-radius: 3px;
 }
 
-.sidebar::-webkit-scrollbar-thumb:hover {
+.sidebar::-webkit-scrollbar-thumb:hover,
+.sidebar .nav::-webkit-scrollbar-thumb:hover {
     background: #6c757d;
 }
 
 .sidebar .nav-link {
     color: #adb5bd;
-    padding: 10px 18px;
+    padding: 10px 15px;
     border-bottom: 1px solid #495057;
     text-decoration: none;
     transition: 0.3s;
-    font-size: 0.9rem;
-    white-space: nowrap;
+    font-size: 0.88rem;
+    white-space: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .sidebar .nav-link:hover { 
