@@ -103,6 +103,12 @@
     <servlet>
         <servlet-name>FundServlet</servlet-name>
         <servlet-class>controller.finance.FundServlet</servlet-class>
+        <servlet-name>FarmerDebtHistoryServlet</servlet-name>
+        <servlet-class>controller.debt.FarmerDebtHistoryServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>FarmerTransactionDetailServlet</servlet-name>
+        <servlet-class>controller.debt.FarmerTransactionDetailServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>Register</servlet-name>
@@ -213,6 +219,7 @@
         <url-pattern>/SearchProductWarehouseServlet</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
+
         <servlet-name>AssetServlet</servlet-name>
         <url-pattern>/AssetServlet</url-pattern>
     </servlet-mapping>
@@ -223,5 +230,13 @@
     <servlet-mapping>
         <servlet-name>FundServlet</servlet-name>
         <url-pattern>/fund</url-pattern>
+
+        <servlet-name>FarmerDebtHistoryServlet</servlet-name>
+        <url-pattern>/FarmerDebtHistoryServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>FarmerTransactionDetailServlet</servlet-name>
+        <url-pattern>/FarmerTransactionDetailServlet</url-pattern>
+
     </servlet-mapping>
 </web-app>

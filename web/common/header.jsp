@@ -102,6 +102,7 @@
                     <div class="text-uppercase px-3 py-2 text-secondary" style="font-size: 0.65rem; letter-spacing: 1px; opacity: 0.8;">
                         Kho & Tài chính
                     </div>
+
                     <a class="nav-link w-100 <%= currentUri.contains("AssetServlet") || currentUri.contains("asset") ? "active" : "" %>" 
                        href="${pageContext.request.contextPath}/AssetServlet">
                         <i class="bi bi-tools me-2"></i> Quản lý Tài sản & Thiết bị
@@ -116,6 +117,18 @@
                         <i class="bi bi-graph-up-arrow me-2"></i> Quản lí quỹ chung
                     </a>
 <!--                    <a class="nav-link w-100 <%= (currentUri.contains("finance.jsp") || currentUri.contains("capital.jsp")) ? "active" : "" %>" 
+
+                    <% 
+    Integer mType = (Integer) session.getAttribute("member_type"); 
+    if (mType != null && mType == 1) { 
+                    %>
+                    <a class="nav-link w-100 <%= currentUri.contains("FarmerDebtHistoryServlet") ? "active" : "" %>" 
+                       href="${pageContext.request.contextPath}/FarmerDebtHistoryServlet">
+                        <i class="bi bi-clock-history me-2"></i> Lịch sử nợ của tôi
+                    </a>
+                    <% } %>
+                    <a class="nav-link w-100 <%= (currentUri.contains("finance.jsp") || currentUri.contains("capital.jsp")) ? "active" : "" %>" 
+
                        href="${pageContext.request.contextPath}/admin/finance.jsp">
                         <i class="bi bi-cash-stack me-2"></i> Tài chính & Báo cáo
                     </a>
@@ -124,20 +137,23 @@
                        href="${pageContext.request.contextPath}/SearchMaterialServlet">
                         <i class="bi bi-boxes me-2"></i> Quản lí vật tư
                     </a>
+
                     -->
+
+
                     <a class="nav-link w-100 <%= (currentUri.contains("debt_management.jsp") || currentUri.contains("debt_management.jsp")) ? "active" : "" %>" 
                        href="${pageContext.request.contextPath}/DebtManagementServlet">
                         <i class="bi bi-wallet2 me-2"></i> Quản lí nợ
                     </a>
-                     
-                        <a class="nav-link w-100 <%= (currentUri.contains("purchase_receipt.jsp") || currentUri.contains("purchase_receipt.jsp")) ? "active" : "" %>" 
+
+                    <a class="nav-link w-100 <%= (currentUri.contains("purchase_receipt.jsp") || currentUri.contains("purchase_receipt.jsp")) ? "active" : "" %>" 
                        href="${pageContext.request.contextPath}/purchase/purchase_receipt.jsp">
                         <i class="bi bi-cart-check me-2"></i> Thu mua sản phẩm
                     </a>
-                        <a class="nav-link w-100 <%= (currentUri.contains("contractManager")) ? "active" : "" %>" 
-   href="${pageContext.request.contextPath}/contractManager?service=list">
-    <i class="bi bi-file-earmark-text-fill me-2"></i> Quản lý Hợp đồng
-</a>
+                    <a class="nav-link w-100 <%= (currentUri.contains("contractManager")) ? "active" : "" %>" 
+                       href="${pageContext.request.contextPath}/contractManager?service=list">
+                        <i class="bi bi-file-earmark-text-fill me-2"></i> Quản lý Hợp đồng
+                    </a>
                 </div>
             </nav>
 
@@ -154,40 +170,40 @@
         <div class="main-area">
 
             <script>
-        var socketPath = "ws://" + window.location.host + "${pageContext.request.contextPath}/notificationServer";
-        var socket = new WebSocket(socketPath);
+                var socketPath = "ws://" + window.location.host + "${pageContext.request.contextPath}/notificationServer";
+                var socket = new WebSocket(socketPath);
 
-        socket.onmessage = function (event) {
-            var message = event.data;
-            var badge = document.getElementById("noti-badge");
-            var count = parseInt(badge.innerText);
-            badge.innerText = count + 1;
+                socket.onmessage = function (event) {
+                    var message = event.data;
+                    var badge = document.getElementById("noti-badge");
+                    var count = parseInt(badge.innerText);
+                    badge.innerText = count + 1;
 
-            var bell = document.getElementById("bell-icon");
-            bell.classList.add("bell-ring");
-            setTimeout(() => {
-                bell.classList.remove("bell-ring");
-            }, 1000);
+                    var bell = document.getElementById("bell-icon");
+                    bell.classList.add("bell-ring");
+                    setTimeout(() => {
+                        bell.classList.remove("bell-ring");
+                    }, 1000);
 
-            const Toast = Swal.mixin({
-                toast: true,
-                position: 'top-end',
-                showConfirmButton: false,
-                timer: 4000,
-                timerProgressBar: true
-            });
+                    const Toast = Swal.mixin({
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 4000,
+                        timerProgressBar: true
+                    });
 
-            Toast.fire({
-                icon: 'info',
-                title: 'Thông báo mới',
-                text: message
-            });
-        };
+                    Toast.fire({
+                        icon: 'info',
+                        title: 'Thông báo mới',
+                        text: message
+                    });
+                };
 
-        socket.onopen = function () {
-            console.log("Hệ thống thông báo: Online");
-        };
-        socket.onclose = function () {
-            console.log("Hệ thống thông báo: Offline");
-        };
+                socket.onopen = function () {
+                    console.log("Hệ thống thông báo: Online");
+                };
+                socket.onclose = function () {
+                    console.log("Hệ thống thông báo: Offline");
+                };
             </script>
