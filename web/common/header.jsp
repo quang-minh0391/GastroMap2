@@ -102,7 +102,20 @@
                     <div class="text-uppercase px-3 py-2 text-secondary" style="font-size: 0.65rem; letter-spacing: 1px; opacity: 0.8;">
                         Kho & Tài chính
                     </div>
-                    <a class="nav-link w-100 <%= (currentUri.contains("finance.jsp") || currentUri.contains("capital.jsp")) ? "active" : "" %>" 
+                    <a class="nav-link w-100 <%= currentUri.contains("AssetServlet") || currentUri.contains("asset") ? "active" : "" %>" 
+                       href="${pageContext.request.contextPath}/AssetServlet">
+                        <i class="bi bi-tools me-2"></i> Quản lý Tài sản & Thiết bị
+                    </a>
+
+                    <a class="nav-link w-100 <%= currentUri.contains("/finance") ? "active" : "" %>" 
+                       href="${pageContext.request.contextPath}/finance">
+                        <i class="bi bi-graph-up-arrow me-2"></i> Sổ cái Tài chính
+                    </a>
+                        <a class="nav-link w-100 <%= currentUri.contains("/fund") ? "active" : "" %>" 
+                       href="${pageContext.request.contextPath}/fund">
+                        <i class="bi bi-graph-up-arrow me-2"></i> Quản lí quỹ chung
+                    </a>
+<!--                    <a class="nav-link w-100 <%= (currentUri.contains("finance.jsp") || currentUri.contains("capital.jsp")) ? "active" : "" %>" 
                        href="${pageContext.request.contextPath}/admin/finance.jsp">
                         <i class="bi bi-cash-stack me-2"></i> Tài chính & Báo cáo
                     </a>
@@ -111,7 +124,7 @@
                        href="${pageContext.request.contextPath}/SearchMaterialServlet">
                         <i class="bi bi-boxes me-2"></i> Quản lí vật tư
                     </a>
-                    
+                    -->
                     <a class="nav-link w-100 <%= (currentUri.contains("debt_management.jsp") || currentUri.contains("debt_management.jsp")) ? "active" : "" %>" 
                        href="${pageContext.request.contextPath}/DebtManagementServlet">
                         <i class="bi bi-wallet2 me-2"></i> Quản lí nợ

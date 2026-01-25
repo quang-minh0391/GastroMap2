@@ -92,6 +92,18 @@
         <servlet-name>SearchProductWarehouseServlet</servlet-name>
         <servlet-class>controller.purchase.SearchProductWarehouseServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>AssetServlet</servlet-name>
+        <servlet-class>controller.asset.AssetServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>FinanceServlet</servlet-name>
+        <servlet-class>controller.finance.FinanceServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>FundServlet</servlet-name>
+        <servlet-class>controller.finance.FundServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>Register</servlet-name>
         <url-pattern>/Register</url-pattern>
@@ -199,5 +211,17 @@
     <servlet-mapping>
         <servlet-name>SearchProductWarehouseServlet</servlet-name>
         <url-pattern>/SearchProductWarehouseServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AssetServlet</servlet-name>
+        <url-pattern>/AssetServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>FinanceServlet</servlet-name>
+        <url-pattern>/finance</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>FundServlet</servlet-name>
+        <url-pattern>/fund</url-pattern>
     </servlet-mapping>
 </web-app>
