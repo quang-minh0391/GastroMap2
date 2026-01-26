@@ -17,6 +17,77 @@ public class FinanceDAO {
     Connection conn = null;
     PreparedStatement ps = null;
     ResultSet rs = null;
+// --- [MỚI] 1. Tìm ID danh mục theo tên, nếu chưa có thì tạo mới ---
+
+    public int getOrCreateCategory(String name, String type) {
+        int id = 0;
+        name = name.trim();
+        // DB lưu 'REVENUE' hoặc 'EXPENSE', nhưng form gửi 'IN'/'OUT' -> Cần map lại
+        String dbType = "IN".equals(type) ? "REVENUE" : "EXPENSE";
+
+        // B1: Kiểm tra tồn tại
+        String checkSql = "SELECT id FROM transaction_categories WHERE name = ? AND type = ?";
+        try {
+            conn = new DBContext().getConnection();
+            ps = conn.prepareStatement(checkSql);
+            ps.setString(1, name);
+            ps.setString(2, dbType);
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                id = rs.getInt("id");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (conn != null) {
+                    conn.close();
+                }
+                if (ps != null) {
+                    ps.close();
+                }
+                if (rs != null) {
+                    rs.close();
+                }
+            } catch (Exception e) {
+            }
+        }
+
+        // B2: Nếu chưa có -> Tạo mới
+        if (id == 0) {
+            String insertSql = "INSERT INTO transaction_categories (name, type, code) VALUES (?, ?, ?)";
+            try {
+                conn = new DBContext().getConnection();
+                ps = conn.prepareStatement(insertSql, java.sql.Statement.RETURN_GENERATED_KEYS);
+                ps.setString(1, name);
+                ps.setString(2, dbType);
+                // Tạo mã code ngẫu nhiên hoặc tự sinh (VD: GEN_12345) để tránh lỗi Unique Key
+                ps.setString(3, "GEN_" + System.currentTimeMillis());
+                ps.executeUpdate();
+
+                rs = ps.getGeneratedKeys();
+                if (rs.next()) {
+                    id = rs.getInt(1);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    if (conn != null) {
+                        conn.close();
+                    }
+                    if (ps != null) {
+                        ps.close();
+                    }
+                    if (rs != null) {
+                        rs.close();
+                    }
+                } catch (Exception e) {
+                }
+            }
+        }
+        return id;
+    }
 
     // 1. Lấy tất cả danh mục (Dropdown)
     public List<TransactionCategory> getAllCategories() {
@@ -38,7 +109,8 @@ public class FinanceDAO {
     }
 
     // 2. Tìm kiếm & Phân trang (Sổ cái)
-    public List<FinancialTransaction> searchTransactions(java.sql.Date fromDate, java.sql.Date toDate, String type, Integer categoryId, String sortBy, String sortOrder, int pageIndex, int pageSize) {
+    // --- [CẬP NHẬT] Hàm tìm kiếm (Thêm minAmount, maxAmount) ---
+    public List<FinancialTransaction> searchTransactions(java.sql.Date fromDate, java.sql.Date toDate, String type, String categoryName, BigDecimal minAmount, BigDecimal maxAmount, String sortBy, String sortOrder, int pageIndex, int pageSize) {
         List<FinancialTransaction> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder("SELECT f.*, c.name as cat_name FROM financial_ledger f LEFT JOIN transaction_categories c ON f.category_id = c.id WHERE 1=1 ");
         List<Object> params = new ArrayList<>();
@@ -55,10 +127,21 @@ public class FinanceDAO {
             sql.append(" AND f.transaction_type = ?");
             params.add(type);
         }
-        if (categoryId != null && categoryId > 0) {
-            sql.append(" AND f.category_id = ?");
-            params.add(categoryId);
+        if (categoryName != null && !categoryName.trim().isEmpty()) {
+            sql.append(" AND c.name LIKE ?");
+            params.add("%" + categoryName.trim() + "%");
         }
+
+        // --- [MỚI] Lọc theo giá tiền ---
+        if (minAmount != null) {
+            sql.append(" AND f.amount >= ?");
+            params.add(minAmount);
+        }
+        if (maxAmount != null) {
+            sql.append(" AND f.amount <= ?");
+            params.add(maxAmount);
+        }
+        // -------------------------------
 
         String col = "f.transaction_date";
         if ("amount".equals(sortBy)) {
@@ -68,6 +151,7 @@ public class FinanceDAO {
         } else if ("type".equals(sortBy)) {
             col = "f.transaction_type";
         }
+
         String dir = "DESC";
         if ("ASC".equalsIgnoreCase(sortOrder)) {
             dir = "ASC";
@@ -87,10 +171,8 @@ public class FinanceDAO {
             rs = ps.executeQuery();
             while (rs.next()) {
                 FinancialTransaction t = new FinancialTransaction(rs.getInt("id"), rs.getTimestamp("transaction_date"), rs.getInt("category_id"), rs.getBigDecimal("amount"), rs.getString("transaction_type"), rs.getString("source_table"), rs.getInt("source_id"), rs.getString("description"));
-//                t.setCategoryName(rs.getString("cat_name"));
-//                list.add(t);
                 String catName = rs.getString("cat_name");
-                t.setCategoryName(catName != null ? catName : "Khác (hoặc ID " + rs.getInt("category_id") + ")");
+                t.setCategoryName(catName != null ? catName : "Khác");
                 list.add(t);
             }
         } catch (Exception e) {
@@ -101,11 +183,12 @@ public class FinanceDAO {
         return list;
     }
 
-    // 3. Đếm tổng số giao dịch
-    public int countTransactions(java.sql.Date fromDate, java.sql.Date toDate, String type, Integer categoryId) {
+    // --- [CẬP NHẬT] Hàm đếm tổng số (Thêm minAmount, maxAmount) ---
+    public int countTransactions(java.sql.Date fromDate, java.sql.Date toDate, String type, String categoryName, BigDecimal minAmount, BigDecimal maxAmount) {
         int count = 0;
-        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM financial_ledger f WHERE 1=1 ");
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM financial_ledger f LEFT JOIN transaction_categories c ON f.category_id = c.id WHERE 1=1 ");
         List<Object> params = new ArrayList<>();
+
         if (fromDate != null) {
             sql.append(" AND f.transaction_date >= ?");
             params.add(fromDate);
@@ -118,10 +201,20 @@ public class FinanceDAO {
             sql.append(" AND f.transaction_type = ?");
             params.add(type);
         }
-        if (categoryId != null && categoryId > 0) {
-            sql.append(" AND f.category_id = ?");
-            params.add(categoryId);
+        if (categoryName != null && !categoryName.trim().isEmpty()) {
+            sql.append(" AND c.name LIKE ?");
+            params.add("%" + categoryName.trim() + "%");
         }
+        // --- [MỚI] Lọc theo giá tiền ---
+        if (minAmount != null) {
+            sql.append(" AND f.amount >= ?");
+            params.add(minAmount);
+        }
+        if (maxAmount != null) {
+            sql.append(" AND f.amount <= ?");
+            params.add(maxAmount);
+        }
+        // -------------------------------
 
         try {
             conn = new DBContext().getConnection();
@@ -281,8 +374,4 @@ public class FinanceDAO {
         }
     }
 
-    // Giữ hàm này để tương thích nếu code cũ còn gọi
-    public List<FinancialTransaction> getAllTransactions() {
-        return searchTransactions(null, null, null, null, null, null, 1, 1000);
-    }
 }

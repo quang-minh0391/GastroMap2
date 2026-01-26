@@ -15,20 +15,19 @@ public class FundDAO {
     PreparedStatement ps = null;
     ResultSet rs = null;
 
-// --- 1. Lấy danh sách thành viên (Dùng class member) ---
-    // --- Sửa lại hàm này để lấy danh sách thành viên ---
+    // --- 1. Lấy danh sách thành viên (Đã cập nhật thêm username để tìm kiếm) ---
     public List<member> getAllMembers() {
         List<member> list = new ArrayList<>();
-        // Chỉ lấy những trường cần thiết để hiển thị dropdown cho nhẹ
-        String sql = "SELECT id, full_name, phone FROM members WHERE status = 'Active' ORDER BY full_name ASC"; 
+        // Lấy thêm username để phục vụ tính năng tìm kiếm trong JSP
+        String sql = "SELECT id, username, full_name, phone FROM members WHERE status = 'Active' ORDER BY full_name ASC"; 
         try {
             conn = new DBContext().getConnection();
             ps = conn.prepareStatement(sql);
             rs = ps.executeQuery();
             while (rs.next()) {
-                // Sử dụng setter thay vì constructor dài dòng để tránh lỗi null các trường khác
                 member m = new member();
                 m.setId(rs.getInt("id"));
+                m.setUsername(rs.getString("username")); // Cần đảm bảo model.member có hàm setUsername
                 m.setFull_name(rs.getString("full_name"));
                 m.setPhone(rs.getString("phone")); 
                 list.add(m);
@@ -41,10 +40,11 @@ public class FundDAO {
         return list;
     }
 
-    // 1. Lấy danh sách các Quỹ và số dư hiện tại
+    // --- 2. Lấy danh sách Quỹ (Đã cập nhật Sắp xếp giảm dần theo tiền) ---
     public List<FundCategory> getAllFunds() {
         List<FundCategory> list = new ArrayList<>();
-        String sql = "SELECT * FROM fund_categories";
+        // Thêm ORDER BY current_balance DESC để đưa các quỹ nhiều tiền lên đầu (Top 4)
+        String sql = "SELECT * FROM fund_categories ORDER BY current_balance DESC";
         try {
             conn = new DBContext().getConnection();
             ps = conn.prepareStatement(sql);
@@ -65,10 +65,27 @@ public class FundDAO {
         return list;
     }
 
-    // 2. Lấy lịch sử giao dịch quỹ (Join với bảng Members và FundCategories)
+    // --- 3. Thêm Quỹ Mới (METHOD MỚI) ---
+    public boolean insertFundCategory(String name, String desc, BigDecimal initialBalance) {
+        String sql = "INSERT INTO fund_categories (fund_name, description, current_balance) VALUES (?, ?, ?)";
+        try {
+            conn = new DBContext().getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, name);
+            ps.setString(2, desc);
+            ps.setBigDecimal(3, initialBalance);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            closeResources();
+        }
+        return false;
+    }
+
+    // --- 4. Lấy lịch sử giao dịch gần đây ---
     public List<FundTransaction> getRecentTransactions(int limit) {
         List<FundTransaction> list = new ArrayList<>();
-        // LEFT JOIN members vì có thể giao dịch không gắn với thành viên cụ thể
         String sql = "SELECT ft.*, fc.fund_name, m.full_name "
                 + "FROM fund_transactions ft "
                 + "JOIN fund_categories fc ON ft.fund_id = fc.id "
@@ -101,8 +118,7 @@ public class FundDAO {
         return list;
     }
 
-    // 3. Xử lý Giao dịch (Nộp/Rút) - Dùng Transaction SQL
-    // --- 2. Xử lý Giao dịch (Giữ nguyên logic Transaction chặt chẽ) ---
+    // --- 5. Xử lý Giao dịch (Giữ nguyên logic Transaction) ---
     public boolean insertFundTransaction(FundTransaction trans) {
         boolean success = false;
 
@@ -184,119 +200,136 @@ public class FundDAO {
         }
         return success;
     }
-// --- 4. Tìm kiếm & Phân trang cho Lịch sử Quỹ ---
-    public List<FundTransaction> searchFundTransactions(Integer fundId, Integer memberId, String type, 
-                                                        Date dateFrom, Date dateTo, 
-                                                        int pageIndex, int pageSize) {
-        List<FundTransaction> list = new ArrayList<>();
-        // Query động
-        StringBuilder sql = new StringBuilder("SELECT ft.*, fc.fund_name, m.full_name " +
-                                              "FROM fund_transactions ft " +
-                                              "JOIN fund_categories fc ON ft.fund_id = fc.id " +
-                                              "LEFT JOIN members m ON ft.member_id = m.id " +
-                                              "WHERE 1=1 ");
-        
-        List<Object> params = new ArrayList<>();
 
-        if (fundId != null && fundId > 0) {
-            sql.append(" AND ft.fund_id = ?");
-            params.add(fundId);
-        }
-        if (memberId != null && memberId > 0) {
-            sql.append(" AND ft.member_id = ?");
-            params.add(memberId);
-        }
-        if (type != null && !type.isEmpty()) {
-            sql.append(" AND ft.transaction_type = ?");
-            params.add(type);
-        }
-        if (dateFrom != null) {
-            sql.append(" AND DATE(ft.transaction_date) >= ?");
-            params.add(dateFrom);
-        }
-        if (dateTo != null) {
-            sql.append(" AND DATE(ft.transaction_date) <= ?");
-            params.add(dateTo);
-        }
+    // Trong FundDAO.java
 
-        // Sắp xếp và Phân trang
-        sql.append(" ORDER BY ft.transaction_date DESC LIMIT ? OFFSET ?");
-        params.add(pageSize);
-        params.add((pageIndex - 1) * pageSize);
+// 1. Cập nhật hàm searchFundTransactions
+public List<FundTransaction> searchFundTransactions(String fundName, String memberName, String type, 
+                                                    Date dateFrom, Date dateTo, 
+                                                    int pageIndex, int pageSize) {
+    List<FundTransaction> list = new ArrayList<>();
+    
+    // JOIN bảng fund_categories (fc) để lấy tên quỹ, members (m) lấy tên thành viên
+    StringBuilder sql = new StringBuilder("SELECT ft.*, fc.fund_name, m.full_name " +
+                                          "FROM fund_transactions ft " +
+                                          "JOIN fund_categories fc ON ft.fund_id = fc.id " +
+                                          "LEFT JOIN members m ON ft.member_id = m.id " +
+                                          "WHERE 1=1 ");
+    
+    List<Object> params = new ArrayList<>();
 
-        try {
-            conn = new DBContext().getConnection();
-            ps = conn.prepareStatement(sql.toString());
-            for (int i = 0; i < params.size(); i++) {
-                ps.setObject(i + 1, params.get(i));
-            }
-            rs = ps.executeQuery();
-            while (rs.next()) {
-                FundTransaction ft = new FundTransaction(
-                        rs.getInt("id"),
-                        rs.getInt("fund_id"),
-                        rs.getInt("member_id"),
-                        rs.getString("transaction_type"),
-                        rs.getBigDecimal("amount"),
-                        rs.getTimestamp("transaction_date"),
-                        rs.getString("note")
-                );
-                ft.setFundName(rs.getString("fund_name"));
-                ft.setMemberName(rs.getString("full_name"));
-                list.add(ft);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            closeResources();
-        }
-        return list;
+    // --- SỬA Ở ĐÂY: Tìm theo tên quỹ (LIKE) ---
+    if (fundName != null && !fundName.trim().isEmpty()) {
+        sql.append(" AND fc.fund_name LIKE ?");
+        params.add("%" + fundName.trim() + "%");
+    }
+    
+    // Tìm theo tên thành viên
+    if (memberName != null && !memberName.trim().isEmpty()) {
+        sql.append(" AND m.full_name LIKE ?");
+        params.add("%" + memberName.trim() + "%");
     }
 
-    // --- 5. Đếm tổng số bản ghi (Để tính tổng số trang) ---
-    public int countFundTransactions(Integer fundId, Integer memberId, String type, Date dateFrom, Date dateTo) {
-        int count = 0;
-        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM fund_transactions ft WHERE 1=1 ");
-        List<Object> params = new ArrayList<>();
-
-        if (fundId != null && fundId > 0) {
-            sql.append(" AND ft.fund_id = ?");
-            params.add(fundId);
-        }
-        if (memberId != null && memberId > 0) {
-            sql.append(" AND ft.member_id = ?");
-            params.add(memberId);
-        }
-        if (type != null && !type.isEmpty()) {
-            sql.append(" AND ft.transaction_type = ?");
-            params.add(type);
-        }
-        if (dateFrom != null) {
-            sql.append(" AND DATE(ft.transaction_date) >= ?");
-            params.add(dateFrom);
-        }
-        if (dateTo != null) {
-            sql.append(" AND DATE(ft.transaction_date) <= ?");
-            params.add(dateTo);
-        }
-
-        try {
-            conn = new DBContext().getConnection();
-            ps = conn.prepareStatement(sql.toString());
-            for (int i = 0; i < params.size(); i++) {
-                ps.setObject(i + 1, params.get(i));
-            }
-            rs = ps.executeQuery();
-            if (rs.next()) {
-                count = rs.getInt(1);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            closeResources();
-        }
-        return count;
+    // Tìm theo loại giao dịch
+    if (type != null && !type.isEmpty()) {
+        sql.append(" AND ft.transaction_type = ?");
+        params.add(type);
     }
+
+    // Lọc theo ngày
+    if (dateFrom != null) {
+        sql.append(" AND DATE(ft.transaction_date) >= ?");
+        params.add(dateFrom);
+    }
+    if (dateTo != null) {
+        sql.append(" AND DATE(ft.transaction_date) <= ?");
+        params.add(dateTo);
+    }
+
+    // Sắp xếp & Phân trang
+    sql.append(" ORDER BY ft.transaction_date DESC LIMIT ? OFFSET ?");
+    params.add(pageSize);
+    params.add((pageIndex - 1) * pageSize);
+
+    try {
+        conn = new DBContext().getConnection();
+        ps = conn.prepareStatement(sql.toString());
+        for (int i = 0; i < params.size(); i++) {
+            ps.setObject(i + 1, params.get(i));
+        }
+        rs = ps.executeQuery();
+        while (rs.next()) {
+            FundTransaction ft = new FundTransaction(
+                    rs.getInt("id"),
+                    rs.getInt("fund_id"),
+                    rs.getInt("member_id"),
+                    rs.getString("transaction_type"),
+                    rs.getBigDecimal("amount"),
+                    rs.getTimestamp("transaction_date"),
+                    rs.getString("note")
+            );
+            ft.setFundName(rs.getString("fund_name"));
+            ft.setMemberName(rs.getString("full_name"));
+            list.add(ft);
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    } finally {
+        closeResources();
+    }
+    return list;
+}
+
+// 2. Cập nhật hàm countFundTransactions (Logic tương tự)
+public int countFundTransactions(String fundName, String memberName, String type, Date dateFrom, Date dateTo) {
+    int count = 0;
+    StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM fund_transactions ft " +
+                                          "JOIN fund_categories fc ON ft.fund_id = fc.id " + // Cần JOIN để lọc tên
+                                          "LEFT JOIN members m ON ft.member_id = m.id " +
+                                          "WHERE 1=1 ");
+    List<Object> params = new ArrayList<>();
+
+    // --- SỬA Ở ĐÂY ---
+    if (fundName != null && !fundName.trim().isEmpty()) {
+        sql.append(" AND fc.fund_name LIKE ?");
+        params.add("%" + fundName.trim() + "%");
+    }
+    
+    if (memberName != null && !memberName.trim().isEmpty()) {
+        sql.append(" AND m.full_name LIKE ?");
+        params.add("%" + memberName.trim() + "%");
+    }
+    if (type != null && !type.isEmpty()) {
+        sql.append(" AND ft.transaction_type = ?");
+        params.add(type);
+    }
+    if (dateFrom != null) {
+        sql.append(" AND DATE(ft.transaction_date) >= ?");
+        params.add(dateFrom);
+    }
+    if (dateTo != null) {
+        sql.append(" AND DATE(ft.transaction_date) <= ?");
+        params.add(dateTo);
+    }
+
+    try {
+        conn = new DBContext().getConnection();
+        ps = conn.prepareStatement(sql.toString());
+        for (int i = 0; i < params.size(); i++) {
+            ps.setObject(i + 1, params.get(i));
+        }
+        rs = ps.executeQuery();
+        if (rs.next()) {
+            count = rs.getInt(1);
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    } finally {
+        closeResources();
+    }
+    return count;
+}
+
     // Đóng kết nối
     private void closeResources() {
         try {

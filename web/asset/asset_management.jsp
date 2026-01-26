@@ -89,12 +89,14 @@
                 <label>Tên Tài Sản:</label>
                 <input type="text" name="name" required placeholder="VD: Máy cày Kubota">
 
-                <label>Loại Tài Sản:</label>
-                <select name="category_id">
+                <%-- Thay thế ô select cũ bằng input list --%>
+                <label>Loại Tài Sản :</label>
+                <input type="text" name="category_name" list="category_list" required placeholder="Gõ tên loại mới hoặc chọn..." autocomplete="off">
+                <datalist id="category_list">
                     <c:forEach items="${categories}" var="cat">
-                        <option value="${cat.id}">${cat.name}</option>
+                        <option value="${cat.name}"></option>
                     </c:forEach>
-                </select>
+                </datalist>
 
                 <label>Ngày mua:</label>
                 <input type="date" name="purchase_date" required>
@@ -119,25 +121,46 @@
         <div class="table-section-asset">
             <h4 class="mt-0 mb-3">
                 📋 Danh sách Máy móc & Thiết bị 
-                <span style="color: #007bff; font-size: 0.9em;">
-                    (Tổng trong kho: ${grandTotalAssets})
-                </span>
             </h4>
 
             <form id="filterForm" action="AssetServlet" method="GET" style="background:#f8f9fa; padding:15px; border-radius:4px; margin-bottom: 15px; border: 1px solid #dee2e6;">
                 <input type="hidden" id="sortBy" name="sortBy" value="${sortBy}">
                 <input type="hidden" id="sortOrder" name="sortOrder" value="${sortOrder}">
                 
-                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <input type="text" name="f_code" value="${f_code}" placeholder="Mã..." style="flex:1; margin:0; padding: 6px; border: 1px solid #ccc; border-radius: 4px;">
-                    <input type="text" name="f_name" value="${f_name}" placeholder="Tên thiết bị..." style="flex:2; margin:0; padding: 6px; border: 1px solid #ccc; border-radius: 4px;">
-                    <select name="f_status" style="flex:1; margin:0; padding: 6px; border: 1px solid #ccc; border-radius: 4px;">
-                        <option value="">-- Trạng thái --</option>
-                        <option value="ACTIVE" ${f_status == 'ACTIVE' ? 'selected' : ''}>Đang sử dụng</option>
-                        <option value="MAINTENANCE" ${f_status == 'MAINTENANCE' ? 'selected' : ''}>Bảo trì</option>
-                        <option value="BROKEN" ${f_status == 'BROKEN' ? 'selected' : ''}>Hỏng</option>
-                        <option value="LIQUIDATED" ${f_status == 'LIQUIDATED' ? 'selected' : ''}>Thanh lý</option>
-                    </select>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;">
+                    <%-- Các ô lọc cũ --%>
+                    <div style="flex: 1; min-width: 100px;">
+                         <input type="text" name="f_code" value="${f_code}" placeholder="Mã..." style="width: 100%; margin:0; padding: 6px; border: 1px solid #ccc; border-radius: 4px;">
+                    </div>
+                    <div style="flex: 2; min-width: 150px;">
+                        <input type="text" name="f_name" value="${f_name}" placeholder="Tên thiết bị..." style="width: 100%; margin:0; padding: 6px; border: 1px solid #ccc; border-radius: 4px;">
+                    </div>
+                    <div style="flex: 1; min-width: 120px;">
+                        <select name="f_status" style="width: 100%; margin:0; padding: 6px; border: 1px solid #ccc; border-radius: 4px;">
+                            <option value="">-- Trạng thái --</option>
+                            <option value="ACTIVE" ${f_status == 'ACTIVE' ? 'selected' : ''}>Đang sử dụng</option>
+                            <option value="MAINTENANCE" ${f_status == 'MAINTENANCE' ? 'selected' : ''}>Bảo trì</option>
+                            <option value="BROKEN" ${f_status == 'BROKEN' ? 'selected' : ''}>Hỏng</option>
+                            <option value="LIQUIDATED" ${f_status == 'LIQUIDATED' ? 'selected' : ''}>Thanh lý</option>
+                        </select>
+                    </div>
+
+                    <%-- --- [MỚI] THÊM LỌC NGÀY MUA --- --%>
+                    <div style="display: flex; align-items: center; gap: 5px; background: white; padding: 5px; border: 1px solid #ddd; border-radius: 4px;">
+                        <!--<span style="font-size: 13px; color: #555;">Ngày mua:</span>-->
+                        <input type="date" name="f_date_from" value="${f_date_from}" style="padding: 4px; border: 1px solid #ccc; border-radius: 3px;">
+                        <span>➜</span>
+                        <input type="date" name="f_date_to" value="${f_date_to}" style="padding: 4px; border: 1px solid #ccc; border-radius: 3px;">
+                    </div>
+                    <%-- [MỚI] THÊM BỘ LỌC GIÁ TRỊ TẠI ĐÂY --%>
+                    <div style="display: flex; align-items: center; gap: 5px; background: white; padding: 5px; border: 1px solid #ddd; border-radius: 4px;">
+                        <span style="font-size: 13px; color: #555;">Giá tiền:</span>
+                        <input type="number" name="f_price_from" value="${f_price_from}" placeholder="Min" min="0" step="1000" style="width: 80px; padding: 4px; border: 1px solid #ccc; border-radius: 3px;">
+                        <span>-</span>
+                        <input type="number" name="f_price_to" value="${f_price_to}" placeholder="Max" min="0" step="1000" style="width: 80px; padding: 4px; border: 1px solid #ccc; border-radius: 3px;">
+                    </div>
+                    <%-- --------------------------------- --%>
+
                     <button type="submit" style="width: auto; padding: 6px 15px; background: #007bff; color: white; border: none; border-radius: 4px;">🔍 Lọc</button>
                     <a href="AssetServlet" style="align-self: center; font-size: 13px; color: red; text-decoration: none; margin-left: 5px;">[Xóa lọc]</a>
                 </div>
@@ -176,21 +199,14 @@
                             <td>${a.location}</td>
                             <td>
                                 <c:choose>
-                                    <%-- NẾU ĐÃ THANH LÝ -> HIỆN FORM MUA LẠI --%>
-                                    <c:when test="${a.status == 'LIQUIDATED'}">
-                                        <form action="AssetServlet" method="POST" style="background:#f1f1f1; padding:5px; border-radius:4px; font-size:11px;">
-                                            <input type="hidden" name="action" value="repurchase">
-                                            <input type="hidden" name="asset_id" value="${a.id}">
-                                            <input type="hidden" name="asset_name" value="${a.name}">
-                                            <b>Mua lại về:</b>
-                                            <select name="target_status" style="margin-bottom:3px; font-size: 11px;">
-                                                <option value="ACTIVE">Tốt</option>
-                                                <option value="BROKEN">Hỏng</option>
-                                            </select>
-                                            <input type="number" name="price" value="${a.currentValue}" style="width: 70px; font-size: 11px; padding: 2px;">
-                                            <button type="submit" style="background:#17a2b8; color:white; border:none; padding:2px 5px; cursor:pointer; width: auto; font-size: 11px;">↩ Mua lại</button>
-                                        </form>
-                                    </c:when>
+                                    <%-- NẾU ĐÃ THANH LÝ -> HIỆN NÚT MỞ MODAL --%>
+                                        <c:when test="${a.status == 'LIQUIDATED'}">
+                                            <button type="button" 
+                                                    onclick="openRepurchaseModal('${a.id}', '${a.name}', ${a.currentValue})"
+                                                    style="background:#17a2b8; color:white; border:none; padding:5px 10px; border-radius:4px; font-size:12px; cursor:pointer;">
+                                                ↩ Mua lại
+                                            </button>
+                                        </c:when>
 
                                     <%-- NẾU CHƯA THANH LÝ -> HIỆN BẢO TRÌ & THANH LÝ --%>
                                     <c:otherwise>
@@ -217,19 +233,58 @@
                     <c:if test="${empty assets}">
                         <tr><td colspan="7" style="text-align: center; color: red; padding: 20px;">Không tìm thấy tài sản nào!</td></tr>
                     </c:if>
+                        <div id="repurchaseModal" class="modal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5);">
+    <div style="background:white; margin:10% auto; padding:20px; width:400px; border-radius:8px; box-shadow:0 5px 15px rgba(0,0,0,0.3);">
+        <h3 style="margin-top:0;">↩ Mua lại Tài sản Thanh lý</h3>
+        <form action="AssetServlet" method="POST">
+            <input type="hidden" name="action" value="repurchase">
+            <input type="hidden" name="asset_id" id="modal_asset_id">
+            <input type="hidden" name="asset_name" id="modal_asset_name">
+            
+            <p>Bạn đang mua lại: <b id="display_name" style="color:#007bff"></b></p>
+            
+            <label style="display:block; margin-top:10px;">Trạng thái sau khi mua:</label>
+            <select name="target_status" style="width:100%; padding:8px; margin-bottom:10px;">
+                <option value="ACTIVE">✅ Tốt (Đang sử dụng)</option>
+                <option value="BROKEN">❌ Hỏng (Cần sửa)</option>
+            </select>
+            
+            <label style="display:block;">Giá mua lại (VNĐ):</label>
+            <input type="number" name="price" id="modal_price" required min="0" style="width:100%; padding:8px; margin-bottom:15px;">
+            
+            <div style="text-align:right;">
+                <button type="button" onclick="document.getElementById('repurchaseModal').style.display='none'" style="background:#ccc; border:none; padding:8px 15px; cursor:pointer; border-radius:4px;">Hủy</button>
+                <button type="submit" style="background:#28a745; color:white; border:none; padding:8px 15px; cursor:pointer; border-radius:4px;">Xác nhận Mua</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openRepurchaseModal(id, name, currentValue) {
+        document.getElementById('modal_asset_id').value = id;
+        document.getElementById('modal_asset_name').value = name;
+        document.getElementById('display_name').innerText = name;
+        document.getElementById('modal_price').value = currentValue; // Gợi ý giá cũ
+        document.getElementById('repurchaseModal').style.display = 'block';
+    }
+</script>
                 </tbody>
             </table>
 
-            <div style="margin-top: 20px; text-align: center;">
+           <div style="margin-top: 20px; text-align: center;">
                 <c:if test="${totalPage > 1}">
                     <c:if test="${pageIndex > 1}">
-                        <a href="AssetServlet?page=${pageIndex - 1}&f_code=${f_code}&f_name=${f_name}&f_status=${f_status}&sortBy=${sortBy}&sortOrder=${sortOrder}" 
-                           style="padding:8px 12px; background:#e9ecef; text-decoration:none; border-radius:4px; color: black; border: 1px solid #ddd;">« Trước</a>
+                        <%-- Thêm &f_price_from=${f_price_from}&f_price_to=${f_price_to} vào link --%>
+                        <a href="AssetServlet?page=${pageIndex - 1}&f_code=${f_code}&f_name=${f_name}&f_status=${f_status}&sortBy=${sortBy}&sortOrder=${sortOrder}&f_date_from=${f_date_from}&f_date_to=${f_date_to}&f_price_from=${f_price_from}&f_price_to=${f_price_to}" 
+                           style="padding:8px 12px; background:#007bff; text-decoration:none; border-radius:4px; color: white; border: 1px solid #ddd;">« Trước</a>
                     </c:if>
+                    
                     <span style="margin:0 10px; font-weight:bold;">Trang ${pageIndex} / ${totalPage}</span>
+                    
                     <c:if test="${pageIndex < totalPage}">
-                        <a href="AssetServlet?page=${pageIndex + 1}&f_code=${f_code}&f_name=${f_name}&f_status=${f_status}&sortBy=${sortBy}&sortOrder=${sortOrder}" 
-                           style="padding:8px 12px; background:#e9ecef; text-decoration:none; border-radius:4px; color: black; border: 1px solid #ddd;">Sau »</a>
+                        <a href="AssetServlet?page=${pageIndex + 1}&f_code=${f_code}&f_name=${f_name}&f_status=${f_status}&sortBy=${sortBy}&sortOrder=${sortOrder}&f_date_from=${f_date_from}&f_date_to=${f_date_to}&f_price_from=${f_price_from}&f_price_to=${f_price_to}" 
+                           style="padding:8px 12px; background:#007bff; text-decoration:none; border-radius:4px; color: white; border: 1px solid #ddd;">Sau »</a>
                     </c:if>
                 </c:if>
             </div>

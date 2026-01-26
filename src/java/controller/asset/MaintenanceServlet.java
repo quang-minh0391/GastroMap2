@@ -105,23 +105,26 @@ public class MaintenanceServlet extends HttpServlet {
             // 2. Cập nhật trạng thái tài sản thành MAINTENANCE
             dao.updateAssetStatus(assetId, "MAINTENANCE");
             
-            // 3. Tự động ghi vào Sổ cái (Financial Ledger) nếu có chi phí
-            if (cost.compareTo(BigDecimal.ZERO) > 0) {
-                FinanceDAO financeDao = new FinanceDAO();
-                FinancialTransaction trans = new FinancialTransaction();
-                
-                // Set ngày giao dịch = ngày bảo trì (Chuyển từ sql.Date sang sql.Timestamp)
-                trans.setTransactionDate(new java.sql.Timestamp(mDate.getTime()));
-                
-                // QUAN TRỌNG: ID 6 phải tồn tại trong bảng 'transaction_categories' là "Chi phí bảo trì"
-                trans.setCategoryId(6); 
-                
-                trans.setAmount(cost);
-                trans.setTransactionType("OUT"); // Chi tiền
-                trans.setDescription("Tự động: Phí bảo trì tài sản ID " + assetId + ". Nội dung: " + description);
-                
-                financeDao.insertTransaction(trans);
-            }
+            // 3. [MỚI] TỰ ĐỘNG GHI SỔ CÁI TÀI CHÍNH
+        if (cost.compareTo(BigDecimal.ZERO) > 0) {
+            FinanceDAO financeDao = new FinanceDAO();
+            FinancialTransaction trans = new FinancialTransaction();
+            
+            // Lấy thời gian hiện tại cho giao dịch tài chính
+            trans.setTransactionDate(new java.sql.Timestamp(System.currentTimeMillis()));
+            
+            // ID = 4 (Giả sử là 'Chi bảo trì tài sản' trong bảng transaction_categories)
+            // Bạn cần chắc chắn ID này tồn tại trong DB, nếu không hãy dùng ID 3 (Chi khác)
+            trans.setCategoryId(4); 
+            
+            trans.setAmount(cost);
+            trans.setTransactionType("OUT"); // Chi tiền
+            trans.setDescription("Phí bảo trì tài sản ID " + assetId + " (" + description + ")");
+            trans.setSourceTable("asset_maintenance_log"); // (Tùy chọn) Để biết nguồn gốc
+            // trans.setSourceId(...); // Nếu muốn lưu ID log
+            
+            financeDao.insertTransaction(trans);
+        }
             
             response.sendRedirect("maintenance?asset_id=" + assetId);
             

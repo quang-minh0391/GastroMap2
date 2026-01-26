@@ -116,8 +116,7 @@
                        href="${pageContext.request.contextPath}/fund">
                         <i class="bi bi-graph-up-arrow me-2"></i> Quản lí quỹ chung
                     </a>
-<!--                    <a class="nav-link w-100 <%= (currentUri.contains("finance.jsp") || currentUri.contains("capital.jsp")) ? "active" : "" %>" 
-
+                    <a class="nav-link w-100 <%= (currentUri.contains("finance.jsp") || currentUri.contains("capital.jsp")) ? "active" : "" %>" 
                     <% 
     Integer mType = (Integer) session.getAttribute("member_type"); 
     if (mType != null && mType == 1) { 
@@ -137,10 +136,6 @@
                        href="${pageContext.request.contextPath}/SearchMaterialServlet">
                         <i class="bi bi-boxes me-2"></i> Quản lí vật tư
                     </a>
-
-                    -->
-
-
                     <a class="nav-link w-100 <%= (currentUri.contains("debt_management.jsp") || currentUri.contains("debt_management.jsp")) ? "active" : "" %>" 
                        href="${pageContext.request.contextPath}/DebtManagementServlet">
                         <i class="bi bi-wallet2 me-2"></i> Quản lí nợ

@@ -418,6 +418,7 @@ public class AssetDAO {
         }
         return count;
     }
+
     // [MỚI] Đếm tổng tất cả tài sản trong DB (Không quan tâm bộ lọc)
     public int countAllAssets() {
         String sql = "SELECT COUNT(*) FROM fixed_assets";
@@ -431,7 +432,18 @@ public class AssetDAO {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            try { if (conn != null) conn.close(); if (ps != null) ps.close(); if (rs != null) rs.close(); } catch (Exception e) {}
+            try {
+                if (conn != null) {
+                    conn.close();
+                }
+                if (ps != null) {
+                    ps.close();
+                }
+                if (rs != null) {
+                    rs.close();
+                }
+            } catch (Exception e) {
+            }
         }
         return 0;
     }
@@ -444,7 +456,7 @@ public class AssetDAO {
         stats.put("MAINTENANCE", 0);
         stats.put("BROKEN", 0);
         stats.put("LIQUIDATED", 0);
-        
+
         String sql = "SELECT status, COUNT(*) FROM fixed_assets GROUP BY status";
         try {
             conn = new DBContext().getConnection();
@@ -456,8 +468,87 @@ public class AssetDAO {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            try { if (conn != null) conn.close(); if (ps != null) ps.close(); if (rs != null) rs.close(); } catch (Exception e) {}
+            try {
+                if (conn != null) {
+                    conn.close();
+                }
+                if (ps != null) {
+                    ps.close();
+                }
+                if (rs != null) {
+                    rs.close();
+                }
+            } catch (Exception e) {
+            }
         }
         return stats;
+    }
+
+    // --- 7. [MỚI] Tự động lấy ID danh mục (Nếu chưa có tên thì tạo mới) ---
+    public int getOrCreateCategoryId(String categoryName) {
+        int catId = 0;
+        categoryName = categoryName.trim();
+
+        // Bước 1: Kiểm tra xem tên này đã có chưa
+        String checkSql = "SELECT id FROM asset_categories WHERE name = ?";
+        try {
+            conn = new DBContext().getConnection();
+            ps = conn.prepareStatement(checkSql);
+            ps.setString(1, categoryName);
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                catId = rs.getInt("id");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (conn != null) {
+                    conn.close();
+                }
+                if (ps != null) {
+                    ps.close();
+                }
+                if (rs != null) {
+                    rs.close();
+                }
+            } catch (Exception e) {
+            }
+        }
+
+        // Bước 2: Nếu chưa có (catId vẫn = 0) -> Insert mới
+        if (catId == 0) {
+            String insertSql = "INSERT INTO asset_categories (name, description, depreciation_rate) VALUES (?, ?, ?)";
+            try {
+                conn = new DBContext().getConnection();
+                // Return generated keys để lấy ngay ID vừa tạo
+                ps = conn.prepareStatement(insertSql, java.sql.Statement.RETURN_GENERATED_KEYS);
+                ps.setString(1, categoryName);
+                ps.setString(2, "Tự động thêm mới");
+                ps.setBigDecimal(3, new java.math.BigDecimal("0.0")); // Mặc định khấu hao 0
+                ps.executeUpdate();
+
+                rs = ps.getGeneratedKeys();
+                if (rs.next()) {
+                    catId = rs.getInt(1);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    if (conn != null) {
+                        conn.close();
+                    }
+                    if (ps != null) {
+                        ps.close();
+                    }
+                    if (rs != null) {
+                        rs.close();
+                    }
+                } catch (Exception e) {
+                }
+            }
+        }
+        return catId;
     }
 }

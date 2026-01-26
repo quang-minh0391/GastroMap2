@@ -79,35 +79,34 @@ public class FundServlet extends HttpServlet {
         } catch (NumberFormatException e) { pageIndex = 1; }
 
         // b. Lấy tham số lọc
-        String f_fund = request.getParameter("f_fund");
-        String f_mem = request.getParameter("f_mem");
-        String f_type = request.getParameter("f_type");
-        String f_date_from = request.getParameter("f_date_from");
-        String f_date_to = request.getParameter("f_date_to");
+    String f_fund_name = request.getParameter("f_fund_name"); // Thay đổi tên tham số
+    String f_member_name = request.getParameter("f_member_name");
+    String f_type = request.getParameter("f_type");
+    String f_date_from = request.getParameter("f_date_from");
+    String f_date_to = request.getParameter("f_date_to");
 
-        Integer searchFundId = (f_fund != null && !f_fund.isEmpty()) ? Integer.parseInt(f_fund) : null;
-        Integer searchMemId = (f_mem != null && !f_mem.isEmpty()) ? Integer.parseInt(f_mem) : null;
-        java.sql.Date dateFrom = (f_date_from != null && !f_date_from.isEmpty()) ? java.sql.Date.valueOf(f_date_from) : null;
-        java.sql.Date dateTo = (f_date_to != null && !f_date_to.isEmpty()) ? java.sql.Date.valueOf(f_date_to) : null;
+    // Xử lý ngày tháng
+    java.sql.Date dateFrom = (f_date_from != null && !f_date_from.isEmpty()) ? java.sql.Date.valueOf(f_date_from) : null;
+    java.sql.Date dateTo = (f_date_to != null && !f_date_to.isEmpty()) ? java.sql.Date.valueOf(f_date_to) : null;
 
-        // c. Gọi DAO tìm kiếm
-        List<FundTransaction> history = dao.searchFundTransactions(searchFundId, searchMemId, f_type, dateFrom, dateTo, pageIndex, pageSize);
-        
-        // d. Tính tổng trang
-        int totalRecords = dao.countFundTransactions(searchFundId, searchMemId, f_type, dateFrom, dateTo);
-        int totalPage = (totalRecords % pageSize == 0) ? (totalRecords / pageSize) : (totalRecords / pageSize + 1);
+    // c. Gọi DAO tìm kiếm (Truyền chuỗi tên quỹ vào)
+    List<FundTransaction> history = dao.searchFundTransactions(f_fund_name, f_member_name, f_type, dateFrom, dateTo, pageIndex, pageSize);
+    
+    // d. Tính tổng trang
+    int totalRecords = dao.countFundTransactions(f_fund_name, f_member_name, f_type, dateFrom, dateTo);
+    int totalPage = (totalRecords % pageSize == 0) ? (totalRecords / pageSize) : (totalRecords / pageSize + 1);
 
-        // e. Đẩy dữ liệu ra JSP
-        request.setAttribute("history", history);
-        request.setAttribute("pageIndex", pageIndex);
-        request.setAttribute("totalPage", totalPage);
-        
-        // f. Giữ lại giá trị lọc để hiện lại trên form
-        request.setAttribute("f_fund", f_fund);
-        request.setAttribute("f_mem", f_mem);
-        request.setAttribute("f_type", f_type);
-        request.setAttribute("f_date_from", f_date_from);
-        request.setAttribute("f_date_to", f_date_to);
+    // e. Đẩy dữ liệu ra JSP
+    request.setAttribute("history", history);
+    request.setAttribute("pageIndex", pageIndex);
+    request.setAttribute("totalPage", totalPage);
+    
+    // f. Giữ lại giá trị lọc
+    request.setAttribute("f_fund_name", f_fund_name); // Gửi lại tên quỹ
+    request.setAttribute("f_member_name", f_member_name);
+    request.setAttribute("f_type", f_type);
+    request.setAttribute("f_date_from", f_date_from);
+    request.setAttribute("f_date_to", f_date_to);
         
         request.getRequestDispatcher("/finance/fund_management.jsp").forward(request, response);
     }
@@ -126,29 +125,55 @@ public class FundServlet extends HttpServlet {
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
         
+        // 1. Lấy action để biết người dùng đang muốn "Tạo quỹ" hay "Giao dịch"
+        String action = request.getParameter("action"); 
+        FundDAO dao = new FundDAO();
+
         try {
+            // --- TRƯỜNG HỢP 1: TẠO QUỸ MỚI ---
+            // Kiểm tra action TRƯỚC, nếu đúng là tạo quỹ thì xử lý ngay và return
+            if ("create_fund".equals(action)) {
+                String newName = request.getParameter("new_fund_name");
+                String newDesc = request.getParameter("new_fund_desc");
+                
+                // Mặc định tạo quỹ mới thì tiền = 0
+                boolean created = dao.insertFundCategory(newName, newDesc, BigDecimal.ZERO);
+                
+                if (created) {
+                    response.sendRedirect("fund?msg=created");
+                } else {
+                    response.sendRedirect("fund?error=create_fail");
+                }
+                return; // QUAN TRỌNG: Dừng lại ở đây, không chạy xuống phần dưới
+            }
+
+            // --- TRƯỜNG HỢP 2: GIAO DỊCH (NỘP/RÚT) ---
+            // Chỉ khi không phải tạo quỹ thì mới lấy các thông số này
             int fundId = Integer.parseInt(request.getParameter("fund_id"));
             String type = request.getParameter("type");
             BigDecimal amount = new BigDecimal(request.getParameter("amount"));
             String note = request.getParameter("note");
             
-            // --- XỬ LÝ NGÀY GIỜ TỪ FORM ---
-            String dateStr = request.getParameter("transaction_date"); // Chuỗi dạng: "2026-01-24T21:30"
+            // Xử lý ngày tháng
+            String dateStr = request.getParameter("transaction_date");
             java.sql.Timestamp transDate;
             
             if (dateStr != null && !dateStr.isEmpty()) {
-                // HTML5 datetime-local có chữ 'T' ở giữa, SQL cần khoảng trắng
                 String formattedDate = dateStr.replace("T", " ") + ":00"; 
                 transDate = java.sql.Timestamp.valueOf(formattedDate);
             } else {
                 transDate = new java.sql.Timestamp(System.currentTimeMillis());
             }
-            // ------------------------------
-            
+
+            // Xử lý thành viên (có thể null)
             int memberId = 0;
             String memStr = request.getParameter("member_id");
             if(memStr != null && !memStr.isEmpty()) {
-                memberId = Integer.parseInt(memStr);
+                try {
+                    memberId = Integer.parseInt(memStr);
+                } catch (NumberFormatException e) {
+                    memberId = 0; // Nếu lỗi parse thì coi như là 0 (Quỹ chung)
+                }
             }
             
             FundTransaction trans = new FundTransaction();
@@ -157,9 +182,8 @@ public class FundServlet extends HttpServlet {
             trans.setTransactionType(type);
             trans.setAmount(amount);
             trans.setNote(note);
-            trans.setTransactionDate(transDate); // Set ngày đã chọn
+            trans.setTransactionDate(transDate);
             
-            FundDAO dao = new FundDAO();
             boolean result = dao.insertFundTransaction(trans);
             
             if(result) {
@@ -169,7 +193,7 @@ public class FundServlet extends HttpServlet {
             }
             
         } catch (Exception e) {
-            e.printStackTrace();
+            e.printStackTrace(); // Xem lỗi chi tiết ở cửa sổ Output của Netbean
             response.sendRedirect("fund?error=exception");
         }
     }
