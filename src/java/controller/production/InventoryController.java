@@ -1,4 +1,4 @@
-package controller;
+package controller.production;
 
 import DAO.DAOBatchInventory;
 import DAO.DAOWarehouse;
@@ -13,14 +13,15 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
 
 /**
  * Controller for Batch Inventory management
- * URL Pattern: /inventory
+ * URL Pattern: /batch-inventory
  */
-@WebServlet(name = "InventoryController", urlPatterns = {"/inventory"})
+@WebServlet(name = "InventoryController", urlPatterns = {"/batch-inventory"})
 public class InventoryController extends HttpServlet {
 
     @Override
@@ -48,6 +49,13 @@ public class InventoryController extends HttpServlet {
 
     private void handleList(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Lấy coop_id từ session
+        HttpSession session = request.getSession();
+        Integer coopId = (Integer) session.getAttribute("coop_id");
+        if (coopId == null || coopId == 0) {
+            coopId = (Integer) session.getAttribute("id");
+        }
+        
         int page = 1;
         int pageSize = 10;
 
@@ -87,14 +95,28 @@ public class InventoryController extends HttpServlet {
         DAOProductionBatch daoBatch = new DAOProductionBatch();
         DAOFarmProduct daoProduct = new DAOFarmProduct();
 
-        List<BatchInventory> list = dao.getPaginatedWithFilters(page, pageSize, warehouseId, batchId);
-        int totalRecords = dao.countWithFilters(warehouseId, batchId);
+        List<BatchInventory> list;
+        int totalRecords;
+        List<StorageWarehouse> warehouses;
+        List<ProductionBatch> batches;
+        List<FarmProduct> products;
+        
+        if (coopId != null) {
+            // Filter by coop_id
+            list = dao.getPaginatedByCoopId(page, pageSize, coopId, warehouseId, batchId);
+            totalRecords = dao.countByCoopId(coopId, warehouseId, batchId);
+            warehouses = daoWarehouse.getAllByCoopId(coopId);
+            batches = daoBatch.getAllByCoopId(coopId);
+            products = daoProduct.getActiveByCoopId(coopId);
+        } else {
+            list = dao.getPaginatedWithFilters(page, pageSize, warehouseId, batchId);
+            totalRecords = dao.countWithFilters(warehouseId, batchId);
+            warehouses = daoWarehouse.getAll();
+            batches = daoBatch.getAll();
+            products = daoProduct.getAll();
+        }
+        
         int totalPages = (int) Math.ceil((double) totalRecords / pageSize);
-
-        // Get warehouses and batches for filter dropdowns
-        List<StorageWarehouse> warehouses = daoWarehouse.getAll();
-        List<ProductionBatch> batches = daoBatch.getAll();
-        List<FarmProduct> products = daoProduct.getAll();
 
         request.setAttribute("inventoryList", list);
         request.setAttribute("warehouseList", warehouses);

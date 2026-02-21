@@ -1,4 +1,4 @@
-package controller;
+package controller.production;
 
 import DAO.DAOProductionBatch;
 import DAO.DAOFarmProduct;
@@ -11,15 +11,16 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.Date;
 import java.util.List;
 
 /**
  * Controller for Production Batches management
- * URL Pattern: /batches
+ * URL Pattern: /production-batches
  */
-@WebServlet(name = "ProductionBatchController", urlPatterns = {"/batches"})
+@WebServlet(name = "ProductionBatchController", urlPatterns = {"/production-batches"})
 public class ProductionBatchController extends HttpServlet {
 
     @Override
@@ -39,6 +40,9 @@ public class ProductionBatchController extends HttpServlet {
                 break;
             case "view":
                 handleView(request, response);
+                break;
+            case "delete":
+                handleDelete(request, response);
                 break;
             default:
                 handleList(request, response);
@@ -65,6 +69,13 @@ public class ProductionBatchController extends HttpServlet {
 
     private void handleList(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Lấy coop_id từ session
+        HttpSession session = request.getSession();
+        Integer coopId = (Integer) session.getAttribute("coop_id");
+        if (coopId == null || coopId == 0) {
+            coopId = (Integer) session.getAttribute("id");
+        }
+        
         int page = 1;
         int pageSize = 10;
 
@@ -82,13 +93,25 @@ public class ProductionBatchController extends HttpServlet {
         DAOFarmProduct daoProduct = new DAOFarmProduct();
         DAOMember daoMember = new DAOMember();
 
-        List<ProductionBatch> list = dao.getPaginated(page, pageSize);
-        int totalRecords = dao.countAll();
+        List<ProductionBatch> list;
+        int totalRecords;
+        List<FarmProduct> products;
+        List<member> members;
+        
+        if (coopId != null) {
+            // Filter by coop_id
+            list = dao.getPaginatedByCoopId(page, pageSize, coopId);
+            totalRecords = dao.countByCoopId(coopId);
+            products = daoProduct.getActiveByCoopId(coopId);
+            members = daoMember.getAllByCoopId(coopId);
+        } else {
+            list = dao.getPaginated(page, pageSize);
+            totalRecords = dao.countAll();
+            products = daoProduct.getAll();
+            members = daoMember.getAll();
+        }
+        
         int totalPages = (int) Math.ceil((double) totalRecords / pageSize);
-
-        // Get product and member names for display
-        List<FarmProduct> products = daoProduct.getAll();
-        List<member> members = daoMember.getAll();
 
         request.setAttribute("batchList", list);
         request.setAttribute("productList", products);
@@ -102,12 +125,28 @@ public class ProductionBatchController extends HttpServlet {
 
     private void showCreateForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Lấy coop_id từ session
+        HttpSession session = request.getSession();
+        Integer coopId = (Integer) session.getAttribute("coop_id");
+        if (coopId == null || coopId == 0) {
+            coopId = (Integer) session.getAttribute("id");
+        }
+        
         DAOFarmProduct daoProduct = new DAOFarmProduct();
         DAOMember daoMember = new DAOMember();
         DAOProductionBatch daoBatch = new DAOProductionBatch();
 
-        List<FarmProduct> products = daoProduct.getActive();
-        List<member> members = daoMember.getAll();
+        List<FarmProduct> products;
+        List<member> members;
+        
+        if (coopId != null) {
+            products = daoProduct.getActiveByCoopId(coopId);
+            members = daoMember.getAllByCoopId(coopId);
+        } else {
+            products = daoProduct.getActive();
+            members = daoMember.getAll();
+        }
+        
         String suggestedBatchCode = daoBatch.generateBatchCode();
 
         request.setAttribute("productList", products);
@@ -121,7 +160,7 @@ public class ProductionBatchController extends HttpServlet {
             throws ServletException, IOException {
         String idStr = request.getParameter("id");
         if (idStr == null || idStr.isEmpty()) {
-            response.sendRedirect(request.getContextPath() + "/batches?action=list");
+            response.sendRedirect(request.getContextPath() + "/production-batches?action=list");
             return;
         }
 
@@ -147,7 +186,7 @@ public class ProductionBatchController extends HttpServlet {
             request.setAttribute("member", memberObj);
             request.getRequestDispatcher("/production/batches/view.jsp").forward(request, response);
         } catch (NumberFormatException e) {
-            response.sendRedirect(request.getContextPath() + "/batches?action=list");
+            response.sendRedirect(request.getContextPath() + "/production-batches?action=list");
         }
     }
 
@@ -208,6 +247,30 @@ public class ProductionBatchController extends HttpServlet {
             request.setAttribute("error", "Định dạng ngày không hợp lệ (YYYY-MM-DD)");
             showCreateForm(request, response);
         }
+    }
+
+    private void handleDelete(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String idStr = request.getParameter("id");
+        if (idStr == null || idStr.isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/production-batches?action=list");
+            return;
+        }
+
+        try {
+            Integer id = Integer.parseInt(idStr);
+            DAOProductionBatch dao = new DAOProductionBatch();
+            boolean success = dao.delete(id);
+
+            if (success) {
+                request.setAttribute("success", "Xóa lô sản xuất thành công");
+            } else {
+                request.setAttribute("error", "Xóa lô sản xuất thất bại. Lô có thể đang được sử dụng (có QR code hoặc tồn kho).");
+            }
+        } catch (NumberFormatException e) {
+            request.setAttribute("error", "ID không hợp lệ");
+        }
+        handleList(request, response);
     }
 }
 

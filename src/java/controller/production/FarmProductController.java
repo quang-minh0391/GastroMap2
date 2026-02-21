@@ -1,21 +1,22 @@
-package controller;
+package controller.production;
 
-import DAO.DAOWarehouse;
-import model.StorageWarehouse;
+import DAO.DAOFarmProduct;
+import model.FarmProduct;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
 
 /**
- * Controller for Storage Warehouses management
- * URL Pattern: /warehouses
+ * Controller for Farm Products management
+ * URL Pattern: /farm-products
  */
-@WebServlet(name = "WarehouseController", urlPatterns = {"/warehouses"})
-public class WarehouseController extends HttpServlet {
+@WebServlet(name = "FarmProductController", urlPatterns = {"/farm-products"})
+public class FarmProductController extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -66,6 +67,13 @@ public class WarehouseController extends HttpServlet {
 
     private void handleList(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Lấy coop_id từ session
+        HttpSession session = request.getSession();
+        Integer coopId = (Integer) session.getAttribute("coop_id");
+        if (coopId == null || coopId == 0) {
+            coopId = (Integer) session.getAttribute("id"); // Tài khoản HTX (Type 2) dùng chính ID của mình
+        }
+        
         int page = 1;
         int pageSize = 10;
 
@@ -79,74 +87,92 @@ public class WarehouseController extends HttpServlet {
             }
         }
 
-        DAOWarehouse dao = new DAOWarehouse();
-        List<StorageWarehouse> list = dao.getPaginated(page, pageSize);
-        int totalRecords = dao.countAll();
+        DAOFarmProduct dao = new DAOFarmProduct();
+        List<FarmProduct> list;
+        int totalRecords;
+        
+        if (coopId != null) {
+            // Filter by coop_id
+            list = dao.getPaginatedByCoopId(page, pageSize, coopId);
+            totalRecords = dao.countByCoopId(coopId);
+        } else {
+            // Fallback for admin or no coop
+            list = dao.getPaginated(page, pageSize);
+            totalRecords = dao.countAll();
+        }
+        
         int totalPages = (int) Math.ceil((double) totalRecords / pageSize);
 
-        request.setAttribute("warehouseList", list);
+        request.setAttribute("productList", list);
         request.setAttribute("currentPage", page);
         request.setAttribute("totalPages", totalPages);
         request.setAttribute("totalRecords", totalRecords);
 
-        request.getRequestDispatcher("/production/warehouses/list.jsp").forward(request, response);
+        request.getRequestDispatcher("/production/farm-products/list.jsp").forward(request, response);
     }
 
     private void showCreateForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        request.getRequestDispatcher("/production/warehouses/create.jsp").forward(request, response);
+        request.getRequestDispatcher("/production/farm-products/create.jsp").forward(request, response);
     }
 
     private void showEditForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String idStr = request.getParameter("id");
         if (idStr == null || idStr.isEmpty()) {
-            response.sendRedirect(request.getContextPath() + "/warehouses?action=list");
+            response.sendRedirect(request.getContextPath() + "/farm-products?action=list");
             return;
         }
 
         try {
             Integer id = Integer.parseInt(idStr);
-            DAOWarehouse dao = new DAOWarehouse();
-            StorageWarehouse warehouse = dao.getById(id);
+            DAOFarmProduct dao = new DAOFarmProduct();
+            FarmProduct product = dao.getById(id);
 
-            if (warehouse == null) {
-                request.setAttribute("error", "Không tìm thấy kho");
+            if (product == null) {
+                request.setAttribute("error", "Không tìm thấy sản phẩm");
                 handleList(request, response);
                 return;
             }
 
-            request.setAttribute("warehouse", warehouse);
-            request.getRequestDispatcher("/production/warehouses/edit.jsp").forward(request, response);
+            request.setAttribute("product", product);
+            request.getRequestDispatcher("/production/farm-products/edit.jsp").forward(request, response);
         } catch (NumberFormatException e) {
-            response.sendRedirect(request.getContextPath() + "/warehouses?action=list");
+            response.sendRedirect(request.getContextPath() + "/farm-products?action=list");
         }
     }
 
     private void handleSave(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Lấy user ID từ session để lưu createdBy
+        HttpSession session = request.getSession();
+        Integer userId = (Integer) session.getAttribute("id");
+        
         String name = request.getParameter("name");
-        String location = request.getParameter("location");
+        String unit = request.getParameter("unit");
         String description = request.getParameter("description");
+        String status = request.getParameter("status");
 
         if (name == null || name.trim().isEmpty()) {
-            request.setAttribute("error", "Tên kho không được để trống");
-            request.getRequestDispatcher("/production/warehouses/create.jsp").forward(request, response);
+            request.setAttribute("error", "Tên sản phẩm không được để trống");
+            request.getRequestDispatcher("/production/farm-products/create.jsp").forward(request, response);
             return;
         }
 
-        StorageWarehouse warehouse = new StorageWarehouse();
-        warehouse.setName(name.trim());
-        warehouse.setLocation(location != null ? location.trim() : null);
-        warehouse.setDescription(description != null ? description.trim() : null);
+        FarmProduct product = new FarmProduct();
+        product.setName(name.trim());
+        product.setUnit(unit != null && !unit.isEmpty() ? unit.trim() : "kg");
+        product.setDescription(description != null ? description.trim() : null);
+        product.setStatus(status != null && !status.isEmpty() ? status : "ACTIVE");
+        product.setCreatedBy(userId); // Lưu người tạo
 
-        DAOWarehouse dao = new DAOWarehouse();
-        boolean success = dao.insert(warehouse);
+        DAOFarmProduct dao = new DAOFarmProduct();
+        boolean success = dao.insert(product);
 
         if (success) {
-            request.setAttribute("success", "Thêm kho thành công");
+            request.setAttribute("success", "Thêm sản phẩm thành công");
         } else {
-            request.setAttribute("error", "Thêm kho thất bại");
+            request.setAttribute("error", "Thêm sản phẩm thất bại");
         }
         handleList(request, response);
     }
@@ -155,8 +181,9 @@ public class WarehouseController extends HttpServlet {
             throws ServletException, IOException {
         String idStr = request.getParameter("id");
         String name = request.getParameter("name");
-        String location = request.getParameter("location");
+        String unit = request.getParameter("unit");
         String description = request.getParameter("description");
+        String status = request.getParameter("status");
 
         if (idStr == null || name == null || name.trim().isEmpty()) {
             request.setAttribute("error", "Dữ liệu không hợp lệ");
@@ -166,19 +193,20 @@ public class WarehouseController extends HttpServlet {
 
         try {
             Integer id = Integer.parseInt(idStr);
-            StorageWarehouse warehouse = new StorageWarehouse();
-            warehouse.setId(id);
-            warehouse.setName(name.trim());
-            warehouse.setLocation(location != null ? location.trim() : null);
-            warehouse.setDescription(description != null ? description.trim() : null);
+            FarmProduct product = new FarmProduct();
+            product.setId(id);
+            product.setName(name.trim());
+            product.setUnit(unit != null && !unit.isEmpty() ? unit.trim() : "kg");
+            product.setDescription(description != null ? description.trim() : null);
+            product.setStatus(status != null && !status.isEmpty() ? status : "ACTIVE");
 
-            DAOWarehouse dao = new DAOWarehouse();
-            boolean success = dao.update(warehouse);
+            DAOFarmProduct dao = new DAOFarmProduct();
+            boolean success = dao.update(product);
 
             if (success) {
-                request.setAttribute("success", "Cập nhật kho thành công");
+                request.setAttribute("success", "Cập nhật sản phẩm thành công");
             } else {
-                request.setAttribute("error", "Cập nhật kho thất bại");
+                request.setAttribute("error", "Cập nhật sản phẩm thất bại");
             }
         } catch (NumberFormatException e) {
             request.setAttribute("error", "ID không hợp lệ");
@@ -190,19 +218,19 @@ public class WarehouseController extends HttpServlet {
             throws ServletException, IOException {
         String idStr = request.getParameter("id");
         if (idStr == null || idStr.isEmpty()) {
-            response.sendRedirect(request.getContextPath() + "/warehouses?action=list");
+            response.sendRedirect(request.getContextPath() + "/farm-products?action=list");
             return;
         }
 
         try {
             Integer id = Integer.parseInt(idStr);
-            DAOWarehouse dao = new DAOWarehouse();
+            DAOFarmProduct dao = new DAOFarmProduct();
             boolean success = dao.delete(id);
 
             if (success) {
-                request.setAttribute("success", "Xóa kho thành công");
+                request.setAttribute("success", "Xóa sản phẩm thành công");
             } else {
-                request.setAttribute("error", "Xóa kho thất bại. Có thể kho đang chứa hàng.");
+                request.setAttribute("error", "Xóa sản phẩm thất bại. Có thể sản phẩm đang được sử dụng.");
             }
         } catch (NumberFormatException e) {
             request.setAttribute("error", "ID không hợp lệ");

@@ -25,22 +25,66 @@ body {
     display: flex;
     flex-direction: column;
     z-index: 1000;
+    overflow: hidden;
+}
+
+/* Phần brand và user profile - cố định ở trên */
+.sidebar .brand-section {
+    flex-shrink: 0;
+}
+
+/* Phần nav menu - scroll được */
+.sidebar .nav {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 0; /* Quan trọng để flex item có thể scroll */
+}
+
+/* Phần logout - cố định ở dưới */
+.sidebar .logout-section {
+    flex-shrink: 0;
+}
+
+/* Scrollbar tùy chỉnh cho sidebar */
+.sidebar::-webkit-scrollbar,
+.sidebar .nav::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track,
+.sidebar .nav::-webkit-scrollbar-track {
+    background: #23272b;
+}
+
+.sidebar::-webkit-scrollbar-thumb,
+.sidebar .nav::-webkit-scrollbar-thumb {
+    background: #495057;
+    border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover,
+.sidebar .nav::-webkit-scrollbar-thumb:hover {
+    background: #6c757d;
 }
 
 /* Ép container nav luôn xếp dọc */
 .sidebar .nav {
-    display: block !important; /* Thay đổi từ flex sang block để ép xuống hàng */
+    display: block !important; 
 }
 
 .sidebar .nav-link {
-    display: block !important; /* QUAN TRỌNG: Ép mỗi link chiếm trọn 1 hàng */
+    display: block !important; 
     width: 100%;
     color: #adb5bd;
-    padding: 15px 20px;
+    padding: 10px 15px;
     border-bottom: 1px solid #495057;
     text-decoration: none;
     transition: 0.3s;
-    font-size: 0.95rem;
+    font-size: 0.9rem; /* Kết hợp giữa 0.95 và 0.88 */
+    white-space: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .sidebar .nav-link:hover { 
@@ -56,7 +100,7 @@ body {
 /* 3. SUB-MENU */
 .sidebar .nav-item-group {
     border-bottom: 1px solid #495057;
-    display: block; /* Đảm bảo nhóm item cũng xếp dọc */
+    display: block; 
 }
 
 .sidebar .nav-item-group > .nav-link {

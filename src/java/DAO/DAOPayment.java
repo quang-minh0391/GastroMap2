@@ -69,5 +69,21 @@ public class DAOPayment extends DBContext {
         return planId;
     }
     // Hàm dành riêng cho GIA HẠN (đã có member_id)
+     // Thêm hàm này vào DAOPayment.java
+    public long getAmountByOrderCode(long orderCode) {
+        long amount = 0;
+        String sql = "SELECT amount FROM payments WHERE order_code = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, orderCode);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    amount = rs.getLong("amount");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return amount;
+    }
 
 }

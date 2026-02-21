@@ -1,4 +1,4 @@
-package controller;
+package controller.production;
 
 import DAO.DAOBatchQRCode;
 import DAO.DAOProductionBatch;
@@ -13,6 +13,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
 
@@ -69,6 +70,13 @@ public class QRCodeController extends HttpServlet {
 
     private void handleList(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Lấy coop_id từ session
+        HttpSession session = request.getSession();
+        Integer coopId = (Integer) session.getAttribute("coop_id");
+        if (coopId == null || coopId == 0) {
+            coopId = (Integer) session.getAttribute("id");
+        }
+        
         int page = 1;
         int pageSize = 10;
 
@@ -86,12 +94,25 @@ public class QRCodeController extends HttpServlet {
         DAOProductionBatch daoBatch = new DAOProductionBatch();
         DAOFarmProduct daoProduct = new DAOFarmProduct();
 
-        List<BatchQRCode> list = dao.getPaginated(page, pageSize);
-        int totalRecords = dao.countAll();
+        List<BatchQRCode> list;
+        int totalRecords;
+        List<ProductionBatch> batches;
+        List<FarmProduct> products;
+        
+        if (coopId != null) {
+            // Filter by coop_id
+            list = dao.getPaginatedByCoopId(page, pageSize, coopId);
+            totalRecords = dao.countByCoopId(coopId);
+            batches = daoBatch.getAllByCoopId(coopId);
+            products = daoProduct.getActiveByCoopId(coopId);
+        } else {
+            list = dao.getPaginated(page, pageSize);
+            totalRecords = dao.countAll();
+            batches = daoBatch.getAll();
+            products = daoProduct.getAll();
+        }
+        
         int totalPages = (int) Math.ceil((double) totalRecords / pageSize);
-
-        List<ProductionBatch> batches = daoBatch.getAll();
-        List<FarmProduct> products = daoProduct.getAll();
 
         request.setAttribute("qrCodeList", list);
         request.setAttribute("batchList", batches);
@@ -105,11 +126,26 @@ public class QRCodeController extends HttpServlet {
 
     private void showGenerateForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Lấy coop_id từ session
+        HttpSession session = request.getSession();
+        Integer coopId = (Integer) session.getAttribute("coop_id");
+        if (coopId == null || coopId == 0) {
+            coopId = (Integer) session.getAttribute("id");
+        }
+        
         DAOProductionBatch daoBatch = new DAOProductionBatch();
         DAOFarmProduct daoProduct = new DAOFarmProduct();
 
-        List<ProductionBatch> batches = daoBatch.getAvailable();
-        List<FarmProduct> products = daoProduct.getAll();
+        List<ProductionBatch> batches;
+        List<FarmProduct> products;
+        
+        if (coopId != null) {
+            batches = daoBatch.getAvailableByCoopId(coopId);
+            products = daoProduct.getActiveByCoopId(coopId);
+        } else {
+            batches = daoBatch.getAvailable();
+            products = daoProduct.getAll();
+        }
 
         request.setAttribute("batchList", batches);
         request.setAttribute("productList", products);

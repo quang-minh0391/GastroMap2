@@ -1,4 +1,4 @@
-package controller;
+package controller.production;
 
 import DAO.DAOBatchQRCode;
 import DAO.DAOProductionBatch;
@@ -71,6 +71,22 @@ public class TraceabilityController extends HttpServlet {
 
     private void showScanPage(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Check if this is a direct scan from phone (qr parameter in URL)
+        String qrValue = request.getParameter("qr");
+        if (qrValue != null && !qrValue.trim().isEmpty()) {
+            // Redirect to lookup process
+            DAOBatchQRCode daoQR = new DAOBatchQRCode();
+            BatchQRCode qrCode = daoQR.getByQrValue(qrValue.trim());
+            
+            if (qrCode != null) {
+                // Found - redirect to result
+                response.sendRedirect(request.getContextPath() + "/traceability?action=result&qrId=" + qrCode.getId());
+                return;
+            } else {
+                request.setAttribute("error", "Không tìm thấy mã QR: " + qrValue);
+            }
+        }
+        
         request.getRequestDispatcher("/production/traceability/scan.jsp").forward(request, response);
     }
 

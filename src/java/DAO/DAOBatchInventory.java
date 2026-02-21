@@ -306,5 +306,89 @@ public class DAOBatchInventory extends DBContext {
         }
         return 0;
     }
+    
+    /**
+     * Get paginated inventory filtered by cooperative ID (through warehouse)
+     */
+    public List<BatchInventory> getPaginatedByCoopId(int page, int pageSize, Integer coopId, Integer warehouseId, Integer batchId) {
+        List<BatchInventory> list = new ArrayList<>();
+        StringBuilder sql = new StringBuilder(
+            "SELECT bi.* FROM batch_inventory bi " +
+            "INNER JOIN storage_warehouses sw ON bi.warehouse_id = sw.id " +
+            "WHERE sw.coop_id = ?");
+        
+        if (warehouseId != null) {
+            sql.append(" AND bi.warehouse_id = ?");
+        }
+        if (batchId != null) {
+            sql.append(" AND bi.batch_id = ?");
+        }
+        sql.append(" ORDER BY bi.updated_at DESC LIMIT ? OFFSET ?");
+        
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = conn.prepareStatement(sql.toString());
+            int paramIndex = 1;
+            ps.setInt(paramIndex++, coopId);
+            if (warehouseId != null) {
+                ps.setInt(paramIndex++, warehouseId);
+            }
+            if (batchId != null) {
+                ps.setInt(paramIndex++, batchId);
+            }
+            ps.setInt(paramIndex++, pageSize);
+            ps.setInt(paramIndex, (page - 1) * pageSize);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(getFromResultSet(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeResources(null, ps, rs);
+        }
+        return list;
+    }
+    
+    /**
+     * Count inventory by cooperative ID
+     */
+    public int countByCoopId(Integer coopId, Integer warehouseId, Integer batchId) {
+        StringBuilder sql = new StringBuilder(
+            "SELECT COUNT(*) FROM batch_inventory bi " +
+            "INNER JOIN storage_warehouses sw ON bi.warehouse_id = sw.id " +
+            "WHERE sw.coop_id = ?");
+        
+        if (warehouseId != null) {
+            sql.append(" AND bi.warehouse_id = ?");
+        }
+        if (batchId != null) {
+            sql.append(" AND bi.batch_id = ?");
+        }
+        
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = conn.prepareStatement(sql.toString());
+            int paramIndex = 1;
+            ps.setInt(paramIndex++, coopId);
+            if (warehouseId != null) {
+                ps.setInt(paramIndex++, warehouseId);
+            }
+            if (batchId != null) {
+                ps.setInt(paramIndex, batchId);
+            }
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeResources(null, ps, rs);
+        }
+        return 0;
+    }
 }
 

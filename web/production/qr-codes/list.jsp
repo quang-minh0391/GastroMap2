@@ -31,10 +31,11 @@
 <div class="card shadow-sm border-0">
     <div class="card-body">
         <div class="table-responsive">
-            <table class="table table-hover data-table">
+            <table class="table table-hover data-table align-middle">
                 <thead>
                     <tr>
                         <th>#</th>
+                        <th>QR Code</th>
                         <th>Mã QR</th>
                         <th>Mã lô</th>
                         <th>Nông sản</th>
@@ -47,11 +48,21 @@
                     <c:forEach var="qrCode" items="${qrCodeList}" varStatus="loop">
                         <tr>
                             <td>${(currentPage - 1) * 10 + loop.count}</td>
+                            <td>
+                                <!-- Thumbnail QR Code -->
+                                <a href="${pageContext.request.contextPath}/qr-codes?action=view&id=${qrCode.id}" 
+                                   title="Click để xem chi tiết">
+                                    <img src="${pageContext.request.contextPath}/qr-image?id=${qrCode.id}" 
+                                         alt="QR" width="50" height="50"
+                                         class="border rounded"
+                                         style="image-rendering: pixelated;">
+                                </a>
+                            </td>
                             <td><code class="bg-light p-1">${qrCode.qrValue}</code></td>
                             <td>
                                 <c:forEach var="batch" items="${batchList}">
                                     <c:if test="${batch.id == qrCode.batchId}">
-                                        <a href="${pageContext.request.contextPath}/batches?action=view&id=${batch.id}">
+                                        <a href="${pageContext.request.contextPath}/production-batches?action=view&id=${batch.id}">
                                             ${batch.batchCode}
                                         </a>
                                     </c:if>
@@ -86,19 +97,32 @@
                             </td>
                             <td><fmt:formatDate value="${qrCode.createdAt}" pattern="dd/MM/yyyy HH:mm"/></td>
                             <td class="text-center">
-                                <a href="${pageContext.request.contextPath}/qr-codes?action=view&id=${qrCode.id}" 
-                                   class="btn btn-sm btn-outline-primary" title="Xem QR">👁️</a>
-                                <a href="${pageContext.request.contextPath}/traceability?action=result&qrId=${qrCode.id}" 
-                                   class="btn btn-sm btn-outline-success" title="Truy xuất">🔍</a>
-                                <a href="${pageContext.request.contextPath}/qr-codes?action=delete&id=${qrCode.id}" 
-                                   class="btn btn-sm btn-outline-danger" title="Xóa"
-                                   onclick="return confirm('Bạn có chắc muốn xóa mã QR này?')">🗑️</a>
+                                <div class="btn-group" role="group">
+                                    <a href="${pageContext.request.contextPath}/qr-codes?action=view&id=${qrCode.id}" 
+                                       class="btn btn-sm btn-outline-primary" title="Xem QR">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="${pageContext.request.contextPath}/qr-image?id=${qrCode.id}" 
+                                       download="QR_${qrCode.qrValue}.png"
+                                       class="btn btn-sm btn-outline-success" title="Tải xuống">
+                                        <i class="bi bi-download"></i>
+                                    </a>
+                                    <a href="${pageContext.request.contextPath}/traceability?action=result&qrId=${qrCode.id}" 
+                                       class="btn btn-sm btn-outline-info" title="Truy xuất">
+                                        <i class="bi bi-search"></i>
+                                    </a>
+                                    <a href="${pageContext.request.contextPath}/qr-codes?action=delete&id=${qrCode.id}" 
+                                       class="btn btn-sm btn-outline-danger" title="Xóa"
+                                       onclick="return confirm('Bạn có chắc muốn xóa mã QR này?')">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                     </c:forEach>
                     <c:if test="${empty qrCodeList}">
                         <tr>
-                            <td colspan="7" class="text-center text-muted py-4">
+                            <td colspan="8" class="text-center text-muted py-4">
                                 Chưa có mã QR nào. 
                                 <a href="${pageContext.request.contextPath}/qr-codes?action=generate">Tạo mã QR</a>
                             </td>

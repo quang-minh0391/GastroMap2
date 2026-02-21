@@ -98,7 +98,7 @@
                 <div class="d-grid gap-2">
                     <a href="${pageContext.request.contextPath}/qr-codes?batchId=${batch.id}" 
                        class="btn btn-outline-primary">📱 Xem mã QR của lô</a>
-                    <a href="${pageContext.request.contextPath}/inventory?batchId=${batch.id}" 
+                    <a href="${pageContext.request.contextPath}/batch-inventory?batchId=${batch.id}" 
                        class="btn btn-outline-info">📊 Xem tồn kho</a>
                 </div>
             </div>

@@ -14,16 +14,20 @@ public class ContractDAO extends DBContext {
 
     public List<Contract> searchContracts(String keyword, int coopId) {
     List<Contract> list = new ArrayList<>();
-    // Sử dụng JOIN để lọc hợp đồng dựa trên coop_id của thành viên
-    String sql = "SELECT c.id, c.contract_code, c.contract_type, c.signing_date, c.expiry_date, c.status, c.document_path " +
+    // Tìm hợp đồng:
+    // 1. Hợp đồng của thành viên thuộc HTX (m.coop_id = coopId)
+    // 2. Hoặc hợp đồng được ký trực tiếp bởi HTX (member_id = coopId)
+    String sql = "SELECT DISTINCT c.id, c.contract_code, c.contract_type, c.signing_date, c.expiry_date, c.status, c.document_path " +
                  "FROM contracts c " +
-                 "JOIN members m ON c.member_id = m.id " +
-                 "WHERE c.contract_code LIKE ? AND m.coop_id = ? " +
+                 "LEFT JOIN members m ON c.member_id = m.id " +
+                 "WHERE c.contract_code LIKE ? " +
+                 "AND (c.member_id = ? OR m.coop_id = ?) " +
                  "LIMIT 10";
                  
     try (PreparedStatement ps = conn.prepareStatement(sql)) {
         ps.setString(1, "%" + keyword + "%");
-        ps.setInt(2, coopId); // Lọc theo coop_id của HTX
+        ps.setInt(2, coopId); // Hợp đồng ký trực tiếp với HTX
+        ps.setInt(3, coopId); // Hợp đồng của thành viên thuộc HTX
         
         ResultSet rs = ps.executeQuery();
         while (rs.next()) {

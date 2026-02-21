@@ -149,4 +149,53 @@ public class DAOMember extends DBContext {
         }
         return 0;
     }
+    
+    /**
+     * Get all members belonging to a cooperative
+     * Includes members with coop_id = coopId OR id = coopId (the coop itself)
+     */
+    public List<member> getAllByCoopId(Integer coopId) {
+        List<member> list = new ArrayList<>();
+        String sql = "SELECT * FROM members WHERE coop_id = ? OR id = ? ORDER BY full_name";
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, coopId);
+            ps.setInt(2, coopId);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(getFromResultSet(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeResources(null, ps, rs);
+        }
+        return list;
+    }
+    
+    /**
+     * Get active members belonging to a cooperative
+     */
+    public List<member> getActiveByCoopId(Integer coopId) {
+        List<member> list = new ArrayList<>();
+        String sql = "SELECT * FROM members WHERE status = 'Active' AND (coop_id = ? OR id = ?) ORDER BY full_name";
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, coopId);
+            ps.setInt(2, coopId);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(getFromResultSet(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeResources(null, ps, rs);
+        }
+        return list;
+    }
 }

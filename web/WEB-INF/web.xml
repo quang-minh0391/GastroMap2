@@ -1,8 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app version="6.0" xmlns="https://jakarta.ee/xml/ns/jakartaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee                         https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd">
+<web-app version="6.0" xmlns="https://jakarta.ee/xml/ns/jakartaee" 
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd">
+    
     <servlet>
         <servlet-name>Register</servlet-name>
         <servlet-class>controller.login.Register</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>loginController</servlet-name>
+        <servlet-class>controller.login.loginController</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>PartnerServlet</servlet-name>
@@ -33,7 +40,7 @@
         <servlet-class>controller.supply.CreateMaterialSupplyServlet</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>SearchDebtServlet</servlet-name>
+        <servlet-name>DebtManagementServlet</servlet-name>
         <servlet-class>controller.debt.DebtManagementServlet</servlet-class>
     </servlet>
     <servlet>
@@ -92,10 +99,26 @@
         <servlet-name>SearchProductWarehouseServlet</servlet-name>
         <servlet-class>controller.purchase.SearchProductWarehouseServlet</servlet-class>
     </servlet>
-    <servlet-mapping>
-        <servlet-name>Register</servlet-name>
-        <url-pattern>/Register</url-pattern>
-    </servlet-mapping>
+    <servlet>
+        <servlet-name>AssetServlet</servlet-name>
+        <servlet-class>controller.asset.AssetServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>FinanceServlet</servlet-name>
+        <servlet-class>controller.finance.FinanceServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>FundServlet</servlet-name>
+        <servlet-class>controller.finance.FundServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>FarmerDebtHistoryServlet</servlet-name>
+        <servlet-class>controller.debt.FarmerDebtHistoryServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>FarmerTransactionDetailServlet</servlet-name>
+        <servlet-class>controller.debt.FarmerTransactionDetailServlet</servlet-class>
+    </servlet>
     <servlet>
         <servlet-name>SearchMaterialServlet</servlet-name>
         <servlet-class>controller.supply.SearchMaterialServlet</servlet-class>
@@ -104,6 +127,15 @@
         <servlet-name>MaterialDetailServlet</servlet-name>
         <servlet-class>controller.supply.MaterialDetailServlet</servlet-class>
     </servlet>
+
+    <servlet-mapping>
+        <servlet-name>Register</servlet-name>
+        <url-pattern>/Register</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>loginController</servlet-name>
+        <url-pattern>/loginURL</url-pattern>
+    </servlet-mapping>
     <servlet-mapping>
         <servlet-name>SearchMaterialServlet</servlet-name>
         <url-pattern>/SearchMaterialServlet</url-pattern>
@@ -200,15 +232,29 @@
         <servlet-name>SearchProductWarehouseServlet</servlet-name>
         <url-pattern>/SearchProductWarehouseServlet</url-pattern>
     </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AssetServlet</servlet-name>
+        <url-pattern>/AssetServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>FinanceServlet</servlet-name>
+        <url-pattern>/finance</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>FundServlet</servlet-name>
+        <url-pattern>/fund</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>FarmerDebtHistoryServlet</servlet-name>
+        <url-pattern>/FarmerDebtHistoryServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>FarmerTransactionDetailServlet</servlet-name>
+        <url-pattern>/FarmerTransactionDetailServlet</url-pattern>
+    </servlet-mapping>
+
     <welcome-file-list>
-    <welcome-file>login/login.jsp</welcome-file>
-</welcome-file-list>
-<servlet>
-    <servlet-name>loginController</servlet-name>
-    <servlet-class>controller.login.loginController</servlet-class>
-</servlet>
-<servlet-mapping>
-    <servlet-name>loginController</servlet-name>
-    <url-pattern>/loginURL</url-pattern>
-</servlet-mapping>
+        <welcome-file>login/login.jsp</welcome-file>
+    </welcome-file-list>
+    
 </web-app>

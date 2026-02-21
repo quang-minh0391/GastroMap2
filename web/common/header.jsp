@@ -18,30 +18,30 @@
         %>
 
         <div class="sidebar shadow">
-            <div class="brand-section py-4 border-bottom border-secondary mb-2">
+            <div class="brand-section py-3 border-bottom border-secondary mb-1">
                 <div class="text-center">
                     <div class="d-flex align-items-center justify-content-center gap-3 mb-3">
                         <a href="${pageContext.request.contextPath}/index.jsp" class="text-decoration-none">
-                            <h4 class="text-white m-0">🍀 Gastromap</h4>
+                            <h5 class="text-white m-0">🍀 Gastromap</h5>
                         </a>
 
                         <div class="notification-wrapper">
                             <a href="${pageContext.request.contextPath}/meetingManager?service=list" class="text-decoration-none d-inline-block position-relative">
-                                <i class="bi bi-bell-fill fs-5" id="bell-icon" style="color: #adb5bd;"></i>
-                                <span id="noti-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;">
+                                <i class="bi bi-bell-fill fs-6" id="bell-icon" style="color: #adb5bd;"></i>
+                                <span id="noti-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.55rem;">
                                     0
                                 </span>
                             </a>
                         </div>
                     </div>
 
-                    <div class="user-profile-top mt-4">
+                    <div class="user-profile-top mt-2">
                         <a href="${pageContext.request.contextPath}/profile" class="text-decoration-none d-flex flex-column align-items-center">
-                            <div class="avatar-circle mb-2">
-                                <span class="text-white fw-bold"><%= displayLetter %></span>
+                            <div class="avatar-circle mb-1" style="width: 38px; height: 38px;">
+                                <span class="text-white fw-bold" style="font-size: 0.9rem;"><%= displayLetter %></span>
                             </div>
-                            <span class="text-white fw-bold"><%= (fullName != null) ? fullName : "Người dùng" %></span>
-                            <small class="text-success" style="font-size: 0.75rem;">● Đang hoạt động</small>
+                            <span class="text-white fw-bold" style="font-size: 0.85rem;"><%= (fullName != null) ? fullName : "Người dùng" %></span>
+                            <small class="text-success" style="font-size: 0.7rem;">● Đang hoạt động</small>
                         </a>
                     </div>
                 </div>
@@ -50,7 +50,7 @@
             <nav class="sidebar-nav-container overflow-y-auto" style="max-height: calc(100vh - 250px);">
 
                 <div class="nav-item-group w-100 d-block">
-                    <div class="text-uppercase px-4 py-3 text-secondary" style="font-size: 0.7rem; letter-spacing: 1px; opacity: 0.8;">
+                    <div class="text-uppercase px-3 py-2 text-secondary" style="font-size: 0.65rem; letter-spacing: 1px; opacity: 0.8;">
                         Hệ thống
                     </div>
                     <a class="nav-link w-100 <%= (currentUri.contains("memberManager") || currentUri.contains("Member.jsp")) ? "active" : "" %>" 
@@ -63,8 +63,8 @@
                     </a>
                 </div>
 
-                <div class="nav-item-group w-100 d-block mt-2">
-                    <div class="text-uppercase px-4 py-3 text-secondary" style="font-size: 0.7rem; letter-spacing: 1px; opacity: 0.8;">
+                <div class="nav-item-group w-100 d-block mt-1">
+                    <div class="text-uppercase px-3 py-2 text-secondary" style="font-size: 0.65rem; letter-spacing: 1px; opacity: 0.8;">
                         Sản xuất
                     </div>
                     <a class="nav-link w-100 <%= currentUri.contains("farm-products") ? "active" : "" %>" 
@@ -81,25 +81,40 @@
                     </a>
                 </div>
 
-                <div class="nav-item-group w-100 d-block mt-2">
-                    <div class="text-uppercase px-4 py-3 text-secondary" style="font-size: 0.7rem; letter-spacing: 1px; opacity: 0.8;">
+                <div class="nav-item-group w-100 d-block mt-1">
+                    <div class="text-uppercase px-3 py-2 text-secondary" style="font-size: 0.65rem; letter-spacing: 1px; opacity: 0.8;">
                         Kho & Tài chính
                     </div>
-                    <a class="nav-link w-100 <%= currentUri.contains("inventory") ? "active" : "" %>" 
-                       href="${pageContext.request.contextPath}/inventory?service=list">
-                        <i class="bi bi-archive me-2"></i> Quản lý Tồn kho
+
+                    <a class="nav-link w-100 <%= currentUri.contains("AssetServlet") ? "active" : "" %>" 
+                       href="${pageContext.request.contextPath}/AssetServlet">
+                        <i class="bi bi-tools me-2"></i> Quản lý Tài sản
                     </a>
-                    <a class="nav-link w-100 <%= (currentUri.contains("finance.jsp") || currentUri.contains("capital.jsp")) ? "active" : "" %>" 
+
+                    <a class="nav-link w-100 <%= currentUri.contains("/finance") ? "active" : "" %>" 
+                       href="${pageContext.request.contextPath}/finance">
+                        <i class="bi bi-graph-up-arrow me-2"></i> Sổ cái Tài chính
+                    </a>
+                    
+                    <% Integer mType = (Integer) session.getAttribute("member_type"); 
+                       if (mType != null && mType == 1) { %>
+                    <a class="nav-link w-100 <%= currentUri.contains("FarmerDebtHistoryServlet") ? "active" : "" %>" 
+                       href="${pageContext.request.contextPath}/FarmerDebtHistoryServlet">
+                        <i class="bi bi-clock-history me-2"></i> Lịch sử nợ của tôi
+                    </a>
+                    <% } %>
+
+                    <a class="nav-link w-100 <%= currentUri.contains("admin/finance.jsp") ? "active" : "" %>" 
                        href="${pageContext.request.contextPath}/admin/finance.jsp">
                         <i class="bi bi-cash-stack me-2"></i> Tài chính & Báo cáo
                     </a>
 
-                    <a class="nav-link w-100 <%= currentUri.contains("list_materials.jsp") ? "active" : "" %>" 
+                    <a class="nav-link w-100 <%= currentUri.contains("SearchMaterialServlet") ? "active" : "" %>" 
                        href="${pageContext.request.contextPath}/SearchMaterialServlet">
                         <i class="bi bi-box-fill me-2"></i> Quản lí vật tư
                     </a>
                     
-                    <a class="nav-link w-100 <%= currentUri.contains("debt_management.jsp") ? "active" : "" %>" 
+                    <a class="nav-link w-100 <%= currentUri.contains("DebtManagementServlet") ? "active" : "" %>" 
                        href="${pageContext.request.contextPath}/DebtManagementServlet">
                         <i class="bi bi-credit-card-2-back-fill me-2"></i> Quản lí nợ
                     </a>
@@ -115,11 +130,11 @@
                 </div>
             </nav>
 
-            <div class="logout-section mt-auto p-3">
+            <div class="logout-section mt-auto p-2">
                 <form action="${pageContext.request.contextPath}/loginURL" method="POST" class="m-0">
                     <input type="hidden" name="service" value="logoutUser">
-                    <button type="submit" class="btn btn-outline-danger btn-sm w-100 py-2">
-                        <i class="bi bi-box-arrow-right me-2"></i> Đăng xuất
+                    <button type="submit" class="btn btn-outline-danger btn-sm w-100 py-1">
+                        <i class="bi bi-box-arrow-right me-1"></i> Đăng xuất
                     </button>
                 </form>
             </div>
@@ -139,9 +154,7 @@
 
                 var bell = document.getElementById("bell-icon");
                 bell.classList.add("bell-ring");
-                setTimeout(() => {
-                    bell.classList.remove("bell-ring");
-                }, 1000);
+                setTimeout(() => { bell.classList.remove("bell-ring"); }, 1000);
 
                 const Toast = Swal.mixin({
                     toast: true,

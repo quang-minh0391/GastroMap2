@@ -1,12 +1,16 @@
 package controller.login;
 
 import DAO.DAOPayment;
+import DAO.PaymentVoucherDAO;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import model.PaymentVoucher;
 
 @WebServlet(name = "payment-success", urlPatterns = {"/payment-success"})
 public class PaymentSuccessServlet extends HttpServlet {
@@ -20,8 +24,35 @@ public class PaymentSuccessServlet extends HttpServlet {
         if ("PAID".equals(status) && orderCodeRaw != null) {
             long orderCode = Long.parseLong(orderCodeRaw);
             // Cập nhật trạng thái thanh toán thành SUCCESS
-            new DAOPayment().updateStatus(orderCode, "SUCCESS");
+//            new DAOPayment().updateStatus(orderCode, "SUCCESS");
+DAOPayment daoP = new DAOPayment();
+            
+            // 1. Cập nhật trạng thái
+            daoP.updateStatus(orderCode, "SUCCESS");
+            
+            // 2. Lấy số tiền
+            long amountLong = daoP.getAmountByOrderCode(orderCode);
+            // --- KẾT NỐI TÀI CHÍNH ---
+            try {
+                PaymentVoucherDAO voucherDao = new PaymentVoucherDAO();
+                PaymentVoucher v = new PaymentVoucher();
+                
+                v.setVoucherCode("REG-" + orderCode);
+                v.setVoucherType("RECEIPT"); // Thu tiền
+                v.setMemberId(null);         // Chưa có ID thành viên
+                v.setPartnerId(null);
+                v.setAmount(new BigDecimal(amountLong));
+                v.setPaymentMethod("Chuyển khoản (PayOS)");
+                v.setDescription("Thu phí đăng ký thành viên mới (Chờ kích hoạt)");
+                v.setCreatedDate(new Timestamp(System.currentTimeMillis()));
 
+                // Ghi vào sổ cái tài chính
+                voucherDao.insertVoucher(v);
+                
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            // -------------------------
             // Chuyển sang Register.jsp và cầm theo orderCode
             request.setAttribute("orderCode", orderCode);
             request.getRequestDispatcher("login/Register.jsp").forward(request, response);

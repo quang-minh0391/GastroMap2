@@ -2,7 +2,6 @@ package DAO;
 
 import DAL.DBContext;
 import model.BatchStockIn;
-import model.BatchInventory;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -219,6 +218,58 @@ public class DAOBatchStockIn extends DBContext {
         ResultSet rs = null;
         try {
             ps = conn.prepareStatement(sql);
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeResources(null, ps, rs);
+        }
+        return 0;
+    }
+    
+    /**
+     * Get paginated stock-ins by cooperative ID (through warehouse)
+     */
+    public List<BatchStockIn> getPaginatedByCoopId(int page, int pageSize, Integer coopId) {
+        List<BatchStockIn> list = new ArrayList<>();
+        String sql = "SELECT bsi.* FROM batch_stock_ins bsi " +
+                     "INNER JOIN storage_warehouses sw ON bsi.warehouse_id = sw.id " +
+                     "WHERE sw.coop_id = ? " +
+                     "ORDER BY bsi.created_at DESC LIMIT ? OFFSET ?";
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, coopId);
+            ps.setInt(2, pageSize);
+            ps.setInt(3, (page - 1) * pageSize);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(getFromResultSet(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeResources(null, ps, rs);
+        }
+        return list;
+    }
+    
+    /**
+     * Count stock-ins by cooperative ID
+     */
+    public int countByCoopId(Integer coopId) {
+        String sql = "SELECT COUNT(*) FROM batch_stock_ins bsi " +
+                     "INNER JOIN storage_warehouses sw ON bsi.warehouse_id = sw.id " +
+                     "WHERE sw.coop_id = ?";
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, coopId);
             rs = ps.executeQuery();
             if (rs.next()) {
                 return rs.getInt(1);

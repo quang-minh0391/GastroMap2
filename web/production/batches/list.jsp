@@ -9,7 +9,7 @@
             <h2 class="fw-bold">📦 Lô Sản xuất</h2>
             <p class="text-muted">Quản lý các lô sản xuất nông sản</p>
         </div>
-        <a href="${pageContext.request.contextPath}/batches?action=create" class="btn btn-success">
+        <a href="${pageContext.request.contextPath}/production-batches?action=create" class="btn btn-success">
             <i class="bi bi-plus-lg"></i> Tạo lô mới
         </a>
     </div>
@@ -82,10 +82,21 @@
                                 </c:choose>
                             </td>
                             <td class="text-center">
-                                <a href="${pageContext.request.contextPath}/batches?action=view&id=${batch.id}" 
-                                   class="btn btn-sm btn-outline-primary" title="Xem">👁️</a>
-                                <a href="${pageContext.request.contextPath}/qr-codes?action=generate&batchId=${batch.id}" 
-                                   class="btn btn-sm btn-outline-success" title="Tạo QR">📱</a>
+                                <div class="btn-group" role="group">
+                                    <a href="${pageContext.request.contextPath}/production-batches?action=view&id=${batch.id}" 
+                                       class="btn btn-sm btn-outline-primary" title="Xem">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="${pageContext.request.contextPath}/qr-codes?action=generate&batchId=${batch.id}" 
+                                       class="btn btn-sm btn-outline-success" title="Tạo QR">
+                                        <i class="bi bi-qr-code"></i>
+                                    </a>
+                                    <a href="${pageContext.request.contextPath}/production-batches?action=delete&id=${batch.id}" 
+                                       class="btn btn-sm btn-outline-danger" title="Xóa"
+                                       onclick="return confirm('Bạn có chắc muốn xóa lô sản xuất này?')">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                     </c:forEach>
@@ -93,7 +104,7 @@
                         <tr>
                             <td colspan="8" class="text-center text-muted py-4">
                                 Chưa có lô sản xuất nào. 
-                                <a href="${pageContext.request.contextPath}/batches?action=create">Tạo lô mới</a>
+                                <a href="${pageContext.request.contextPath}/production-batches?action=create">Tạo lô mới</a>
                             </td>
                         </tr>
                     </c:if>
