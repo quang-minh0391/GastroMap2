@@ -162,7 +162,9 @@ public class DAOMember1 extends DBContext {
     public member login(String email, String password) {
         String sql = "SELECT * FROM members WHERE email=? AND password=?";
         String hashedPassword = hashPassword(password);
-
+        if (this.conn == null) {
+        new DBContext(); // Gọi lại constructor để gán giá trị cho conn
+    }
         try (PreparedStatement pre = conn.prepareStatement(sql)) {
             pre.setString(1, email);
             pre.setString(2, hashedPassword);
