@@ -75,11 +75,11 @@
                         Sản xuất
                     </div>
                     <a class="nav-link w-100 <%= currentUri.contains("farm-products") ? "active" : "" %>" 
-                       href="${pageContext.request.contextPath}/farmProduct?service=list">
+                       href="${pageContext.request.contextPath}/farm-products?service=list">
                         <i class="bi bi-box-seam me-2"></i> Nông sản
                     </a>
                     <a class="nav-link w-100 <%= currentUri.contains("production-batches") ? "active" : "" %>" 
-                       href="${pageContext.request.contextPath}/productionBatch?service=list">
+                       href="${pageContext.request.contextPath}/production-batches?service=list">
                         <i class="bi bi-layers-half me-2"></i> Lô sản xuất
                     </a>
                     <a class="nav-link w-100 <%= currentUri.contains("traceability") ? "active" : "" %>" 
