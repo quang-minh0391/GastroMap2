@@ -13,7 +13,7 @@ body {
     color: #333;
 }
 
-/* 2. SIDEBAR (GIỮ KHUNG TỪ GIT + TINH CHỈNH CỦA BẠN) */
+/* 2. SIDEBAR */
 .sidebar {
     width: 260px;
     height: 100vh;
@@ -68,13 +68,20 @@ body {
     background: #6c757d;
 }
 
+/* Ép container nav luôn xếp dọc */
+.sidebar .nav {
+    display: block !important; 
+}
+
 .sidebar .nav-link {
+    display: block !important; 
+    width: 100%;
     color: #adb5bd;
     padding: 10px 15px;
     border-bottom: 1px solid #495057;
     text-decoration: none;
     transition: 0.3s;
-    font-size: 0.88rem;
+    font-size: 0.9rem; /* Kết hợp giữa 0.95 và 0.88 */
     white-space: normal;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -90,9 +97,10 @@ body {
     color: white !important;
 }
 
-/* 3. SUB-MENU (QUAN TRỌNG - GIỮ TỪ GIT ĐỂ KHÔNG LỖI MENU XỔ XUỐNG) */
+/* 3. SUB-MENU */
 .sidebar .nav-item-group {
     border-bottom: 1px solid #495057;
+    display: block; 
 }
 
 .sidebar .nav-item-group > .nav-link {
@@ -126,7 +134,7 @@ body {
     border-bottom: none;
 }
 
-/* 4. THÔNG BÁO & CHUÔNG (LẤY HIỆU ỨNG RUNG CỦA BẠN) */
+/* 4. THÔNG BÁO & CHUÔNG */
 .notification-bell i {
     color: #adb5bd;
     transition: 0.3s;
@@ -138,7 +146,6 @@ body {
     transform: rotate(15deg);
 }
 
-/* Animation rung chuông khi có thông báo mới */
 .bell-ring {
     animation: ring 0.7s ease-in-out infinite;
     color: #ffc107 !important;
@@ -155,7 +162,7 @@ body {
     100% { transform: rotate(0); }
 }
 
-/* 5. AVATAR & USER SECTION (GỘP CẢ HAI) */
+/* 5. AVATAR & USER SECTION */
 .sidebar .user-section {
     margin-top: auto;
     background: #23272b;
@@ -164,7 +171,7 @@ body {
 }
 
 .avatar-circle {
-    width: 45px; /* Chỉnh lại cỡ vừa vặn */
+    width: 45px;
     height: 45px;
     background: #28a745;
     border-radius: 50%;
@@ -186,7 +193,7 @@ body {
     width: calc(100% - 260px);
 }
 
-/* 7. CARD UI (LẤY BẢN ĐẸP CỦA BẠN) */
+/* 7. CARD UI */
 .card { 
     border: none; 
     transition: transform 0.3s, box-shadow 0.3s; 
@@ -199,7 +206,7 @@ body {
     box-shadow: 0 8px 15px rgba(0,0,0,0.1);
 }
 
-/* 8. LOGOUT BUTTON (PHẦN MỚI CỦA BẠN) */
+/* 8. LOGOUT BUTTON */
 .logout-section .btn-outline-danger:hover {
     background-color: #dc3545;
     color: white;

@@ -27,7 +27,7 @@ public class CreatePaymentServlet2 extends HttpServlet {
         try {
             // 1. Lấy thông tin gói từ form
             int planId = Integer.parseInt(request.getParameter("plan_id"));
-            long amount = (planId == 1) ? 2000L : 2500L; // Sửa lại giá tiền thực tế nếu cần
+            long amount = (planId == 1) ? 100000L : 1000000L; // Sửa lại giá tiền thực tế nếu cần
             long orderCode = System.currentTimeMillis() / 2000L;
 
             // --- BẮT ĐẦU PHẦN SỬA ĐỔI ---

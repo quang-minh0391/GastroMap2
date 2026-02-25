@@ -74,17 +74,17 @@ public class FinanceServlet extends HttpServlet {
 
         // 2. Lấy tham số Lọc & Sắp xếp
         String fType = request.getParameter("f_type");
-        String fCat = request.getParameter("f_cat"); // Category ID
+//        String fCat = request.getParameter("f_cat"); // Category ID
         String sortBy = request.getParameter("sortBy");
         String sortOrder = request.getParameter("sortOrder");
-
-        Integer catId = null;
-        try {
-            if (fCat != null && !fCat.isEmpty()) {
-                catId = Integer.parseInt(fCat);
-            }
-        } catch (Exception e) {
-        }
+        String fCatName = request.getParameter("f_cat_name"); // [MỚI] Lấy tên danh mục thay vì ID
+//        Integer catId = null;
+//        try {
+//            if (fCat != null && !fCat.isEmpty()) {
+//                catId = Integer.parseInt(fCat);
+//            }
+//        } catch (Exception e) {
+//        }
 
         java.sql.Date fFrom = null;
         java.sql.Date fTo = null;
@@ -97,17 +97,25 @@ public class FinanceServlet extends HttpServlet {
             }
         } catch (Exception e) {
         }
-        
-        
+        // --- [MỚI] Xử lý lọc theo Giá tiền ---
+        BigDecimal fAmtFrom = null;
+        BigDecimal fAmtTo = null;
+        try {
+            String sFrom = request.getParameter("f_amount_from");
+            if(sFrom != null && !sFrom.isEmpty()) fAmtFrom = new BigDecimal(sFrom);
+            
+            String sTo = request.getParameter("f_amount_to");
+            if(sTo != null && !sTo.isEmpty()) fAmtTo = new BigDecimal(sTo);
+        } catch (Exception e) {}
+        // -------------------------------------
         // 3. Lấy dữ liệu hiển thị (QUAN TRỌNG: Phải lấy danh mục để hiện Dropdown)
-        List<FinancialTransaction> listTrans = dao.searchTransactions(fFrom, fTo, fType, catId, sortBy, sortOrder, pageIndex, pageSize);
-        List<TransactionCategory> listCats = dao.getAllCategories(); // <--- ĐÃ THÊM DÒNG NÀY (Trước đây bị thiếu)
-        
-        int totalRecords = dao.countTransactions(fFrom, fTo, fType, catId);
+        List<FinancialTransaction> listTrans = dao.searchTransactions(fFrom, fTo, fType, fCatName, fAmtFrom, fAmtTo, sortBy, sortOrder, pageIndex, pageSize);
+        int totalRecords = dao.countTransactions(fFrom, fTo, fType, fCatName, fAmtFrom, fAmtTo);
+        List<TransactionCategory> listCats = dao.getAllCategories();
+
         int totalPage = (totalRecords % pageSize == 0) ? (totalRecords / pageSize) : (totalRecords / pageSize + 1);
 
         // 4. CHUẨN BỊ DỮ LIỆU BIỂU ĐỒ (CẢ NĂM VÀ THÁNG)
-        
         // A. Dữ liệu Theo Năm (5 Năm gần nhất)
         List<double[]> yearlyStats = dao.getYearlyStatistics();
         StringBuilder yLabels = new StringBuilder("[");
@@ -115,13 +123,16 @@ public class FinanceServlet extends HttpServlet {
         StringBuilder yExp = new StringBuilder("[");
         StringBuilder yBal = new StringBuilder("[");
 
-        for(double[] s : yearlyStats) {
-            yLabels.append("'Năm ").append((int)s[0]).append("',");
+        for (double[] s : yearlyStats) {
+            yLabels.append("'Năm ").append((int) s[0]).append("',");
             yRev.append(s[1]).append(",");
             yExp.append(s[2]).append(",");
             yBal.append(s[1] - s[2]).append(",");
         }
-        fixJson(yLabels); fixJson(yRev); fixJson(yExp); fixJson(yBal);
+        fixJson(yLabels);
+        fixJson(yRev);
+        fixJson(yExp);
+        fixJson(yBal);
 
         // B. Dữ liệu Theo Tháng (Của năm hiện tại)
         int currentYear = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR);
@@ -130,30 +141,33 @@ public class FinanceServlet extends HttpServlet {
         StringBuilder mRev = new StringBuilder("[");
         StringBuilder mExp = new StringBuilder("[");
         StringBuilder mBal = new StringBuilder("[");
-        
-        for(double[] s : monthlyStats) {
-            mLabels.append("'Tháng ").append((int)s[0]).append("',");
+
+        for (double[] s : monthlyStats) {
+            mLabels.append("'Tháng ").append((int) s[0]).append("',");
             mRev.append(s[1]).append(",");
             mExp.append(s[2]).append(",");
             mBal.append(s[1] - s[2]).append(",");
         }
-        fixJson(mLabels); fixJson(mRev); fixJson(mExp); fixJson(mBal);
+        fixJson(mLabels);
+        fixJson(mRev);
+        fixJson(mExp);
+        fixJson(mBal);
 
         // 5. Gửi dữ liệu sang JSP
         request.setAttribute("transList", listTrans);
         request.setAttribute("catList", listCats); // Biến này giờ đã có dữ liệu
-        
+
         // Dashboard Stats
         request.setAttribute("totalRevenue", dao.getTotalAmount("IN"));
         request.setAttribute("totalExpense", dao.getTotalAmount("OUT"));
         request.setAttribute("balance", dao.getTotalAmount("IN") - dao.getTotalAmount("OUT"));
-        
+
         // Chart Data (Year)
         request.setAttribute("yLabels", yLabels.toString());
         request.setAttribute("yRev", yRev.toString());
         request.setAttribute("yExp", yExp.toString());
         request.setAttribute("yBal", yBal.toString());
-        
+
         // Chart Data (Month)
         request.setAttribute("mLabels", mLabels.toString());
         request.setAttribute("mRev", mRev.toString());
@@ -164,8 +178,9 @@ public class FinanceServlet extends HttpServlet {
         // Pagination & Filter State
         request.setAttribute("pageIndex", pageIndex);
         request.setAttribute("totalPage", totalPage);
+        // Gửi lại tham số bộ lọc
         request.setAttribute("f_type", fType);
-        request.setAttribute("f_cat", fCat);
+        request.setAttribute("f_cat_name", fCatName); // [MỚI]
         request.setAttribute("sortBy", sortBy);
         request.setAttribute("sortOrder", sortOrder);
 
@@ -180,24 +195,28 @@ public class FinanceServlet extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
-   @Override
+    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
 
         try {
-            // 1. Lấy dữ liệu cơ bản
-            int categoryId = Integer.parseInt(request.getParameter("category_id"));
+            FinanceDAO dao = new FinanceDAO();
+            // 1. Lấy dữ liệu từ Form mới
+            String transType = request.getParameter("type"); // 'IN' hoặc 'OUT' từ nút bấm
+            String categoryName = request.getParameter("category_name"); // Tên gõ vào input
             BigDecimal amount = new BigDecimal(request.getParameter("amount"));
             String description = request.getParameter("description");
+
+            // 2. Xử lý Danh mục (Tìm hoặc Tạo)
+            int categoryId = dao.getOrCreateCategory(categoryName, transType);
 
             // 2. XỬ LÝ NGÀY GIỜ (Logic mới thêm)
             String dateStr = request.getParameter("transaction_date"); // Chuỗi dạng: "2026-01-24T21:30"
             java.sql.Timestamp transDate;
-            
+
             try {
                 if (dateStr != null && !dateStr.isEmpty()) {
-                    // HTML5 datetime-local trả về 'T' ở giữa, SQL cần khoảng trắng
                     String formattedDate = dateStr.replace("T", " ") + ":00";
                     transDate = java.sql.Timestamp.valueOf(formattedDate);
                 } else {
@@ -207,13 +226,6 @@ public class FinanceServlet extends HttpServlet {
                 // Phòng trường hợp lỗi format, lấy giờ hiện tại
                 transDate = new java.sql.Timestamp(System.currentTimeMillis());
             }
-
-            // 3. Gọi DAO
-            FinanceDAO dao = new FinanceDAO();
-            
-            // Tự động xác định IN/OUT dựa vào loại danh mục (Logic cũ giữ nguyên)
-            String catType = dao.getCategoryType(categoryId); 
-            String transType = "REVENUE".equals(catType) ? "IN" : "OUT";
 
             // 4. Tạo đối tượng và set đủ thông tin
             FinancialTransaction trans = new FinancialTransaction();
@@ -226,7 +238,7 @@ public class FinanceServlet extends HttpServlet {
             dao.insertTransaction(trans);
 
             // 5. Load lại trang
-            response.sendRedirect("finance");
+            response.sendRedirect("finance?msg=success");
 
         } catch (Exception e) {
             e.printStackTrace();

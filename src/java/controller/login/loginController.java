@@ -105,7 +105,9 @@ public class loginController extends HttpServlet {
                     session.setAttribute("expiry_date", user.getExpiry_date());
 
                     // Điều hướng vào trang chủ
-                    response.sendRedirect("index.jsp");
+                    //response.sendRedirect("index.jsp");
+                    // Điều hướng vào trang chủ dùng đường dẫn tuyệt đối của ứng dụng
+response.sendRedirect(request.getContextPath() + "/index.jsp");
 
                 } else {
                     // Sai User hoặc Pass

@@ -221,6 +221,13 @@ public class AssetServlet extends HttpServlet {
         request.setAttribute("f_location", fLocation);
         request.setAttribute("sortBy", sortBy);
         request.setAttribute("sortOrder", sortOrder);
+        
+        // --- THÊM 2 DÒNG NÀY ---
+        request.setAttribute("f_date_from", request.getParameter("f_date_from"));
+        request.setAttribute("f_date_to", request.getParameter("f_date_to"));
+        // --- THÊM 2 DÒNG NÀY CHO GIÁ ---
+        request.setAttribute("f_price_from", request.getParameter("f_price_from"));
+        request.setAttribute("f_price_to", request.getParameter("f_price_to"));
 
         request.getRequestDispatcher("/asset/asset_management.jsp").forward(request, response);
     }
@@ -294,7 +301,10 @@ public class AssetServlet extends HttpServlet {
             // Chỉ chạy khi không có action đặc biệt
             String code = request.getParameter("code");
             String name = request.getParameter("name");
-            int categoryId = Integer.parseInt(request.getParameter("category_id"));
+            // --- SỬA ĐOẠN NÀY: Thay vì lấy ID, ta lấy Tên và tự xử lý ---
+            String categoryName = request.getParameter("category_name"); 
+            AssetDAO dao = new AssetDAO();
+            int categoryId = dao.getOrCreateCategoryId(categoryName);
             String dateStr = request.getParameter("purchase_date");
             Date purchaseDate = Date.valueOf(dateStr);
             BigDecimal price = new BigDecimal(request.getParameter("price"));
@@ -311,7 +321,6 @@ public class AssetServlet extends HttpServlet {
             newAsset.setStatus(status);
             newAsset.setLocation(location);
 
-            AssetDAO dao = new AssetDAO();
             dao.insertAsset(newAsset);
 
             // --- GHI SỔ CÁI KHI MUA MỚI (TÙY CHỌN) ---
