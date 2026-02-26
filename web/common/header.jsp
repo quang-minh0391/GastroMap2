@@ -234,7 +234,11 @@
                     </a>
                     <a class="nav-link w-100 <%= uri.contains("material") ? "active" : "" %>" 
                        href="${pageContext.request.contextPath}/batch-inventory">
-                        <i class="bi bi-box-fill me-2"></i> Quản lí kho
+                        <i class="bi bi-box-fill me-2"></i> Tồn kho theo lô
+                    </a>
+                    <a class="nav-link w-100 <%= uri.contains("material") ? "active" : "" %>" 
+                       href="${pageContext.request.contextPath}/warehouses">
+                        <i class="bi bi-box-fill me-2"></i> Quản lý kho
                     </a>
 
                     <a class="nav-link w-100 <%= (uri.contains("debt") && !uri.contains("farmerdebt")) ? "active" : "" %>" 
