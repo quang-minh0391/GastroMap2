@@ -232,6 +232,10 @@
                        href="${pageContext.request.contextPath}/SearchMaterialServlet">
                         <i class="bi bi-box-fill me-2"></i> Quản lí vật tư
                     </a>
+                    <a class="nav-link w-100 <%= uri.contains("material") ? "active" : "" %>" 
+                       href="${pageContext.request.contextPath}/batch-inventory">
+                        <i class="bi bi-box-fill me-2"></i> Quản lí kho
+                    </a>
 
                     <a class="nav-link w-100 <%= (uri.contains("debt") && !uri.contains("farmerdebt")) ? "active" : "" %>" 
                        href="${pageContext.request.contextPath}/DebtManagementServlet">
