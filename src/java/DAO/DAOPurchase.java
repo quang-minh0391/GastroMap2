@@ -21,23 +21,24 @@ public class DAOPurchase extends DBContext {
             if (conn == null) {
                 return false;
             }
-            conn.setAutoCommit(false); // Bắt đầu Transaction
+            conn.setAutoCommit(false);
 
-            // =================================================================================
+            // MỐC THỜI GIAN THỰC: Dùng để format mã phiếu cho đồng bộ
+            java.sql.Timestamp currentTimestamp = new java.sql.Timestamp(System.currentTimeMillis());
+
             // 1. TẠO PHIẾU THU MUA (produce_receipts)
-            // =================================================================================
-            String receiptCode = "PN_" + System.currentTimeMillis(); // Mã phiếu nhập vẫn để random cho nhanh
-
+            String receiptCode = "PN-" + new SimpleDateFormat("yyyyMMdd-HHmmss").format(currentTimestamp);
             double totalAmount = 0;
             for (int i = 0; i < quantities.length; i++) {
                 totalAmount += Double.parseDouble(quantities[i]) * Double.parseDouble(buyPrices[i]);
             }
 
+            // SỬA: Bỏ cột created_at để Database tự xử lý theo giờ hệ thống
             String sqlReceipt = "INSERT INTO produce_receipts (receipt_code, member_id, purchase_date, total_amount, amount_paid, note) VALUES (?, ?, ?, ?, ?, ?)";
             ps = conn.prepareStatement(sqlReceipt, Statement.RETURN_GENERATED_KEYS);
             ps.setString(1, receiptCode);
             ps.setInt(2, memberId);
-            ps.setDate(3, harvestDate);
+            ps.setDate(3, harvestDate); // purchase_date chỉ lưu Ngày (DATE)
             ps.setDouble(4, totalAmount);
             ps.setDouble(5, amountPaid);
             ps.setString(6, note);
@@ -49,24 +50,22 @@ public class DAOPurchase extends DBContext {
                 receiptId = rs.getInt(1);
             }
 
-            // =================================================================================
-            // 2. SINH MÃ LÔ TỰ ĐỘNG THEO CHUẨN (Batch Code Generation)
-            // =================================================================================
-            String productName = getProductName(conn, productId); // Hàm phụ lấy tên SP
-            String batchCode = generateBatchCode(conn, productId, productName); // Hàm sinh mã lô chuẩn
+            // 2. SINH MÃ LÔ & TẠO LÔ (production_batches)
+            String productName = getProductName(conn, productId);
+            String batchCode = generateBatchCode(conn, productId, productName, currentTimestamp);
 
-            // TẠO LÔ SẢN XUẤT (production_batches)
             double totalQuantity = 0;
             for (String q : quantities) {
                 totalQuantity += Double.parseDouble(q);
             }
 
+            // SỬA: Bỏ cột created_at để Database tự xử lý
             String sqlBatch = "INSERT INTO production_batches (batch_code, product_id, member_id, harvest_date, expiry_date, total_quantity, unit, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'AVAILABLE')";
             ps = conn.prepareStatement(sqlBatch, Statement.RETURN_GENERATED_KEYS);
             ps.setString(1, batchCode);
             ps.setInt(2, productId);
             ps.setInt(3, memberId);
-            ps.setDate(4, harvestDate);
+            ps.setDate(4, harvestDate); 
             ps.setDate(5, expiryDate);
             ps.setDouble(6, totalQuantity);
             ps.setString(7, unit);
@@ -78,10 +77,9 @@ public class DAOPurchase extends DBContext {
                 batchId = rs.getInt(1);
             }
 
-            // =================================================================================
-            // 3. LƯU CHI TIẾT (produce_receipt_details) & NHẬP KHO (batch_stock_ins)
-            // =================================================================================
+            // 3. CHI TIẾT PHIẾU & NHẬP KHO
             String sqlDetail = "INSERT INTO produce_receipt_details (receipt_id, product_id, warehouse_id, quantity, unit_price, subtotal) VALUES (?, ?, ?, ?, ?, ?)";
+            // SỬA: Bỏ created_at để Database tự xử lý
             String sqlStockIn = "INSERT INTO batch_stock_ins (batch_id, warehouse_id, quantity, unit, received_date, note) VALUES (?, ?, ?, ?, ?, ?)";
             String sqlInventory = "INSERT INTO batch_inventory (warehouse_id, batch_id, remaining_quantity, unit) VALUES (?, ?, ?, ?)";
 
@@ -89,124 +87,111 @@ public class DAOPurchase extends DBContext {
                 int whId = Integer.parseInt(warehouseIds[i]);
                 double qty = Double.parseDouble(quantities[i]);
                 double price = Double.parseDouble(buyPrices[i]);
-                double subtotal = qty * price;
 
-                // A. Lưu chi tiết phiếu (quan trọng để lưu giá)
-                ps = conn.prepareStatement(sqlDetail);
-                ps.setInt(1, receiptId);
-                ps.setInt(2, productId);
-                ps.setInt(3, whId);
-                ps.setDouble(4, qty);
-                ps.setDouble(5, price);
-                ps.setDouble(6, subtotal);
-                ps.executeUpdate();
+                // A. Chi tiết phiếu
+                try (PreparedStatement psD = conn.prepareStatement(sqlDetail)) {
+                    psD.setInt(1, receiptId);
+                    psD.setInt(2, productId);
+                    psD.setInt(3, whId);
+                    psD.setDouble(4, qty);
+                    psD.setDouble(5, price);
+                    psD.setDouble(6, qty * price);
+                    psD.executeUpdate();
+                }
 
-                // B. Lưu lịch sử nhập kho
-                ps = conn.prepareStatement(sqlStockIn);
-                ps.setInt(1, batchId);
-                ps.setInt(2, whId);
-                ps.setDouble(3, qty);
-                ps.setString(4, unit);
-                ps.setDate(5, new java.sql.Date(System.currentTimeMillis()));
-                ps.setString(6, "Nhập từ phiếu: " + receiptCode);
-                ps.executeUpdate();
+                // B. Lịch sử nhập kho - received_date lưu Ngày, giờ tạo tự sinh
+                try (PreparedStatement psS = conn.prepareStatement(sqlStockIn)) {
+                    psS.setInt(1, batchId);
+                    psS.setInt(2, whId);
+                    psS.setDouble(3, qty);
+                    psS.setString(4, unit);
+                    psS.setDate(5, harvestDate); 
+                    psS.setString(6, "Nhập từ phiếu: " + receiptCode);
+                    psS.executeUpdate();
+                }
 
-                // C. Tăng tồn kho
-                ps = conn.prepareStatement(sqlInventory);
-                ps.setInt(1, whId);
-                ps.setInt(2, batchId);
-                ps.setDouble(3, qty);
-                ps.setString(4, unit);
-                ps.executeUpdate();
+                // C. Tồn kho (Giữ nguyên)
+                try (PreparedStatement psI = conn.prepareStatement(sqlInventory)) {
+                    psI.setInt(1, whId);
+                    psI.setInt(2, batchId);
+                    psI.setDouble(3, qty);
+                    psI.setString(4, unit);
+                    psI.executeUpdate();
+                }
             }
 
-            // =================================================================================
-            // 4. CÁC BƯỚC CÒN LẠI (QR & CÔNG NỢ) - GIỮ NGUYÊN NHƯ CŨ
-            // =================================================================================
+            // 4. QR (Đã chạy đúng - Giữ nguyên Database tự xử lý created_at)
             if (createQR) {
                 String sqlQR = "INSERT INTO batch_qr_codes (batch_id, qr_value, status) VALUES (?, ?, 'CREATED')";
-                ps = conn.prepareStatement(sqlQR);
-                ps.setInt(1, batchId);
-                ps.setString(2, "QR_" + batchCode);
-                ps.executeUpdate();
+                try (PreparedStatement psQ = conn.prepareStatement(sqlQR)) {
+                    psQ.setInt(1, batchId);
+                    psQ.setString(2, "QR_" + batchCode);
+                    psQ.executeUpdate();
+                }
             }
 
-            // Xử lý công nợ (ghi CÓ và ghi NỢ) - Logic giống hệt bài trước
+            // 5. CÔNG NỢ
             updateLedger(conn, memberId, receiptId, batchCode, totalAmount, amountPaid, receiptCode);
 
-            conn.commit(); // Lưu tất cả
+            conn.commit();
             return true;
 
         } catch (Exception e) {
+            if (conn != null) try { conn.rollback(); } catch (Exception ex) {}
             e.printStackTrace();
-            try {
-                if (conn != null) {
-                    conn.rollback();
-                }
-            } catch (Exception ex) {
-            }
             return false;
         } finally {
-            try {
-                if (conn != null) {
-                    conn.setAutoCommit(true);
-                }
-            } catch (Exception ex) {
-            }
+            try { if (conn != null) conn.setAutoCommit(true); } catch (Exception ex) {}
         }
     }
 
-    // --- CÁC HÀM PHỤ TRỢ (HELPER METHODS) ---
-    // 1. Hàm sinh mã BATCH-{CODE}-{YEAR}-{SEQ}
-    private String generateBatchCode(Connection conn, int productId, String productName) throws SQLException {
-        // Tạo mã tắt từ tên (VD: Lúa ST25 -> LUA)
+    // --- CÁC HÀM PHỤ TRỢ ---
+
+    private String generateBatchCode(Connection conn, int productId, String productName, java.sql.Timestamp ts) throws SQLException {
         String productCode = "PROD";
-        if (productName != null && productName.length() >= 3) {
-            // Lấy 3 ký tự đầu viết hoa, bỏ dấu tiếng Việt (nếu cần xử lý kỹ hơn thì dùng thư viện)
-            productCode = productName.substring(0, 3).toUpperCase().replaceAll("[^A-Z]", "X");
+        if (productName != null) {
+            String cleanName = productName.trim().toUpperCase().replaceAll("[^A-Z0-9]", "");
+            if (cleanName.length() >= 3) {
+                productCode = cleanName.substring(0, 3);
+            } else if (!cleanName.isEmpty()) {
+                productCode = cleanName;
+            }
         }
 
-        // Lấy năm hiện tại
-        int year = Calendar.getInstance().get(Calendar.YEAR);
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(ts.getTime());
+        int year = cal.get(Calendar.YEAR);
 
-        // Đếm số lượng lô của sản phẩm này trong năm nay
         int sequence = 1;
+        // YEAR(created_at) lấy theo giờ DB nên sẽ rất chính xác
         String sqlCount = "SELECT COUNT(*) FROM production_batches WHERE product_id = ? AND YEAR(created_at) = ?";
         try (PreparedStatement ps = conn.prepareStatement(sqlCount)) {
             ps.setInt(1, productId);
             ps.setInt(2, year);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    sequence = rs.getInt(1) + 1; // Tăng lên 1
+                    sequence = rs.getInt(1) + 1;
                 }
             }
         }
-
-        // Format: BATCH-LUA-2026-001
         return String.format("BATCH-%s-%d-%03d", productCode, year, sequence);
     }
 
-    // 2. Lấy tên sản phẩm
     private String getProductName(Connection conn, int productId) {
         String name = "";
         try (PreparedStatement ps = conn.prepareStatement("SELECT name FROM farm_products WHERE id = ?")) {
             ps.setInt(1, productId);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    name = rs.getString("name");
-                }
+                if (rs.next()) name = rs.getString("name");
             }
-        } catch (Exception e) {
-        }
+        } catch (Exception e) {}
         return name;
     }
 
-    // 3. Hàm cập nhật công nợ (Tách ra cho gọn)
     private void updateLedger(Connection conn, int memberId, int receiptId, String batchCode, double totalAmount, double amountPaid, String receiptCode) throws SQLException {
-
         double currentBalance = 0;
         double debt = totalAmount - amountPaid;
-        // Bước: Truy vấn để lấy balance_after mới nhất của thành viên này
+
         String sqlGetBal = "SELECT balance_after FROM member_transaction_ledger "
                 + "WHERE member_id = ? AND partner_id IS NULL "
                 + "ORDER BY id DESC LIMIT 1";
@@ -220,16 +205,18 @@ public class DAOPurchase extends DBContext {
             }
         }
 
-        String sqlLedger = "INSERT INTO member_transaction_ledger (member_id, transaction_date, reference_type, reference_id, amount, entry_type, balance_after, note) VALUES (?, NOW(), ?, ?, ?, ?, ?, ?)";
-        PreparedStatement ps = conn.prepareStatement(sqlLedger);
-        ps.setInt(1, memberId);
-        ps.setString(2, "FARM_PURCHASE");
-        ps.setInt(3, receiptId);
-        ps.setDouble(4, totalAmount);
-        ps.setString(5, "CREDIT");
-        ps.setDouble(6, currentBalance - debt);
-        ps.setString(7, "Thu mua lô: " + batchCode);
-        ps.executeUpdate();
+        // SỬA: Bỏ transaction_date để Database tự xử lý
+        String sqlLedger = "INSERT INTO member_transaction_ledger (member_id, reference_type, reference_id, amount, entry_type, balance_after, note) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
+        try (PreparedStatement ps = conn.prepareStatement(sqlLedger)) {
+            ps.setInt(1, memberId);
+            ps.setString(2, "FARM_PURCHASE");
+            ps.setInt(3, receiptId);
+            ps.setDouble(4, totalAmount);
+            ps.setString(5, "CREDIT");
+            ps.setDouble(6, currentBalance - debt);
+            ps.setString(7, "Thu mua lô: " + batchCode + " (Phiếu: " + receiptCode + ")");
+            ps.executeUpdate();
+        }
     }
 }

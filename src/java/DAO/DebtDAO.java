@@ -156,167 +156,159 @@ public class DebtDAO extends DBContext {
         return list;
     }
 
-    public boolean saveVoucher(int mId, Integer pId, String vType, double amount, String method, String note, String img, String entryType) {
-        String sqlV = "INSERT INTO payment_vouchers (voucher_code, voucher_type, member_id, partner_id, amount, payment_method, description, image_path) VALUES (?,?,?,?,?,?,?,?)";
-        String sqlB = "SELECT balance_after FROM member_transaction_ledger WHERE member_id = ? AND " + (pId == null ? "partner_id IS NULL " : "partner_id = ? ") + "ORDER BY id DESC LIMIT 1";
-        // CẬP NHẬT: Thêm cột reference_id vào cuối câu lệnh (8 tham số ?)
-        String sqlL = "INSERT INTO member_transaction_ledger (member_id, partner_id, reference_type, amount, entry_type, balance_after, note, reference_id) VALUES (?,?,?,?,?,?,?,?)";
+public boolean saveVoucher(int mId, Integer pId, String vType, double amount, String method, String note, String img, String entryType) {
+    // SỬA SQL: Bỏ cột ngày giờ để Database tự xử lý mặc định (giống bảng QR đang chạy đúng)
+    String sqlV = "INSERT INTO payment_vouchers (voucher_code, voucher_type, member_id, partner_id, amount, payment_method, description, image_path) VALUES (?,?,?,?,?,?,?,?)";
+    String sqlB = "SELECT balance_after FROM member_transaction_ledger WHERE member_id = ? AND " + (pId == null ? "partner_id IS NULL " : "partner_id = ? ") + "ORDER BY id DESC LIMIT 1";
+    String sqlL = "INSERT INTO member_transaction_ledger (member_id, partner_id, reference_type, amount, entry_type, balance_after, note, reference_id) VALUES (?,?,?,?,?,?,?,?)";
 
-        try {
-            conn.setAutoCommit(false);
+    try {
+        conn.setAutoCommit(false);
 
-            // 1. Lưu Voucher và lấy ID tự tăng (Generated Keys)
-            int generatedVoucherId = 0;
-            String vCode = (vType.equals("RECEIPT") ? "PT-" : "PC-") + System.currentTimeMillis();
-            try (PreparedStatement psV = conn.prepareStatement(sqlV, Statement.RETURN_GENERATED_KEYS)) {
-                psV.setString(1, vCode);
-                psV.setString(2, vType);
-                psV.setInt(3, mId);
-                if (pId != null) {
-                    psV.setInt(4, pId);
-                } else {
-                    psV.setNull(4, Types.INTEGER);
-                }
-                psV.setDouble(5, amount);
-                psV.setString(6, method);
-                psV.setString(7, note);
-                psV.setString(8, img);
-                psV.executeUpdate();
+        // Mốc thời gian này chỉ dùng để tạo mã phiếu (vCode), không gửi xuống DB để tránh lệch giờ
+        java.util.Date now = new java.util.Date();
+        int generatedVoucherId = 0;
+        String vPrefix = vType.equals("RECEIPT") ? "PT-" : "PC-";
+        String vCode = vPrefix + new java.text.SimpleDateFormat("yyyyMMdd-HHmmss").format(now);
 
-                // Lấy ID tự tăng từ Database
-                ResultSet rsKeys = psV.getGeneratedKeys();
-                if (rsKeys.next()) {
-                    generatedVoucherId = rsKeys.getInt(1);
-                }
-            }
-
-            // 2. Lấy số dư cũ (Giữ nguyên)
-            double lastBal = 0;
-            try (PreparedStatement psB = conn.prepareStatement(sqlB)) {
-                psB.setInt(1, mId);
-                if (pId != null) {
-                    psB.setInt(2, pId);
-                }
-                try (ResultSet rs = psB.executeQuery()) {
-                    if (rs.next()) {
-                        lastBal = rs.getDouble("balance_after");
-                    }
-                }
-            }
-
-            // SỬA LỖI LOGIC TẠI ĐÂY:
-            // DEBIT = Tăng số dư (+) | CREDIT = Giảm số dư (-)
-            double newBal = ("DEBIT".equals(entryType)) ? lastBal + amount : lastBal - amount;
-
-            try (PreparedStatement psL = conn.prepareStatement(sqlL)) {
-                psL.setInt(1, mId);
-                if (pId != null) {
-                    psL.setInt(2, pId);
-                } else {
-                    psL.setNull(2, Types.INTEGER);
-                }
-                psL.setString(3, vType.equals("RECEIPT") ? "CASH_RECEIPT" : "CASH_PAYMENT");
-                psL.setDouble(4, amount);
-                psL.setString(5, entryType);
-                psL.setDouble(6, newBal);
-                psL.setString(7, note + " (" + method + ")");
-                psL.setInt(8, generatedVoucherId);
-                psL.executeUpdate();
-            }
-            conn.commit();
-            return true;
-        } catch (SQLException e) {
-            try {
-                if (conn != null) {
-                    conn.rollback();
-                }
-            } catch (SQLException ex) {
-            }
-            e.printStackTrace();
-            return false;
-        } finally {
-            try {
-                conn.setAutoCommit(true);
-            } catch (SQLException e) {
-            }
-        }
-    }
-// Hàm dành riêng cho Nhà cung cấp - LUÔN LUÔN TRỪ NỢ
-
-    public boolean saveSupplierVoucher(int mId, int pId, double amount, String method, String note, String img) {
-        String sqlV = "INSERT INTO payment_vouchers (voucher_code, voucher_type, member_id, partner_id, amount, payment_method, description, image_path) VALUES (?,?,?,?,?,?,?,?)";
-        String sqlB = "SELECT balance_after FROM member_transaction_ledger WHERE member_id = ? AND partner_id = ? ORDER BY id DESC LIMIT 1";
-        String sqlL = "INSERT INTO member_transaction_ledger (member_id, partner_id, reference_type, amount, entry_type, balance_after, note, reference_id) VALUES (?,?,?,?,?,?,?,?)";
-
-        try {
-            conn.setAutoCommit(false);
-            int voucherId = 0;
-            String vCode = "PC-" + System.currentTimeMillis();
-
-            // 1. Lưu phiếu chi
-            try (PreparedStatement psV = conn.prepareStatement(sqlV, Statement.RETURN_GENERATED_KEYS)) {
-                psV.setString(1, vCode);
-                psV.setString(2, "PAYMENT");
-                psV.setInt(3, mId);
+        // 1. Lưu Voucher (Bỏ tham số Timestamp ở vị trí thứ 9)
+        try (PreparedStatement psV = conn.prepareStatement(sqlV, Statement.RETURN_GENERATED_KEYS)) {
+            psV.setString(1, vCode);
+            psV.setString(2, vType);
+            psV.setInt(3, mId);
+            if (pId != null) {
                 psV.setInt(4, pId);
-                psV.setDouble(5, amount);
-                psV.setString(6, method);
-                psV.setString(7, note);
-                psV.setString(8, img);
-                psV.executeUpdate();
-                ResultSet rs = psV.getGeneratedKeys();
-                if (rs.next()) {
-                    voucherId = rs.getInt(1);
-                }
+            } else {
+                psV.setNull(4, java.sql.Types.INTEGER);
             }
+            psV.setDouble(5, amount);
+            psV.setString(6, method);
+            psV.setString(7, note);
+            psV.setString(8, img);
+            // Database sẽ tự điền created_date dựa trên giờ hệ thống
+            psV.executeUpdate();
 
-            // 2. Lấy nợ hiện tại
-            double lastBal = 0;
-            try (PreparedStatement psB = conn.prepareStatement(sqlB)) {
-                psB.setInt(1, mId);
-                psB.setInt(2, pId);
-                try (ResultSet rs = psB.executeQuery()) {
-                    if (rs.next()) {
-                        lastBal = rs.getDouble("balance_after");
-                    }
-                }
-            }
-
-            // 3. Logic: Trả nợ NCC thì nợ phải GIẢM (Phép Trừ)
-            double newBal = lastBal - amount;
-
-            // 4. Ghi vào sổ cái (Dùng CREDIT để ký hiệu giảm nợ)
-            try (PreparedStatement psL = conn.prepareStatement(sqlL)) {
-                psL.setInt(1, mId);
-                psL.setInt(2, pId);
-                psL.setString(3, "CASH_PAYMENT");
-                psL.setDouble(4, amount);
-                psL.setString(5, "DEBIT");
-                psL.setDouble(6, newBal);
-                psL.setString(7, note + " (Trả nợ NCC)");
-                psL.setInt(8, voucherId);
-                psL.executeUpdate();
-            }
-
-            conn.commit();
-            return true;
-        } catch (SQLException e) {
-            try {
-                if (conn != null) {
-                    conn.rollback();
-                }
-            } catch (SQLException ex) {
-            }
-            e.printStackTrace();
-            return false;
-        } finally {
-            try {
-                conn.setAutoCommit(true);
-            } catch (SQLException e) {
+            ResultSet rsKeys = psV.getGeneratedKeys();
+            if (rsKeys.next()) {
+                generatedVoucherId = rsKeys.getInt(1);
             }
         }
-    }
 
+        // 2. Lấy số dư cũ (Giữ nguyên logic của bạn)
+        double lastBal = 0;
+        try (PreparedStatement psB = conn.prepareStatement(sqlB)) {
+            psB.setInt(1, mId);
+            if (pId != null) {
+                psB.setInt(2, pId);
+            }
+            try (ResultSet rs = psB.executeQuery()) {
+                if (rs.next()) {
+                    lastBal = rs.getDouble("balance_after");
+                }
+            }
+        }
+
+        // 3. Logic: DEBIT = Tăng số dư (+) | CREDIT = Giảm số dư (-) (Giữ nguyên logic của bạn)
+        double newBal = ("DEBIT".equals(entryType)) ? lastBal + amount : lastBal - amount;
+
+        // 4. Ghi sổ cái (Bỏ tham số Timestamp ở vị trí thứ 9)
+        try (PreparedStatement psL = conn.prepareStatement(sqlL)) {
+            psL.setInt(1, mId);
+            if (pId != null) {
+                psL.setInt(2, pId);
+            } else {
+                psL.setNull(2, java.sql.Types.INTEGER);
+            }
+            psL.setString(3, vType.equals("RECEIPT") ? "CASH_RECEIPT" : "CASH_PAYMENT");
+            psL.setDouble(4, amount);
+            psL.setString(5, entryType);
+            psL.setDouble(6, newBal);
+            psL.setString(7, note + " (" + method + ")");
+            psL.setInt(8, generatedVoucherId);
+            // Database sẽ tự điền transaction_date dựa trên giờ hệ thống
+            psL.executeUpdate();
+        }
+        
+        conn.commit();
+        return true;
+    } catch (SQLException e) {
+        if (conn != null) try { conn.rollback(); } catch (SQLException ex) {}
+        e.printStackTrace();
+        return false;
+    } finally {
+        try { conn.setAutoCommit(true); } catch (SQLException e) {}
+    }
+}// Hàm dành riêng cho Nhà cung cấp - LUÔN LUÔN TRỪ NỢ
+public boolean saveSupplierVoucher(int mId, int pId, double amount, String method, String note, String img) {
+    // SỬA SQL: Loại bỏ cột ngày giờ thủ công để Database tự xử lý theo giá trị mặc định
+    String sqlV = "INSERT INTO payment_vouchers (voucher_code, voucher_type, member_id, partner_id, amount, payment_method, description, image_path) VALUES (?,?,?,?,?,?,?,?)";
+    String sqlB = "SELECT balance_after FROM member_transaction_ledger WHERE member_id = ? AND partner_id = ? ORDER BY id DESC LIMIT 1";
+    String sqlL = "INSERT INTO member_transaction_ledger (member_id, partner_id, reference_type, amount, entry_type, balance_after, note, reference_id) VALUES (?,?,?,?,?,?,?,?)";
+
+    try {
+        conn.setAutoCommit(false);
+        
+        // Mốc thời gian Java chỉ dùng để tạo mã phiếu (vCode) cho đồng bộ
+        java.util.Date now = new java.util.Date();
+        int voucherId = 0;
+        String vCode = "PC-" + new java.text.SimpleDateFormat("yyyyMMdd-HHmmss").format(now);
+
+        // 1. Lưu phiếu chi (Bỏ tham số Timestamp ở vị trí thứ 9)
+        try (PreparedStatement psV = conn.prepareStatement(sqlV, Statement.RETURN_GENERATED_KEYS)) {
+            psV.setString(1, vCode);
+            psV.setString(2, "PAYMENT");
+            psV.setInt(3, mId);
+            psV.setInt(4, pId);
+            psV.setDouble(5, amount);
+            psV.setString(6, method);
+            psV.setString(7, note);
+            psV.setString(8, img);
+            // Database tự điền created_date dựa trên giờ máy chủ
+            psV.executeUpdate();
+            
+            ResultSet rs = psV.getGeneratedKeys();
+            if (rs.next()) voucherId = rs.getInt(1);
+        }
+
+        // 2. Lấy nợ hiện tại (Giữ nguyên logic của bạn)
+        double lastBal = 0;
+        try (PreparedStatement psB = conn.prepareStatement(sqlB)) {
+            psB.setInt(1, mId);
+            psB.setInt(2, pId);
+            try (ResultSet rs = psB.executeQuery()) {
+                if (rs.next()) {
+                    lastBal = rs.getDouble("balance_after");
+                }
+            }
+        }
+
+        // 3. Logic: Trả nợ NCC thì nợ phải GIẢM (Giữ nguyên logic của bạn)
+        double newBal = lastBal - amount;
+
+        // 4. Ghi vào sổ cái (Bỏ tham số Timestamp ở vị trí thứ 9)
+        try (PreparedStatement psL = conn.prepareStatement(sqlL)) {
+            psL.setInt(1, mId);
+            psL.setInt(2, pId);
+            psL.setString(3, "CASH_PAYMENT");
+            psL.setDouble(4, amount);
+            psL.setString(5, "DEBIT");
+            psL.setDouble(6, newBal);
+            psL.setString(7, note + " (Trả nợ NCC)");
+            psL.setInt(8, voucherId);
+            // Database tự điền transaction_date dựa trên giờ máy chủ
+            psL.executeUpdate();
+        }
+
+        conn.commit();
+        return true;
+    } catch (SQLException e) {
+        if (conn != null) try { conn.rollback(); } catch (SQLException ex) {}
+        e.printStackTrace();
+        return false;
+    } finally {
+        try { conn.setAutoCommit(true); } catch (SQLException e) {}
+    }
+}
     public List<Map<String, Object>> getPartnerTransactionHistory(int coopId, int partnerId) {
         List<Map<String, Object>> history = new ArrayList<>();
         String sql = "SELECT l.transaction_date, l.reference_type, l.amount, l.entry_type, l.balance_after, l.note, "
