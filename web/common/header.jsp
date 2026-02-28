@@ -15,13 +15,17 @@
             String currentUri = request.getRequestURI(); 
             String fullName = (String) session.getAttribute("full_name");
             String displayLetter = (fullName != null && !fullName.isEmpty()) ? fullName.substring(0, 1).toUpperCase() : "U";
+            Integer memberType = (Integer) session.getAttribute("member_type");
+            // memberType: 1 = Nông dân, 2 = HTX, 3 = Quản lý HTX
+            boolean isFarmer = (memberType != null && memberType == 1);
+            boolean isHTX = (memberType != null && memberType == 2);
+            boolean isManager = (memberType != null && memberType == 3);
         %>
 
         <div class="sidebar shadow">
             <div class="brand-section py-3 border-bottom border-secondary mb-1">
                 <div class="text-center">
-
-                    <div class="d-flex align-items-center justify-content-center gap-3 mb-2">
+                    <div class="d-flex align-items-center justify-content-center gap-3 mb-3">
                         <a href="${pageContext.request.contextPath}/index.jsp" class="text-decoration-none">
                             <h5 class="text-white m-0">🍀 Gastromap</h5>
                         </a>
@@ -47,18 +51,132 @@
                     </div>
                 </div>
             </div>
+            <!--
+                        <nav class="sidebar-nav-container overflow-y-auto" style="max-height: calc(100vh - 250px);">
+            
+            <%-- ========== MENU CHO HTX VÀ QUẢN LÝ HTX (Type 2, 3) ========== --%>
+            <% if (isHTX || isManager) { %>
+            <div class="nav-item-group w-100 d-block">
+                <div class="text-uppercase px-3 py-2 text-secondary" style="font-size: 0.65rem; letter-spacing: 1px; opacity: 0.8;">
+                    Hệ thống
+                </div>
+                <a class="nav-link w-100 <%= (currentUri.contains("memberManager") || currentUri.contains("Member.jsp")) ? "active" : "" %>" 
+                   href="${pageContext.request.contextPath}/memberManager?service=list">
+                    <i class="bi bi-people-fill me-2"></i> Quản lý Thành viên
+                </a>
+                <a class="nav-link w-100 <%= currentUri.contains("meeting") ? "active" : "" %>" 
+                   href="${pageContext.request.contextPath}/meetingManager?service=list">
+                    <i class="bi bi-calendar-check me-2"></i> Quản lý Cuộc họp
+                </a>
+            </div>
 
-            <nav class="nav flex-column w-100 overflow-y-auto flex-grow-1" style="min-height: 0;">
+            <div class="nav-item-group w-100 d-block mt-1">
+                <div class="text-uppercase px-3 py-2 text-secondary" style="font-size: 0.65rem; letter-spacing: 1px; opacity: 0.8;">
+                    Sản xuất
+                </div>
+                <a class="nav-link w-100 <%= currentUri.contains("farm-products") ? "active" : "" %>" 
+                   href="${pageContext.request.contextPath}/farm-products?service=list">
+                    <i class="bi bi-box-seam me-2"></i> Nông sản
+                </a>
+                <a class="nav-link w-100 <%= currentUri.contains("production-batches") ? "active" : "" %>" 
+                   href="${pageContext.request.contextPath}/production-batches?service=list">
+                    <i class="bi bi-layers-half me-2"></i> Lô sản xuất
+                </a>
+                <a class="nav-link w-100 <%= currentUri.contains("traceability") ? "active" : "" %>" 
+                   href="${pageContext.request.contextPath}/traceability?service=history">
+                    <i class="bi bi-qr-code-scan me-2"></i> Truy xuất nguồn gốc
+                </a>
+            </div>
 
+            <div class="nav-item-group w-100 d-block mt-1">
+                <div class="text-uppercase px-3 py-2 text-secondary" style="font-size: 0.65rem; letter-spacing: 1px; opacity: 0.8;">
+                    Kho & Tài chính
+                </div>
+
+                <a class="nav-link w-100 <%= currentUri.contains("AssetServlet") ? "active" : "" %>" 
+                   href="${pageContext.request.contextPath}/AssetServlet">
+                    <i class="bi bi-tools me-2"></i> Quản lý Tài sản
+                </a>
+
+                <a class="nav-link w-100 <%= currentUri.endsWith("/finance") ? "active" : "" %>" 
+                   href="${pageContext.request.contextPath}/finance">
+                    <i class="bi bi-graph-up-arrow me-2"></i> Sổ cái Tài chính
+                </a>
+
+            <% Integer mType = (Integer) session.getAttribute("member_type"); 
+                       if (mType != null && mType == 1) { %>
+            <a class="nav-link w-100 <%= currentUri.contains("FarmerDebtHistoryServlet") ? "active" : "" %>" 
+               href="${pageContext.request.contextPath}/FarmerDebtHistoryServlet">
+                <i class="bi bi-clock-history me-2"></i> Lịch sử nợ của tôi
+            </a>
+            <% } %>
+
+            <a class="nav-link w-100 <%= currentUri.endsWith("/fund") ? "active" : "" %>" 
+               href="${pageContext.request.contextPath}/fund">
+                <i class="bi bi-piggy-bank-fill me-2"></i> Quản lý Quỹ Chung
+            </a>
+
+            <a class="nav-link w-100 <%= currentUri.contains("SearchMaterialServlet") ? "active" : "" %>" 
+               href="${pageContext.request.contextPath}/SearchMaterialServlet">
+                <i class="bi bi-box-fill me-2"></i> Quản lí vật tư
+            </a>
+
+            <a class="nav-link w-100 <%= currentUri.contains("DebtManagementServlet") ? "active" : "" %>" 
+               href="${pageContext.request.contextPath}/DebtManagementServlet">
+                <i class="bi bi-credit-card-2-back-fill me-2"></i> Quản lí nợ
+            </a>
+
+            <a class="nav-link w-100 <%= currentUri.contains("purchase_receipt.jsp") ? "active" : "" %>" 
+               href="${pageContext.request.contextPath}/purchase/purchase_receipt.jsp">
+                <i class="bi bi-cart-fill me-2"></i> Thu mua sản phẩm
+            </a>
+            <a class="nav-link w-100 <%= (currentUri.contains("contractManager")) ? "active" : "" %>" 
+               href="${pageContext.request.contextPath}/contractManager?service=list">
+                <i class="bi bi-file-earmark-text-fill me-2"></i> Quản lý Hợp đồng
+            </a>
+        </div>
+            <% } %>
+
+            <%-- ========== MENU CHO NÔNG DÂN (Type 1) ========== --%>
+            <% if (isFarmer) { %>
+            <div class="nav-item-group w-100 d-block">
+                <div class="text-uppercase px-3 py-2 text-secondary" style="font-size: 0.65rem; letter-spacing: 1px; opacity: 0.8;">
+                    Chức năng
+                </div>
+                <a class="nav-link w-100 <%= currentUri.contains("meeting") ? "active" : "" %>" 
+                   href="${pageContext.request.contextPath}/meetingManager?service=list">
+                    <i class="bi bi-calendar-check me-2"></i> Quản lý Cuộc họp
+                </a>
+                <a class="nav-link w-100 <%= currentUri.endsWith("/finance") ? "active" : "" %>" 
+                   href="${pageContext.request.contextPath}/finance">
+                    <i class="bi bi-graph-up-arrow me-2"></i> Sổ cái Tài chính
+                </a>
+                <a class="nav-link w-100 <%= currentUri.contains("FarmerDebtHistoryServlet") ? "active" : "" %>" 
+                   href="${pageContext.request.contextPath}/FarmerDebtHistoryServlet">
+                    <i class="bi bi-clock-history me-2"></i> Lịch sử nợ của tôi
+                </a>
+            </div>
+            <% } %>
+
+        </nav>-->
+
+            <nav class="sidebar-nav-container overflow-y-auto" style="max-height: calc(100vh - 250px);">
+                <% 
+                    // [MỚI] Chuyển URL hiện tại về chữ thường để so sánh không bị sai lệch
+                    String uri = currentUri.toLowerCase(); 
+                %>
+
+                <%-- ========== MENU CHO HTX VÀ QUẢN LÝ HTX (Type 2, 3) ========== --%>
+                <% if (isHTX || isManager) { %>
                 <div class="nav-item-group w-100 d-block">
                     <div class="text-uppercase px-3 py-2 text-secondary" style="font-size: 0.65rem; letter-spacing: 1px; opacity: 0.8;">
                         Hệ thống
                     </div>
-                    <a class="nav-link w-100 <%= (currentUri.contains("memberManager") || currentUri.contains("Member.jsp")) ? "active" : "" %>" 
+                    <a class="nav-link w-100 <%= uri.contains("member") ? "active" : "" %>" 
                        href="${pageContext.request.contextPath}/memberManager?service=list">
                         <i class="bi bi-people-fill me-2"></i> Quản lý Thành viên
                     </a>
-                    <a class="nav-link w-100 <%= currentUri.contains("meeting") ? "active" : "" %>" 
+                    <a class="nav-link w-100 <%= uri.contains("meeting") ? "active" : "" %>" 
                        href="${pageContext.request.contextPath}/meetingManager?service=list">
                         <i class="bi bi-calendar-check me-2"></i> Quản lý Cuộc họp
                     </a>
@@ -68,32 +186,16 @@
                     <div class="text-uppercase px-3 py-2 text-secondary" style="font-size: 0.65rem; letter-spacing: 1px; opacity: 0.8;">
                         Sản xuất
                     </div>
-                    <a class="nav-link w-100 <%= currentUri.contains("farm-products") ? "active" : "" %>" 
-                       href="${pageContext.request.contextPath}/farm-products?action=list">
+                    <a class="nav-link w-100 <%= uri.contains("farm-products") ? "active" : "" %>" 
+                       href="${pageContext.request.contextPath}/farm-products?service=list">
                         <i class="bi bi-box-seam me-2"></i> Nông sản
                     </a>
-                    <a class="nav-link w-100 <%= currentUri.contains("production-batches") ? "active" : "" %>" 
-                       href="${pageContext.request.contextPath}/production-batches?action=list">
+                    <a class="nav-link w-100 <%= uri.contains("production-batches") ? "active" : "" %>" 
+                       href="${pageContext.request.contextPath}/production-batches?service=list">
                         <i class="bi bi-layers-half me-2"></i> Lô sản xuất
                     </a>
-                    <a class="nav-link w-100 <%= currentUri.contains("warehouses") ? "active" : "" %>" 
-                       href="${pageContext.request.contextPath}/warehouses?action=list">
-                        <i class="bi bi-building me-2"></i> Kho nông sản
-                    </a>
-                    <a class="nav-link w-100 <%= currentUri.contains("stock-ins") ? "active" : "" %>" 
-                       href="${pageContext.request.contextPath}/stock-ins?action=list">
-                        <i class="bi bi-box-arrow-in-down me-2"></i> Nhập kho
-                    </a>
-                    <a class="nav-link w-100 <%= currentUri.contains("batch-inventory") ? "active" : "" %>" 
-                       href="${pageContext.request.contextPath}/batch-inventory?action=list">
-                        <i class="bi bi-archive me-2"></i> Tồn kho nông sản
-                    </a>
-                    <a class="nav-link w-100 <%= currentUri.contains("qr-codes") ? "active" : "" %>" 
-                       href="${pageContext.request.contextPath}/qr-codes?action=list">
-                        <i class="bi bi-qr-code me-2"></i> QR Code
-                    </a>
-                    <a class="nav-link w-100 <%= currentUri.contains("traceability") ? "active" : "" %>" 
-                       href="${pageContext.request.contextPath}/traceability?action=search">
+                    <a class="nav-link w-100 <%= uri.contains("traceability") ? "active" : "" %>" 
+                       href="${pageContext.request.contextPath}/traceability?service=history">
                         <i class="bi bi-qr-code-scan me-2"></i> Truy xuất nguồn gốc
                     </a>
                 </div>
@@ -103,41 +205,84 @@
                         Kho & Tài chính
                     </div>
 
-                    <% 
-    Integer mType = (Integer) session.getAttribute("member_type"); 
-    if (mType != null && mType == 1) { 
-                    %>
-                    <a class="nav-link w-100 <%= currentUri.contains("FarmerDebtHistoryServlet") ? "active" : "" %>" 
+                    <a class="nav-link w-100 <%= uri.contains("asset") ? "active" : "" %>" 
+                       href="${pageContext.request.contextPath}/AssetServlet">
+                        <i class="bi bi-tools me-2"></i> Quản lý Tài sản
+                    </a>
+
+                    <a class="nav-link w-100 <%= (uri.contains("finance") && !uri.contains("fund")) ? "active" : "" %>" 
+                       href="${pageContext.request.contextPath}/finance">
+                        <i class="bi bi-graph-up-arrow me-2"></i> Sổ cái Tài chính
+                    </a>
+
+                    <% Integer mType = (Integer) session.getAttribute("member_type"); 
+                       if (mType != null && mType == 1) { %>
+                    <a class="nav-link w-100 <%= uri.contains("farmerdebt") ? "active" : "" %>" 
                        href="${pageContext.request.contextPath}/FarmerDebtHistoryServlet">
                         <i class="bi bi-clock-history me-2"></i> Lịch sử nợ của tôi
                     </a>
                     <% } %>
-                    <a class="nav-link w-100 <%= (currentUri.contains("finance.jsp") || currentUri.contains("capital.jsp")) ? "active" : "" %>" 
-                       href="${pageContext.request.contextPath}/admin/finance.jsp">
-                        <i class="bi bi-cash-stack me-2"></i> Tài chính & Báo cáo
+
+                    <a class="nav-link w-100 <%= uri.contains("fund") ? "active" : "" %>" 
+                       href="${pageContext.request.contextPath}/fund">
+                        <i class="bi bi-piggy-bank-fill me-2"></i> Quản lý Quỹ Chung
                     </a>
 
-                    <a class="nav-link w-100 <%= (currentUri.contains("list_materials.jsp") || currentUri.contains("list_materials.jsp")) ? "active" : "" %>" 
+                    <a class="nav-link w-100 <%= uri.contains("material") ? "active" : "" %>" 
                        href="${pageContext.request.contextPath}/SearchMaterialServlet">
-                        <i class="bi bi-boxes me-2"></i> Quản lí vật tư
+                        <i class="bi bi-box-fill me-2"></i> Quản lí vật tư
+                    </a>
+                    <a class="nav-link w-100 <%= uri.contains("material") ? "active" : "" %>" 
+                       href="${pageContext.request.contextPath}/batch-inventory">
+                        <i class="bi bi-box-fill me-2"></i> Tồn kho theo lô
+                    </a>
+                    <a class="nav-link w-100 <%= uri.contains("material") ? "active" : "" %>" 
+                       href="${pageContext.request.contextPath}/warehouses">
+                        <i class="bi bi-box-fill me-2"></i> Quản lý kho
                     </a>
 
-                    <a class="nav-link w-100 <%= (currentUri.contains("debt_management.jsp") || currentUri.contains("debt_management.jsp")) ? "active" : "" %>" 
+                    <a class="nav-link w-100 <%= (uri.contains("debt") && !uri.contains("farmerdebt")) ? "active" : "" %>" 
                        href="${pageContext.request.contextPath}/DebtManagementServlet">
-                        <i class="bi bi-wallet2 me-2"></i> Quản lí nợ
+                        <i class="bi bi-credit-card-2-back-fill me-2"></i> Quản lí nợ
                     </a>
 
-                    <a class="nav-link w-100 <%= (currentUri.contains("purchase_receipt.jsp") || currentUri.contains("purchase_receipt.jsp")) ? "active" : "" %>" 
+                    <a class="nav-link w-100 <%= uri.contains("purchase") ? "active" : "" %>" 
                        href="${pageContext.request.contextPath}/purchase/purchase_receipt.jsp">
-                        <i class="bi bi-cart-check me-2"></i> Thu mua sản phẩm
+                        <i class="bi bi-cart-fill me-2"></i> Thu mua sản phẩm
                     </a>
-                    <a class="nav-link w-100 <%= (currentUri.contains("contractManager")) ? "active" : "" %>" 
+
+                    <a class="nav-link w-100 <%= uri.contains("contract") ? "active" : "" %>" 
                        href="${pageContext.request.contextPath}/contractManager?service=list">
                         <i class="bi bi-file-earmark-text-fill me-2"></i> Quản lý Hợp đồng
                     </a>
                 </div>
-            </nav>
+                <% } %>
 
+                <%-- ========== MENU CHO NÔNG DÂN (Type 1) ========== --%>
+                <% if (isFarmer) { %>
+                <div class="nav-item-group w-100 d-block">
+                    <div class="text-uppercase px-3 py-2 text-secondary" style="font-size: 0.65rem; letter-spacing: 1px; opacity: 0.8;">
+                        Chức năng
+                    </div>
+
+                    <a class="nav-link w-100 <%= uri.contains("meeting") ? "active" : "" %>" 
+                       href="${pageContext.request.contextPath}/meetingManager?service=list">
+                        <i class="bi bi-calendar-check me-2"></i> Quản lý Cuộc họp
+                    </a>
+
+                    <a class="nav-link w-100 <%= (uri.contains("finance") && !uri.contains("fund")) ? "active" : "" %>" 
+                       href="${pageContext.request.contextPath}/finance">
+                        <i class="bi bi-graph-up-arrow me-2"></i> Sổ cái Tài chính
+                    </a>
+
+                    <a class="nav-link w-100 <%= uri.contains("farmerdebt") ? "active" : "" %>" 
+                       href="${pageContext.request.contextPath}/FarmerDebtHistoryServlet">
+                        <i class="bi bi-clock-history me-2"></i> Lịch sử nợ của tôi
+                    </a>
+                </div>
+                <% } %>
+
+            </nav>
             <div class="logout-section mt-auto p-2">
                 <form action="${pageContext.request.contextPath}/loginURL" method="POST" class="m-0">
                     <input type="hidden" name="service" value="logoutUser">
@@ -157,7 +302,7 @@
                 socket.onmessage = function (event) {
                     var message = event.data;
                     var badge = document.getElementById("noti-badge");
-                    var count = parseInt(badge.innerText);
+                    var count = parseInt(badge.innerText) || 0;
                     badge.innerText = count + 1;
 
                     var bell = document.getElementById("bell-icon");

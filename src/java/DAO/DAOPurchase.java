@@ -132,8 +132,26 @@ public class DAOPurchase extends DBContext {
 
             // 5. CÔNG NỢ
             updateLedger(conn, memberId, receiptId, batchCode, totalAmount, amountPaid, receiptCode);
+// 5. [MỚI] GHI SỔ CÁI TÀI CHÍNH (Chi trả tiền ngay)
+            // =================================================================================
+            if (amountPaid > 0) {
+                // Giả định ID=12 là "Chi trả thành viên (Mua nông sản)" trong bảng transaction_categories
+                // Bạn cần kiểm tra trong DB xem ID này có đúng là 12 không nhé!
+                int financeCatId = 12;
 
-            conn.commit();
+
+                String sqlFinance = "INSERT INTO financial_ledger (transaction_date, category_id, amount, transaction_type, description, source_table, source_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
+                ps = conn.prepareStatement(sqlFinance);
+                ps.setTimestamp(1, new java.sql.Timestamp(System.currentTimeMillis())); // Thời gian chi tiền
+                ps.setInt(2, financeCatId);
+                ps.setDouble(3, amountPaid);
+                ps.setString(4, "OUT"); // Loại giao dịch là CHI
+                ps.setString(5, "Chi trả mua hàng phiếu: " + receiptCode + " (" + productName + ")");
+                ps.setString(6, "produce_receipts"); // Nguồn gốc để truy vết
+                ps.setInt(7, receiptId); // ID của phiếu nhập
+                ps.executeUpdate();
+            }
+            conn.commit(); // Lưu tất cả
             return true;
 
         } catch (Exception e) {

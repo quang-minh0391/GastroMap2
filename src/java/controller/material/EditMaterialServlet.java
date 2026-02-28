@@ -49,6 +49,13 @@ public class EditMaterialServlet extends HttpServlet {
         if (part != null && part.getSize() > 0) {
             String fileName = "mat_" + System.currentTimeMillis() + ".jpg";
             String uploadPath = getServletContext().getRealPath("/") + "uploads";
+            
+            // Tạo thư mục uploads nếu chưa tồn tại
+            File uploadDir = new File(uploadPath);
+            if (!uploadDir.exists()) {
+                uploadDir.mkdirs();
+            }
+            
             part.write(uploadPath + File.separator + fileName);
             imagePath = "uploads/" + fileName;
         }

@@ -3,9 +3,9 @@ import vn.payos.PayOS;
 
 public class PayOSConfig {
     // Thay bằng key thật của bạn
-    public static final String CLIENT_ID = "d77b4944-d641-47c4-b226-870281cf96f5";
-    public static final String API_KEY = "94494536-8492-485d-bc66-030d2f85d97e";
-    public static final String CHECKSUM_KEY = "f979648c360769c6f51e049a6b31a319795987851ef9d615ddf3d8ba2f7354b6";
+    public static final String CLIENT_ID = "65c2fa91-9ffd-4cac-80bb-779033814025";
+    public static final String API_KEY = "9d233427-a88f-4cbd-a9e2-a7d7e22fed22";
+    public static final String CHECKSUM_KEY = "159b5dd1524c611a581af75aecfdf59fbcacd1eaabcc60cce64fc430d54013e6";
 
     private static PayOS payOS;
 

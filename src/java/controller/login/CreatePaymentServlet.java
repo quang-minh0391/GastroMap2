@@ -24,7 +24,7 @@ public class CreatePaymentServlet extends HttpServlet {
             throws ServletException, IOException {
         try {
             int planId = Integer.parseInt(request.getParameter("plan_id"));
-            long amount = (planId == 1) ? 2000L : 2500L; 
+            long amount = (planId == 1) ? 100000L : 1000000L; 
             long orderCode = System.currentTimeMillis() / 2000L;
 
             new DAOPayment().createPendingPayment(orderCode, amount, planId);

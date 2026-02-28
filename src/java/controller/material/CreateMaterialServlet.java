@@ -56,7 +56,7 @@ public class CreateMaterialServlet extends HttpServlet {
         String uploadPath = getServletContext().getRealPath("/") + "uploads";
         File uploadDir = new File(uploadPath);
         if (!uploadDir.exists()) {
-            uploadDir.mkdir();
+            uploadDir.mkdirs();
         }
 
         String imagePath = null;
