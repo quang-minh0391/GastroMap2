@@ -9,6 +9,9 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import DAO.FinanceDAO;
+import model.FinancialTransaction;
+import java.math.BigDecimal;
 
 public class CreatePurchaseReceiptServlet extends HttpServlet {
 
@@ -48,6 +51,29 @@ public class CreatePurchaseReceiptServlet extends HttpServlet {
             );
 
             if (success) {
+                // =========================================================
+                try {
+                    if (amountPaid > 0) {
+                        FinanceDAO fDao = new FinanceDAO();
+                        
+                        // 1. Tự động tìm hoặc tạo danh mục chi mua hàng
+                        int catId = fDao.getOrCreateCategory("Chi trả mua nông sản", "OUT");
+                        
+                        // 2. Tạo đối tượng giao dịch tài chính
+                        FinancialTransaction fTrans = new FinancialTransaction();
+                        fTrans.setCategoryId(catId);
+                        fTrans.setAmount(new BigDecimal(amountPaid));
+                        fTrans.setTransactionType("OUT");
+                        fTrans.setDescription("Chi tiền mặt mua nông sản (Mã SP: " + productId + ")");
+                        // Lưu ý: Không cần setTransactionDate vì hàm insertTransaction của bạn đã tự xử lý giờ hiện tại.
+                        
+                        // 3. Đẩy vào CSDL
+                        fDao.insertTransaction(fTrans);
+                    }
+                } catch (Exception ex) {
+                    System.out.println("Lỗi tích hợp Sổ cái tài chính từ module Purchase: " + ex.getMessage());
+                }
+                // =========================================================
                 response.sendRedirect("purchase/purchase_receipt.jsp?status=success");
             } else {
                 response.sendRedirect("purchase/purchase_receipt.jsp?status=error");
