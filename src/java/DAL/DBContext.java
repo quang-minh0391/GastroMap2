@@ -35,7 +35,7 @@ public class DBContext {
 
     public DBContext() {
     // Thử mật khẩu là "root" thay vì để trống ""
-    this("jdbc:mysql://localhost:3306/gastromap2?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC", "root", "123456");
+    this("jdbc:mysql://localhost:3306/gastromap2?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC", "root", "1234");
 }
 
     public void dispatch(HttpServletRequest request, HttpServletResponse response, String page) {
