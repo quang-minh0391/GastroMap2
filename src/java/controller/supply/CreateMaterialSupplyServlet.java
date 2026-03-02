@@ -12,6 +12,8 @@ import jakarta.servlet.http.HttpSession;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import model.PaymentVoucher;
+import DAO.FinanceDAO;
+import model.FinancialTransaction;
 
 public class CreateMaterialSupplyServlet extends HttpServlet {
 
@@ -58,30 +60,51 @@ public class CreateMaterialSupplyServlet extends HttpServlet {
             );
 // ==================  TỰ ĐỘNG TẠO PHIẾU THU ==================
             // Nếu thành viên trả tiền ngay (paid > 0) -> Ghi sổ
-          if (success && paid > 0) {
+//          if (success && paid > 0) {
+//                try {
+//                    PaymentVoucherDAO voucherDao = new PaymentVoucherDAO();
+//                    PaymentVoucher v = new PaymentVoucher();
+//
+//                    long timeCode = System.currentTimeMillis();
+//                    v.setVoucherCode("PT-MAT-" + timeCode); // PT: Phiếu Thu
+//
+//                    v.setVoucherType("RECEIPT"); // Loại: PHIẾU THU
+//                    v.setMemberId(memberId);     // Thu từ thành viên
+//                    v.setPartnerId(null);
+//
+//                    // Chuyển đổi double -> BigDecimal
+//                    v.setAmount(BigDecimal.valueOf(paid));
+//
+//                    v.setPaymentMethod("Tiền mặt");
+//                    v.setDescription("Thu tiền cung ứng vật tư (Thành viên ID: " + memberId + ")");
+//                    v.setCreatedDate(new Timestamp(System.currentTimeMillis()));
+//
+//                    // Lưu vào DB (Tự động cộng tiền vào financial_ledger)
+//                    voucherDao.insertVoucher(v);
+//
+//                } catch (Exception e) {
+//                    e.printStackTrace(); // Log lỗi nhưng không ảnh hưởng quy trình xuất kho
+//                }
+//            }
+            if (success && paid > 0) {
                 try {
-                    PaymentVoucherDAO voucherDao = new PaymentVoucherDAO();
-                    PaymentVoucher v = new PaymentVoucher();
+                    FinanceDAO fDao = new FinanceDAO();
 
-                    long timeCode = System.currentTimeMillis();
-                    v.setVoucherCode("PT-MAT-" + timeCode); // PT: Phiếu Thu
+                    // 1. Tự động tìm hoặc tạo danh mục "Thu cung ứng vật tư"
+                    int catId = fDao.getOrCreateCategory("Thu cung ứng vật tư", "IN");
 
-                    v.setVoucherType("RECEIPT"); // Loại: PHIẾU THU
-                    v.setMemberId(memberId);     // Thu từ thành viên
-                    v.setPartnerId(null);
+                    // 2. Tạo đối tượng giao dịch tài chính (Loại IN - Thu)
+                    FinancialTransaction fTrans = new FinancialTransaction();
+                    fTrans.setCategoryId(catId);
+                    fTrans.setAmount(new BigDecimal(paid));
+                    fTrans.setTransactionType("IN");
+                    fTrans.setDescription("Thu tiền mặt xuất vật tư cho nông dân (Mã VT: " + materialId + ")");
 
-                    // Chuyển đổi double -> BigDecimal
-                    v.setAmount(BigDecimal.valueOf(paid));
-
-                    v.setPaymentMethod("Tiền mặt");
-                    v.setDescription("Thu tiền cung ứng vật tư (Thành viên ID: " + memberId + ")");
-                    v.setCreatedDate(new Timestamp(System.currentTimeMillis()));
-
-                    // Lưu vào DB (Tự động cộng tiền vào financial_ledger)
-                    voucherDao.insertVoucher(v);
+                    // 3. Đẩy vào CSDL
+                    fDao.insertTransaction(fTrans);
 
                 } catch (Exception e) {
-                    e.printStackTrace(); // Log lỗi nhưng không ảnh hưởng quy trình xuất kho
+                    System.out.println("Lỗi tích hợp Sổ cái từ module Cung ứng vật tư: " + e.getMessage());
                 }
             }
             // ================== [KẾT THÚC] ==================

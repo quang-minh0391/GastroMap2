@@ -21,6 +21,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import model.PaymentVoucher;
+import DAO.FinanceDAO;
+import model.FinancialTransaction;
 
 /**
  *
@@ -139,37 +141,61 @@ public class CreateMaterialReceiptServlet extends HttpServlet {
             );
 
             if (isSuccess) {
-                // Thêm context path và thư mục supplyQ vào trước tên file JSP
-                // ================== TỰ ĐỘNG TẠO PHIẾU CHI ==================
-                // Nếu có trả tiền ngay (amountPaid > 0) -> Ghi sổ
-               if (amountPaid > 0) {
-                    try {
-                        PaymentVoucherDAO voucherDao = new PaymentVoucherDAO();
-                        PaymentVoucher v = new PaymentVoucher();
-                        
-                        // Tạo mã phiếu chi: PC + Thời gian hiện tại
-                        long timeCode = System.currentTimeMillis();
-                        v.setVoucherCode("PC-MAT-" + timeCode); 
-                        
-                        v.setVoucherType("PAYMENT"); // Loại: PHIẾU CHI
-                        v.setPartnerId(partnerId);   // Chi trả cho Nhà cung cấp
-                        v.setMemberId(null);
-                        
-                        // Chuyển đổi double -> BigDecimal
-                        v.setAmount(BigDecimal.valueOf(amountPaid)); 
-                        
-                        v.setPaymentMethod("Tiền mặt/Chuyển khoản");
-                        v.setDescription("Chi tiền nhập vật tư (Ngày nhập: " + receiptDate + ")");
-                        v.setCreatedDate(new Timestamp(System.currentTimeMillis()));
+//                // Thêm context path và thư mục supplyQ vào trước tên file JSP
+//                // ================== TỰ ĐỘNG TẠO PHIẾU CHI ==================
+//                // Nếu có trả tiền ngay (amountPaid > 0) -> Ghi sổ
+//               if (amountPaid > 0) {
+//                    try {
+//                        PaymentVoucherDAO voucherDao = new PaymentVoucherDAO();
+//                        PaymentVoucher v = new PaymentVoucher();
+//                        
+//                        // Tạo mã phiếu chi: PC + Thời gian hiện tại
+//                        long timeCode = System.currentTimeMillis();
+//                        v.setVoucherCode("PC-MAT-" + timeCode); 
+//                        
+//                        v.setVoucherType("PAYMENT"); // Loại: PHIẾU CHI
+//                        v.setPartnerId(partnerId);   // Chi trả cho Nhà cung cấp
+//                        v.setMemberId(null);
+//                        
+//                        // Chuyển đổi double -> BigDecimal
+//                        v.setAmount(BigDecimal.valueOf(amountPaid)); 
+//                        
+//                        v.setPaymentMethod("Tiền mặt/Chuyển khoản");
+//                        v.setDescription("Chi tiền nhập vật tư (Ngày nhập: " + receiptDate + ")");
+//                        v.setCreatedDate(new Timestamp(System.currentTimeMillis()));
+//
+//                        // Lưu vào DB (Tự động ghi vào financial_ledger)
+//                        voucherDao.insertVoucher(v);
+//                        
+//                    } catch (Exception e) {
+//                        e.printStackTrace(); // Log lỗi nhưng không chặn luồng chính
+//                    }
+//                }
+//                // ================== [KẾT THÚC] ==================
 
-                        // Lưu vào DB (Tự động ghi vào financial_ledger)
-                        voucherDao.insertVoucher(v);
-                        
+// =========================================================
+                if (amountPaid > 0) {
+                    try {
+                        FinanceDAO fDao = new FinanceDAO();
+
+                        // 1. Tự động tìm hoặc tạo danh mục "Chi mua vật tư"
+                        int catId = fDao.getOrCreateCategory("Chi mua vật tư", "OUT");
+
+                        // 2. Tạo đối tượng giao dịch tài chính (Loại OUT - Chi)
+                        FinancialTransaction fTrans = new FinancialTransaction();
+                        fTrans.setCategoryId(catId);
+                        fTrans.setAmount(new BigDecimal(amountPaid));
+                        fTrans.setTransactionType("OUT");
+                        fTrans.setDescription("Chi tiền nhập vật tư từ đối tác (Mã VT: " + materialId + ")");
+
+                        // 3. Đẩy vào CSDL (Hàm này tự động lấy giờ hiện tại)
+                        fDao.insertTransaction(fTrans);
+
                     } catch (Exception e) {
-                        e.printStackTrace(); // Log lỗi nhưng không chặn luồng chính
+                        System.out.println("Lỗi tích hợp Sổ cái từ module Nhập vật tư: " + e.getMessage());
                     }
                 }
-                // ================== [KẾT THÚC] ==================
+                // =========================================================
                 response.sendRedirect(request.getContextPath() + "/supplyQ/add_materials.jsp?status=success");
             } else {
                 // Thất bại
@@ -178,7 +204,7 @@ public class CreateMaterialReceiptServlet extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
             // Thất bại -> Chuyển hướng lại với status=error
-                response.sendRedirect(request.getContextPath() + "/supplyQ/add_materials.jsp?status=error");
+            response.sendRedirect(request.getContextPath() + "/supplyQ/add_materials.jsp?status=error");
         }
     }
 
