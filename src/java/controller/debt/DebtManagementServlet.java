@@ -7,6 +7,9 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import java.io.File;
 import java.io.IOException;
+import DAO.FinanceDAO;
+import model.FinancialTransaction;
+import java.math.BigDecimal;
 
 @WebServlet(name = "DebtManagementServlet", urlPatterns = {"/DebtManagementServlet"})
 
@@ -43,6 +46,10 @@ public class DebtManagementServlet extends HttpServlet {
             String method = request.getParameter("paymentMethod");
             String note = request.getParameter("note");
 
+            // Lấy loại phiếu (RECEIPT = Thu, PAYMENT = Chi)
+            String vType = request.getParameter("voucherType");
+            String entryType = request.getParameter("entryType");
+            
             // Xử lý upload ảnh minh chứng (giữ nguyên logic cũ)
             String imagePath = "";
             Part part = request.getPart("image");
@@ -61,12 +68,55 @@ public class DebtManagementServlet extends HttpServlet {
                 success = dao.saveSupplierVoucher(memberId, partnerId, amount, method, note, imagePath);
             } else {
                 // ĐỐI VỚI NÔNG DÂN: Giữ nguyên logic cũ (Thu nợ/Chi tiền)
-                String vType = request.getParameter("voucherType");
-                String entryType = request.getParameter("entryType");
+//                String vType = request.getParameter("voucherType");
+//                String entryType = request.getParameter("entryType");
                 success = dao.saveVoucher(memberId, null, vType, amount, method, note, imagePath, entryType);
             }
 
             if (success) {
+                // =========================================================
+                try {
+                    FinanceDAO fDao = new FinanceDAO();
+                    String transType = "";
+                    String catName = "";
+                    String desc = "";
+
+                    // Phân loại luồng tiền
+                    if (partnerId != null) {
+                        // 1. HTX Trả nợ Nhà cung cấp
+                        transType = "OUT";
+                        catName = "Trả nợ nhà cung cấp";
+                        desc = "Thanh toán nợ cho NCC (ID: " + partnerId + ") - Bằng: " + method;
+                    } else {
+                        if ("RECEIPT".equals(vType)) {
+                            // 2. HTX Thu nợ Nông dân
+                            transType = "IN";
+                            catName = "Thu nợ nông dân";
+                            desc = "Thu tiền nợ từ Nông dân (ID: " + memberId + ") - Bằng: " + method;
+                        } else {
+                            // 3. HTX Trả nợ Nông dân
+                            transType = "OUT";
+                            catName = "Trả nợ nông dân";
+                            desc = "Chi trả nợ cho Nông dân (ID: " + memberId + ") - Bằng: " + method;
+                        }
+                    }
+
+                    // Tự động tìm/tạo Danh mục và lưu giao dịch
+                    int catId = fDao.getOrCreateCategory(catName, transType);
+                    
+                    FinancialTransaction fTrans = new FinancialTransaction();
+                    fTrans.setCategoryId(catId);
+                    fTrans.setAmount(new BigDecimal(amount));
+                    fTrans.setTransactionType(transType);
+                    // Ghép thêm ghi chú của thủ quỹ vào description để sổ cái dễ tra cứu
+                    fTrans.setDescription(desc + " | Ghi chú: " + (note != null ? note : ""));
+                    
+                    fDao.insertTransaction(fTrans);
+
+                } catch (Exception ex) {
+                    System.out.println("Lỗi tích hợp Sổ cái từ module Công nợ: " + ex.getMessage());
+                }
+                // =========================================================
                 response.sendRedirect("DebtManagementServlet?status=success");
             } else {
                 response.sendRedirect("DebtManagementServlet?status=error");
