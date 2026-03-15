@@ -15,6 +15,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
 
@@ -147,14 +148,38 @@ public class TraceabilityController extends HttpServlet {
         ProductionBatch batch = daoBatch.getById(qrCode.getBatchId());
         FarmProduct product = null;
         member memberObj = null;
-        List<QRScanHistory> scanHistory = null;
 
         if (batch != null) {
             product = daoProduct.getById(batch.getProductId());
             memberObj = daoMember.getById(batch.getMemberId());
         }
 
-        scanHistory = daoHistory.getByQrId(qrCode.getId());
+        // Auto-record scan event on every result page view
+        QRScanHistory autoRecord = new QRScanHistory();
+        autoRecord.setQrId(qrCode.getId());
+        autoRecord.setScanLocation(null);
+        autoRecord.setScanActor("Anonymous");
+        autoRecord.setNote(null);
+        boolean inserted = daoHistory.insert(autoRecord);
+        System.out.println("[TraceabilityController.handleResult] auto-record insert result=" + inserted + " for qrId=" + qrCode.getId());
+
+        // Fetch updated scan history (includes the record just inserted)
+        List<QRScanHistory> scanHistory = daoHistory.getByQrId(qrCode.getId());
+
+        // Pick up flash message from session (set by handleRecordScan after redirect)
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            String flashSuccess = (String) session.getAttribute("flashSuccess");
+            String flashError = (String) session.getAttribute("flashError");
+            if (flashSuccess != null) {
+                request.setAttribute("success", flashSuccess);
+                session.removeAttribute("flashSuccess");
+            }
+            if (flashError != null) {
+                request.setAttribute("error", flashError);
+                session.removeAttribute("flashError");
+            }
+        }
 
         request.setAttribute("qrCode", qrCode);
         request.setAttribute("batch", batch);
@@ -190,10 +215,12 @@ public class TraceabilityController extends HttpServlet {
             DAOQRScanHistory dao = new DAOQRScanHistory();
             boolean success = dao.insert(history);
 
+            // Use session flash so the message survives the redirect
+            HttpSession session = request.getSession();
             if (success) {
-                request.setAttribute("success", "Đã ghi nhận lịch sử quét");
+                session.setAttribute("flashSuccess", "Đã ghi nhận lịch sử quét");
             } else {
-                request.setAttribute("error", "Ghi nhận lịch sử thất bại");
+                session.setAttribute("flashError", "Ghi nhận lịch sử thất bại");
             }
 
             // Show result page again

@@ -190,12 +190,16 @@
                        href="${pageContext.request.contextPath}/farm-products?service=list">
                         <i class="bi bi-box-seam me-2"></i> Nông sản
                     </a>
-                    <a class="nav-link w-100 <%= uri.contains("production-batches") ? "active" : "" %>" 
+                    <a class="nav-link w-100 <%= uri.contains("production-batches") ? "active" : "" %>"
                        href="${pageContext.request.contextPath}/production-batches?service=list">
                         <i class="bi bi-layers-half me-2"></i> Lô sản xuất
                     </a>
-                    <a class="nav-link w-100 <%= uri.contains("traceability") ? "active" : "" %>" 
-                       href="${pageContext.request.contextPath}/traceability?service=history">
+                    <a class="nav-link w-100 <%= uri.contains("qr-codes") ? "active" : "" %>"
+                       href="${pageContext.request.contextPath}/qr-codes">
+                        <i class="bi bi-qr-code me-2"></i> Quản lý Mã QR
+                    </a>
+                    <a class="nav-link w-100 <%= uri.contains("traceability") ? "active" : "" %>"
+                       href="${pageContext.request.contextPath}/traceability?action=history">
                         <i class="bi bi-qr-code-scan me-2"></i> Truy xuất nguồn gốc
                     </a>
                 </div>
