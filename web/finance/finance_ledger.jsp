@@ -74,6 +74,108 @@
     /* [MỚI] Class riêng cho màu sắc */
     .type-in { color: #28a745; /* Xanh lá */ }
     .type-out { color: #dc3545; /* Đỏ */ }
+    /* --- UNIFIED FILTER STYLES (DÙNG CHUNG CHO BỘ LỌC) --- */
+.filter-wrapper {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 1px solid #dee2e6;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.filter-input {
+    padding: 8px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    background: white;
+}
+
+.filter-input:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+/* Nhóm dành riêng cho Từ ngày - Đến ngày hoặc Khoảng giá */
+.filter-group {
+    display: flex;
+    align-items: center;
+    background: white;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+}
+
+.filter-group:focus-within {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+.filter-group span.group-label {
+    background: #e9ecef;
+    color: #495057;
+    font-size: 13px;
+    padding: 8px 12px;
+    border-right: 1px solid #ced4da;
+    font-weight: 600;
+}
+
+.filter-group span.group-divider {
+    color: #6c757d;
+    font-size: 12px;
+    padding: 0 5px;
+}
+
+.filter-group input {
+    border: none;
+    padding: 8px;
+    font-size: 14px;
+    outline: none;
+    background: transparent;
+    max-width: 120px;
+}
+
+.filter-btn {
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.filter-btn:hover {
+    background-color: #0056b3;
+}
+
+.filter-clear {
+    color: #dc3545;
+    font-size: 13px;
+    text-decoration: none;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.filter-clear:hover {
+    text-decoration: underline;
+    color: #a71d2a;
+}
 </style>
 
 <script>
@@ -282,7 +384,7 @@
         <div class="table-section-fin">
             <h4 class="mt-0 mb-3">📜 Sổ cái giao dịch</h4>
             
-            <form id="filterForm" action="finance" method="GET" style="background:#f8f9fa; padding:10px; margin-bottom:15px; display:flex; flex-wrap:wrap; gap:10px; align-items:center; border: 1px solid #dee2e6; border-radius: 4px;">
+<!--            <form id="filterForm" action="finance" method="GET" style="background:#f8f9fa; padding:10px; margin-bottom:15px; display:flex; flex-wrap:wrap; gap:10px; align-items:center; border: 1px solid #dee2e6; border-radius: 4px;">
                 <input type="hidden" id="sortBy" name="sortBy" value="${sortBy}">
                 <input type="hidden" id="sortOrder" name="sortOrder" value="${sortOrder}">
                 
@@ -312,8 +414,40 @@
                 
                 <button type="submit" style="width:auto; padding:5px 15px; background: #007bff; color: white; border: none; border-radius: 4px;">🔍 Tìm</button>
                 <a href="finance" style="color:red; text-decoration:none; font-size:12px;">[Xóa lọc]</a>
-            </form>
+            </form>-->
+<form id="filterForm" action="finance" method="GET" class="filter-wrapper">
+    <input type="hidden" id="sortBy" name="sortBy" value="${sortBy}">
+    <input type="hidden" id="sortOrder" name="sortOrder" value="${sortOrder}">
+    
+    <div style="display: flex; width: 100%; gap: 12px;">
+        <input type="text" class="filter-input" name="f_cat_name" value="${f_cat_name}" placeholder="Tên danh mục..." style="flex: 1;">
+        
+        <select class="filter-input" name="f_type" style="flex: 1;">
+            <option value="">-- Loại Giao dịch --</option>
+            <option value="IN" ${f_type=='IN'?'selected':''}>Thu (+)</option>
+            <option value="OUT" ${f_type=='OUT'?'selected':''}>Chi (-)</option>
+        </select>
+    </div>
 
+    <div class="filter-group" style="flex: 1; min-width: 300px;">
+        <span class="group-label">📅 Thời gian</span>
+        <input type="date" name="f_date_from" value="${param.f_date_from}" style="flex: 1;">
+        <span class="group-divider">➜</span>
+        <input type="date" name="f_date_to" value="${param.f_date_to}" style="flex: 1;">
+    </div>
+
+    <div class="filter-group" style="flex: 1; min-width: 300px;">
+        <span class="group-label">💰 Số tiền</span>
+        <input type="number" name="f_amount_from" value="${f_amount_from}" placeholder="Từ..." min="0" step="1000" style="flex: 1; min-width: 80px;">
+        <span class="group-divider">-</span>
+        <input type="number" name="f_amount_to" value="${f_amount_to}" placeholder="Đến..." min="0" step="1000" style="flex: 1; min-width: 80px;">
+    </div>
+    
+    <div style="display: flex; width: 100%; gap: 15px; align-items: center; margin-top: 5px;">
+        <button type="submit" class="filter-btn">🔍 Tìm</button>
+        <a href="finance" class="filter-clear">✖ Xóa lọc</a>
+    </div>
+</form>
             <table class="table-fin">
                 <thead>
                     <tr>

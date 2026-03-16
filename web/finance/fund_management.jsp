@@ -50,6 +50,108 @@
     .modal-content { background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 400px; border-radius: 8px; }
     .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
     .close:hover { color: black; }
+    /* --- UNIFIED FILTER STYLES (DÙNG CHUNG CHO BỘ LỌC) --- */
+.filter-wrapper {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 1px solid #dee2e6;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.filter-input {
+    padding: 8px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    background: white;
+}
+
+.filter-input:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+/* Nhóm dành riêng cho Từ ngày - Đến ngày hoặc Khoảng giá */
+.filter-group {
+    display: flex;
+    align-items: center;
+    background: white;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+}
+
+.filter-group:focus-within {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+.filter-group span.group-label {
+    background: #e9ecef;
+    color: #495057;
+    font-size: 13px;
+    padding: 8px 12px;
+    border-right: 1px solid #ced4da;
+    font-weight: 600;
+}
+
+.filter-group span.group-divider {
+    color: #6c757d;
+    font-size: 12px;
+    padding: 0 5px;
+}
+
+.filter-group input {
+    border: none;
+    padding: 8px;
+    font-size: 14px;
+    outline: none;
+    background: transparent;
+    max-width: 120px;
+}
+
+.filter-btn {
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.filter-btn:hover {
+    background-color: #0056b3;
+}
+
+.filter-clear {
+    color: #dc3545;
+    font-size: 13px;
+    text-decoration: none;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.filter-clear:hover {
+    text-decoration: underline;
+    color: #a71d2a;
+}
 </style>
 
 <div class="container-fluid p-4">
@@ -132,32 +234,27 @@
 
         <div class="table-box-fund">
             <h4 class="mt-0 mb-3">📜 Lịch sử Giao dịch</h4>
-            <%-- FORM TÌM KIẾM MỚI --%>
-            <form action="fund" method="GET" style="background:#f8f9fa; padding:15px; margin-bottom:15px; border-radius:4px; border:1px solid #dee2e6;">
-                <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items:center;">
-                    
-                    <%-- 1. Tìm theo Tên Thành viên (Input) --%>
-                    <input type="text" name="f_member_name" value="${f_member_name}" placeholder="Tên thành viên..." style="padding: 6px; border:1px solid #ccc; border-radius:3px;">
+            <form action="fund" method="GET" class="filter-wrapper">
+    <input type="text" class="filter-input" name="f_member_name" value="${f_member_name}" placeholder="Tên thành viên..." style="min-width: 150px;">
+    
+    <input type="text" class="filter-input" name="f_fund_name" value="${f_fund_name}" placeholder="Tên quỹ..." style="min-width: 150px;">
+    
+    <select class="filter-input" name="f_type">
+        <option value="">-- Loại Giao dịch --</option>
+        <option value="DEPOSIT" ${param.f_type == 'DEPOSIT' ? 'selected' : ''}>Nộp (+)</option>
+        <option value="WITHDRAW" ${param.f_type == 'WITHDRAW' ? 'selected' : ''}>Chi (-)</option>
+    </select>
 
-                    <%-- 2. Tìm theo Tên Quỹ (Input - Thay thế Dropdown cũ) --%>
-                    <input type="text" name="f_fund_name" value="${f_fund_name}" placeholder="Tên quỹ..." style="padding: 6px; border:1px solid #ccc; border-radius:3px;">
-                    
-                    <%-- 3. Lọc theo Loại (Dropdown - Giữ nguyên) --%>
-                    <select name="f_type" style="padding: 6px; border:1px solid #ccc; border-radius:3px;">
-                        <option value="">-- Loại Giao dịch --</option>
-                        <option value="DEPOSIT" ${param.f_type == 'DEPOSIT' ? 'selected' : ''}>Nộp (+)</option>
-                        <option value="WITHDRAW" ${param.f_type == 'WITHDRAW' ? 'selected' : ''}>Chi (-)</option>
-                    </select>
-
-                    <%-- 4. Lọc theo Ngày --%>
-                    <input type="date" name="f_date_from" value="${param.f_date_from}" style="padding: 5px; border:1px solid #ccc; border-radius:3px;">
-                    <span>➜</span>
-                    <input type="date" name="f_date_to" value="${param.f_date_to}" style="padding: 5px; border:1px solid #ccc; border-radius:3px;">
-                    
-                    <button type="submit" style="padding: 6px 15px; background: #007bff; color: white; border: none; cursor: pointer; border-radius:3px; font-weight: bold;">🔍 Tìm</button>
-                    <a href="fund" style="font-size: 13px; color: #dc3545; text-decoration: none; margin-left: 5px;">[Xóa lọc]</a>
-                </div>
-            </form>
+    <div class="filter-group">
+        <span class="group-label">📅 Thời gian</span>
+        <input type="date" name="f_date_from" value="${param.f_date_from}">
+        <span class="group-divider">➜</span>
+        <input type="date" name="f_date_to" value="${param.f_date_to}">
+    </div>
+    
+    <button type="submit" class="filter-btn">🔍 Tìm</button>
+    <a href="fund" class="filter-clear">✖ Xóa lọc</a>
+</form>
 
             <table class="table-fund">
                 <thead>
