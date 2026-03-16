@@ -107,7 +107,7 @@
 </div>
 
 <div class="mt-3">
-    <a href="${pageContext.request.contextPath}/batches" class="btn btn-secondary">
+    <a href="${pageContext.request.contextPath}/production-batches" class="btn btn-secondary">
         ← Quay lại danh sách
     </a>
 </div>
