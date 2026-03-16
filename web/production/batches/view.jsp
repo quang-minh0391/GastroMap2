@@ -85,7 +85,7 @@
                         <c:otherwise>Không xác định</c:otherwise>
                     </c:choose>
                 </p>
-                <p class="mb-0"><strong>Ngày tạo:</strong> <fmt:formatDate value="${batch.createdAt}" pattern="dd/MM/yyyy HH:mm"/></p>
+                <%-- Ngày tạo ẩn theo yêu cầu --%>
             </div>
         </div>
     </div>

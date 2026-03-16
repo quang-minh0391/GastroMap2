@@ -74,7 +74,7 @@
                         <th>Mã lô</th>
                         <th>Nông sản</th>
                         <th>Số lượng tồn</th>
-                        <th>Cập nhật lần cuối</th>
+                        <%-- <th>Cập nhật lần cuối</th> --%>
                     </tr>
                 </thead>
                 <tbody>
@@ -113,14 +113,12 @@
                                     ${inventory.remainingQuantity} ${inventory.unit}
                                 </span>
                             </td>
-                            <td>
-                                <fmt:formatDate value="${inventory.updatedAt}" pattern="dd/MM/yyyy HH:mm"/>
-                            </td>
+                            <%-- Cập nhật lần cuối ẩn theo yêu cầu --%>
                         </tr>
                     </c:forEach>
                     <c:if test="${empty inventoryList}">
                         <tr>
-                            <td colspan="6" class="text-center text-muted py-4">
+                            <td colspan="5" class="text-center text-muted py-4">
                                 Chưa có dữ liệu tồn kho. 
                                 <a href="${pageContext.request.contextPath}/stock-ins?action=create">Nhập kho</a>
                             </td>
