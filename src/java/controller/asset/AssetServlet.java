@@ -145,7 +145,6 @@ public class AssetServlet extends HttpServlet {
 //
 //        request.getRequestDispatcher("/asset/asset_management.jsp").forward(request, response);
 //    }
-
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -155,8 +154,11 @@ public class AssetServlet extends HttpServlet {
         int pageIndex = 1;
         int pageSize = 10;
         try {
-            if (request.getParameter("page") != null) pageIndex = Integer.parseInt(request.getParameter("page"));
-        } catch (Exception e) {}
+            if (request.getParameter("page") != null) {
+                pageIndex = Integer.parseInt(request.getParameter("page"));
+            }
+        } catch (Exception e) {
+        }
 
         String fCode = request.getParameter("f_code");
         String fName = request.getParameter("f_name");
@@ -173,29 +175,35 @@ public class AssetServlet extends HttpServlet {
         if (sortOrder == null) {
             sortOrder = "DESC";        // <--- Mặc định giảm dần
         }
-        
+
         java.sql.Date fDateFrom = null;
         java.sql.Date fDateTo = null;
         try {
-             if (request.getParameter("f_date_from") != null && !request.getParameter("f_date_from").isEmpty())
+            if (request.getParameter("f_date_from") != null && !request.getParameter("f_date_from").isEmpty()) {
                 fDateFrom = java.sql.Date.valueOf(request.getParameter("f_date_from"));
-             if (request.getParameter("f_date_to") != null && !request.getParameter("f_date_to").isEmpty())
+            }
+            if (request.getParameter("f_date_to") != null && !request.getParameter("f_date_to").isEmpty()) {
                 fDateTo = java.sql.Date.valueOf(request.getParameter("f_date_to"));
-        } catch (Exception e) {}
+            }
+        } catch (Exception e) {
+        }
 
-        BigDecimal fPriceFrom = null; 
+        BigDecimal fPriceFrom = null;
         BigDecimal fPriceTo = null;
         try {
-             if (request.getParameter("f_price_from") != null && !request.getParameter("f_price_from").isEmpty())
+            if (request.getParameter("f_price_from") != null && !request.getParameter("f_price_from").isEmpty()) {
                 fPriceFrom = new BigDecimal(request.getParameter("f_price_from"));
-             if (request.getParameter("f_price_to") != null && !request.getParameter("f_price_to").isEmpty())
+            }
+            if (request.getParameter("f_price_to") != null && !request.getParameter("f_price_to").isEmpty()) {
                 fPriceTo = new BigDecimal(request.getParameter("f_price_to"));
-        } catch (Exception e) {}
+            }
+        } catch (Exception e) {
+        }
 
         // 2. Lấy danh sách tài sản theo bộ lọc
         List<FixedAsset> listAssets = dao.filterAssets(fCode, fName, fStatus, fLocation, fDateFrom, fDateTo, fPriceFrom, fPriceTo, sortBy, sortOrder, pageIndex, pageSize);
         List<AssetCategory> listCategories = dao.getAllCategories();
-        
+
         // Tính tổng trang cho bộ lọc
         int totalRecordsFiltered = dao.countAssets(fCode, fName, fStatus, fLocation, fDateFrom, fDateTo, fPriceFrom, fPriceTo);
         int totalPage = (totalRecordsFiltered % pageSize == 0) ? (totalRecordsFiltered / pageSize) : (totalRecordsFiltered / pageSize + 1);
@@ -208,12 +216,12 @@ public class AssetServlet extends HttpServlet {
         // 4. Gửi dữ liệu sang JSP
         request.setAttribute("grandTotalAssets", grandTotalAssets); // Số tổng toàn bộ
         request.setAttribute("stats", stats); // Thống kê từng loại
-        
+
         request.setAttribute("assets", listAssets);
         request.setAttribute("categories", listCategories);
         request.setAttribute("pageIndex", pageIndex);
         request.setAttribute("totalPage", totalPage);
-        
+
         // Lưu lại giá trị bộ lọc
         request.setAttribute("f_code", fCode);
         request.setAttribute("f_name", fName);
@@ -221,7 +229,7 @@ public class AssetServlet extends HttpServlet {
         request.setAttribute("f_location", fLocation);
         request.setAttribute("sortBy", sortBy);
         request.setAttribute("sortOrder", sortOrder);
-        
+
         // --- THÊM 2 DÒNG NÀY ---
         request.setAttribute("f_date_from", request.getParameter("f_date_from"));
         request.setAttribute("f_date_to", request.getParameter("f_date_to"));
@@ -231,6 +239,7 @@ public class AssetServlet extends HttpServlet {
 
         request.getRequestDispatcher("/asset/asset_management.jsp").forward(request, response);
     }
+
     /**
      * Handles the HTTP <code>POST</code> method.
      *
@@ -267,7 +276,7 @@ public class AssetServlet extends HttpServlet {
                 trans.setTransactionType("IN");
                 trans.setDescription("Thu từ thanh lý tài sản: " + assetName);
                 financeDao.insertTransaction(trans);
-
+                request.getSession().setAttribute("message", "Đã thanh lí tài sản thành công!");
                 response.sendRedirect("AssetServlet");
                 return; // Kết thúc để không chạy xuống phần Insert
             }
@@ -293,7 +302,7 @@ public class AssetServlet extends HttpServlet {
                 trans.setTransactionType("OUT");
                 trans.setDescription("Mua lại tài sản thanh lý: " + assetName);
                 financeDao.insertTransaction(trans);
-
+                request.getSession().setAttribute("message", "Đã mua lại tài sản thành công!");
                 response.sendRedirect("AssetServlet");
                 return;
             }
@@ -302,7 +311,7 @@ public class AssetServlet extends HttpServlet {
             String code = request.getParameter("code");
             String name = request.getParameter("name");
             // --- SỬA ĐOẠN NÀY: Thay vì lấy ID, ta lấy Tên và tự xử lý ---
-            String categoryName = request.getParameter("category_name"); 
+            String categoryName = request.getParameter("category_name");
             AssetDAO dao = new AssetDAO();
             int categoryId = dao.getOrCreateCategoryId(categoryName);
             String dateStr = request.getParameter("purchase_date");
@@ -333,7 +342,7 @@ public class AssetServlet extends HttpServlet {
             fTrans.setDescription("Mua mới tài sản: " + name);
             fDao.insertTransaction(fTrans);
             // ------------------------------------------
-
+            request.getSession().setAttribute("message", "Đã thêm tài sản mới thành công!");
             response.sendRedirect("AssetServlet");
 
         } catch (Exception e) {
