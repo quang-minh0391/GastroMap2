@@ -1,6 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<fmt:setTimeZone value="Asia/Ho_Chi_Minh"/>
 <%@include file="../../common/header.jsp" %>
 
 <div class="mb-4">
@@ -111,7 +112,7 @@
             <c:when test="${not empty scanHistory}">
                 <c:forEach var="scan" items="${scanHistory}">
                     <div class="border-start border-success border-3 ps-3 mb-3">
-                        <strong><fmt:formatDate value="${scan.scanTime}" pattern="dd/MM/yyyy HH:mm"/></strong><br>
+                        <strong><fmt:formatDate value="${scan.scanTime}" pattern="dd/MM/yyyy HH:mm" timeZone="Asia/Ho_Chi_Minh"/></strong><br>
                         <span class="text-muted">
                             📍 ${not empty scan.scanLocation ? scan.scanLocation : 'Không xác định'}
                             | 👤 ${not empty scan.scanActor ? scan.scanActor : 'Anonymous'}

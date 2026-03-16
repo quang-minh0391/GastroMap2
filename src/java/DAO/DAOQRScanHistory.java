@@ -7,7 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * DAO class for qr_scan_history table
+ * DAO class for qr_scan_history table.
+ * Each method opens and closes its own connection to avoid connection leaks.
  */
 public class DAOQRScanHistory extends DBContext {
 
@@ -15,10 +16,25 @@ public class DAOQRScanHistory extends DBContext {
         super();
     }
 
-    protected void closeResources(Connection conn, PreparedStatement ps, ResultSet rs) {
+    /**
+     * Opens a fresh connection for each operation to avoid stale/leaked connections.
+     */
+    private Connection getConn() throws SQLException {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new SQLException("MySQL driver not found", e);
+        }
+        return DriverManager.getConnection(
+            "jdbc:mysql://localhost:3306/gastromap2?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Ho_Chi_Minh",
+            "root", "123456"
+        );
+    }
+
+    private void closeResources(Connection c, PreparedStatement ps, ResultSet rs) {
         try { if (rs != null) rs.close(); } catch (SQLException e) { e.printStackTrace(); }
         try { if (ps != null) ps.close(); } catch (SQLException e) { e.printStackTrace(); }
-        try { if (conn != null) conn.close(); } catch (SQLException e) { e.printStackTrace(); }
+        try { if (c  != null) c.close();  } catch (SQLException e) { e.printStackTrace(); }
     }
 
     public QRScanHistory getFromResultSet(ResultSet rs) throws SQLException {
@@ -35,37 +51,33 @@ public class DAOQRScanHistory extends DBContext {
     public List<QRScanHistory> getAll() {
         List<QRScanHistory> list = new ArrayList<>();
         String sql = "SELECT * FROM qr_scan_history ORDER BY scan_time DESC";
-        PreparedStatement ps = null;
-        ResultSet rs = null;
+        Connection c = null; PreparedStatement ps = null; ResultSet rs = null;
         try {
-            ps = conn.prepareStatement(sql);
+            c = getConn();
+            ps = c.prepareStatement(sql);
             rs = ps.executeQuery();
-            while (rs.next()) {
-                list.add(getFromResultSet(rs));
-            }
+            while (rs.next()) list.add(getFromResultSet(rs));
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            closeResources(null, ps, rs);
+            closeResources(c, ps, rs);
         }
         return list;
     }
 
     public QRScanHistory getById(Integer id) {
         String sql = "SELECT * FROM qr_scan_history WHERE id = ?";
-        PreparedStatement ps = null;
-        ResultSet rs = null;
+        Connection c = null; PreparedStatement ps = null; ResultSet rs = null;
         try {
-            ps = conn.prepareStatement(sql);
+            c = getConn();
+            ps = c.prepareStatement(sql);
             ps.setInt(1, id);
             rs = ps.executeQuery();
-            if (rs.next()) {
-                return getFromResultSet(rs);
-            }
+            if (rs.next()) return getFromResultSet(rs);
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            closeResources(null, ps, rs);
+            closeResources(c, ps, rs);
         }
         return null;
     }
@@ -73,37 +85,41 @@ public class DAOQRScanHistory extends DBContext {
     public List<QRScanHistory> getByQrId(Integer qrId) {
         List<QRScanHistory> list = new ArrayList<>();
         String sql = "SELECT * FROM qr_scan_history WHERE qr_id = ? ORDER BY scan_time DESC";
-        PreparedStatement ps = null;
-        ResultSet rs = null;
+        Connection c = null; PreparedStatement ps = null; ResultSet rs = null;
         try {
-            ps = conn.prepareStatement(sql);
+            c = getConn();
+            ps = c.prepareStatement(sql);
             ps.setInt(1, qrId);
             rs = ps.executeQuery();
-            while (rs.next()) {
-                list.add(getFromResultSet(rs));
-            }
+            while (rs.next()) list.add(getFromResultSet(rs));
+            System.out.println("[DAOQRScanHistory.getByQrId] Found " + list.size() + " record(s) for qrId=" + qrId);
         } catch (SQLException e) {
+            System.err.println("[DAOQRScanHistory.getByQrId] SQLException: " + e.getMessage());
             e.printStackTrace();
         } finally {
-            closeResources(null, ps, rs);
+            closeResources(c, ps, rs);
         }
         return list;
     }
 
     public boolean insert(QRScanHistory history) {
         String sql = "INSERT INTO qr_scan_history (qr_id, scan_location, scan_actor, note) VALUES (?, ?, ?, ?)";
-        PreparedStatement ps = null;
+        Connection c = null; PreparedStatement ps = null;
         try {
-            ps = conn.prepareStatement(sql);
+            c = getConn();
+            ps = c.prepareStatement(sql);
             ps.setInt(1, history.getQrId());
             ps.setString(2, history.getScanLocation());
             ps.setString(3, history.getScanActor());
             ps.setString(4, history.getNote());
-            return ps.executeUpdate() > 0;
+            int rows = ps.executeUpdate();
+            System.out.println("[DAOQRScanHistory.insert] Inserted " + rows + " row(s) for qrId=" + history.getQrId());
+            return rows > 0;
         } catch (SQLException e) {
+            System.err.println("[DAOQRScanHistory.insert] SQLException: " + e.getMessage());
             e.printStackTrace();
         } finally {
-            closeResources(null, ps, null);
+            closeResources(c, ps, null);
         }
         return false;
     }
@@ -111,59 +127,52 @@ public class DAOQRScanHistory extends DBContext {
     public List<QRScanHistory> getPaginated(int page, int pageSize) {
         List<QRScanHistory> list = new ArrayList<>();
         String sql = "SELECT * FROM qr_scan_history ORDER BY scan_time DESC LIMIT ? OFFSET ?";
-        PreparedStatement ps = null;
-        ResultSet rs = null;
+        Connection c = null; PreparedStatement ps = null; ResultSet rs = null;
         try {
-            ps = conn.prepareStatement(sql);
+            c = getConn();
+            ps = c.prepareStatement(sql);
             ps.setInt(1, pageSize);
             ps.setInt(2, (page - 1) * pageSize);
             rs = ps.executeQuery();
-            while (rs.next()) {
-                list.add(getFromResultSet(rs));
-            }
+            while (rs.next()) list.add(getFromResultSet(rs));
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            closeResources(null, ps, rs);
+            closeResources(c, ps, rs);
         }
         return list;
     }
 
     public int countAll() {
         String sql = "SELECT COUNT(*) FROM qr_scan_history";
-        PreparedStatement ps = null;
-        ResultSet rs = null;
+        Connection c = null; PreparedStatement ps = null; ResultSet rs = null;
         try {
-            ps = conn.prepareStatement(sql);
+            c = getConn();
+            ps = c.prepareStatement(sql);
             rs = ps.executeQuery();
-            if (rs.next()) {
-                return rs.getInt(1);
-            }
+            if (rs.next()) return rs.getInt(1);
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            closeResources(null, ps, rs);
+            closeResources(c, ps, rs);
         }
         return 0;
     }
 
     public int countByQrId(Integer qrId) {
         String sql = "SELECT COUNT(*) FROM qr_scan_history WHERE qr_id = ?";
-        PreparedStatement ps = null;
-        ResultSet rs = null;
+        Connection c = null; PreparedStatement ps = null; ResultSet rs = null;
         try {
-            ps = conn.prepareStatement(sql);
+            c = getConn();
+            ps = c.prepareStatement(sql);
             ps.setInt(1, qrId);
             rs = ps.executeQuery();
-            if (rs.next()) {
-                return rs.getInt(1);
-            }
+            if (rs.next()) return rs.getInt(1);
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            closeResources(null, ps, rs);
+            closeResources(c, ps, rs);
         }
         return 0;
     }
 }
-
