@@ -41,6 +41,7 @@
                         <th>Mã lô</th>
                         <th>Nông sản</th>
                         <th>Trạng thái</th>
+                        <th>Ngày tạo</th>
                         <th class="text-center">Thao tác</th>
                     </tr>
                 </thead>
@@ -95,7 +96,7 @@
                                     </c:otherwise>
                                 </c:choose>
                             </td>
-                            <%-- Ngày tạo ẩn theo yêu cầu --%>
+                            <td><fmt:formatDate value="${qrCode.createdAt}" pattern="dd/MM/yyyy"/></td>
                             <td class="text-center">
                                 <div class="btn-group" role="group">
                                     <a href="${pageContext.request.contextPath}/qr-codes?action=view&id=${qrCode.id}" 
@@ -122,7 +123,7 @@
                     </c:forEach>
                     <c:if test="${empty qrCodeList}">
                         <tr>
-                            <td colspan="7" class="text-center text-muted py-4">
+                            <td colspan="8" class="text-center text-muted py-4">
                                 Chưa có mã QR nào. 
                                 <a href="${pageContext.request.contextPath}/qr-codes?action=generate">Tạo mã QR</a>
                             </td>

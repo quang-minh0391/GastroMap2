@@ -25,7 +25,7 @@
                         <th>#</th>
                         <th>Mã QR</th>
                         <th>Mã lô</th>
-                        <%-- <th>Thời gian quét</th> --%>
+                        <th>Thời gian quét</th>
                         <th>Vị trí</th>
                         <th>Người quét</th>
                         <th>Ghi chú</th>
@@ -55,7 +55,7 @@
                                     </c:if>
                                 </c:forEach>
                             </td>
-                            <%-- Thời gian quét ẩn theo yêu cầu --%>
+                            <td><fmt:formatDate value="${history.scanTime}" pattern="dd/MM/yyyy" timeZone="Asia/Ho_Chi_Minh"/></td>
                             <td>${not empty history.scanLocation ? history.scanLocation : '-'}</td>
                             <td>${not empty history.scanActor ? history.scanActor : 'Anonymous'}</td>
                             <td>${not empty history.note ? history.note : '-'}</td>
@@ -63,7 +63,7 @@
                     </c:forEach>
                     <c:if test="${empty historyList}">
                         <tr>
-                            <td colspan="6" class="text-center text-muted py-4">
+                            <td colspan="7" class="text-center text-muted py-4">
                                 Chưa có lịch sử quét nào.
                             </td>
                         </tr>
