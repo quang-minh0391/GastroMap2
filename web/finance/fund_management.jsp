@@ -269,7 +269,7 @@
                 <tbody>
                     <c:forEach items="${history}" var="h">
                         <tr>
-                            <td><fmt:formatDate value="${h.transactionDate}" pattern="dd/MM/yyyy HH:mm"/></td>
+                            <td><fmt:formatDate value="${h.transactionDate}" pattern="dd/MM/yyyy"/></td>
                             <td>${h.fundName}</td>
                             <td>
                                 <c:choose>

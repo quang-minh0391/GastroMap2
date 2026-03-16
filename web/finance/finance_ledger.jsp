@@ -461,7 +461,7 @@
                 <tbody>
                     <c:forEach items="${transList}" var="t">
                         <tr>
-                            <td><fmt:formatDate value="${t.transactionDate}" pattern="dd/MM/yyyy HH:mm"/></td>
+                            <td><fmt:formatDate value="${t.transactionDate}" pattern="dd/MM/yyyy"/></td>
                             <td><strong>${t.categoryName}</strong></td>
                             <td style="color:#555;">${t.description}</td>
                             <td>
